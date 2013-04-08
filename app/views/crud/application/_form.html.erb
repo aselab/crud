@@ -1,0 +1,18 @@
+<%= simple_form_for(resource,
+  :url => resource.new_record? ?
+    stored_params(:action => :new) :
+    stored_params(:action => :update, :id => resource)
+  ) do |f| %>
+  <%= f.error_notification %>
+
+  <div class="form-inputs">
+    <% columns.each do |column| %>
+      <%= simple_form_input f, column, input_options(column) %>
+    <% end %>
+  </div>
+
+  <div class="form-actions">
+    <%= f.button :submit, :class => "primary" %>
+    <%= link_to t("action.back"), stored_params(:action => :index), :class => "btn" %>
+  </div>
+<% end %>
