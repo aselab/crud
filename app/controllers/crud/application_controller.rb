@@ -155,8 +155,8 @@ class Crud::ApplicationController < ApplicationController
   def do_search
     format = (params[:format] || :html).to_sym
     columns = format == :html ? columns_for(:index) : columns_for(format)
-    associations, columns = columns.partition(&:association_key?)
-    all_columns_exist = columns.all?(&:column_key?)
+    associations, columns = columns.partition {|c| association_key?(c)}
+    all_columns_exist = columns.all? {|c| column_key?(c)}
 
     self.resources = (associations.empty? && all_columns_exist) ?
         model.select([:id] + columns).accessible_by(current_ability) :
@@ -378,5 +378,9 @@ class Crud::ApplicationController < ApplicationController
     else
       render json: resources.to_json
     end
+  end
+
+  unless method_defined?(:current_user)
+    define_method(:current_user) {}
   end
 end

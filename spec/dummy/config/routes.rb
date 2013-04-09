@@ -1,4 +1,3 @@
-Rails.application.routes.draw do
-
-  mount Crud::Engine => "/crud"
+Dummy::Application.routes.draw do
+  resources :people
 end
