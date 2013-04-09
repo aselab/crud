@@ -1,6 +1,6 @@
 <%= simple_form_for(resource,
   :url => resource.new_record? ?
-    stored_params(:action => :new) :
+    stored_params(:action => :create) :
     stored_params(:action => :update, :id => resource)
   ) do |f| %>
   <%= f.error_notification %>
