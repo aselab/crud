@@ -1,0 +1,27 @@
+ja:
+  crud:
+    action:
+      ok: OK
+      cancel: キャンセル
+      new: 新規作成
+      edit: 編集
+      index: 一覧
+      show: 詳細
+      create: 作成
+      update: 更新
+      destroy: 削除
+
+    action_title:
+      new: "%{name}新規作成"
+      edit: "%{name}編集"
+      index: "%{name}一覧"
+      show: "%{name}詳細"
+      create: "%{name}作成"
+      update: "%{name}更新"
+      destroy: "%{name}削除"
+
+    message:
+      successfully_created: "%{name}を作成しました"
+      successfully_updated: "%{name}を更新しました"
+      successfully_deleted: "%{name}を削除しました"
+      are_you_sure: "よろしいですか？"

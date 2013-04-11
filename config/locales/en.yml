@@ -1,0 +1,27 @@
+en:
+  crud:
+    action:
+      ok: OK
+      cancel: Cancel
+      new: New
+      edit: Edit
+      index: List
+      show: Show
+      create: Create
+      update: Update
+      destroy: Destroy
+
+    action_title:
+      new: "New %{name}"
+      edit: "Editing %{name}"
+      index: "Listing %{name}"
+      show: "Showing %{name}"
+      create: "Create %{name}"
+      update: "Update %{name}"
+      destroy: "Destroy %{name}"
+
+    message:
+      successfully_created: "%{name} was successfully created."
+      successfully_updated: "%{name} was successfully updated."
+      successfully_deleted: "%{name} was successfully deleted."
+      are_you_sure: "Are you sure?"

@@ -12,7 +12,7 @@
   </div>
 
   <div class="form-actions">
-    <%= f.button :submit, :class => "primary" %>
-    <%= link_to t("action.back"), stored_params(:action => :index), :class => "btn" %>
+    <%= f.button :submit, :class => "btn btn-primary" %>
+    <%= link_to t("crud.action.cancel"), stored_params(:action => :index), :class => "btn" %>
   </div>
 <% end %>

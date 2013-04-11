@@ -21,9 +21,9 @@
           <td><%= to_label resource.send(column) %></td>
         <% end %>
         <td>
-          <%= link_to t("action.show"), stored_params(:action => "show", :id => resource), :class => "btn small" if can?(:show, resource) %>
-          <%= link_to t("action.edit"), stored_params(:action => "edit", :id => resource), :class => "btn small" if can?(:update, resource) %>
-          <%= link_to t("action.destroy"), stored_params(:action => "destroy", :id => resource), method: :delete, data: { confirm: t("message.are_you_sure") }, :class => "btn danger small" if can?(:destroy, resource) %>
+          <%= link_to t("crud.action.show"), stored_params(:action => "show", :id => resource), :class => "btn" if can?(:show, resource) %>
+          <%= link_to t("crud.action.edit"), stored_params(:action => "edit", :id => resource), :class => "btn" if can?(:update, resource) %>
+          <%= link_to t("crud.action.destroy"), stored_params(:action => "destroy", :id => resource), method: :delete, data: { confirm: t("crud.message.are_you_sure") }, :class => "btn btn-danger" if can?(:destroy, resource) %>
         </td>
       </tr>
     <% end %>
