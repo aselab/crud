@@ -1,17 +1,19 @@
 <h1><%= @title %></h1>
 
-<div>
-  <form method="GET">
-    <div class="navbar-search input-append">
-      <%= text_field_tag :term, params[:term], :placeholder => t("crud.message.enter_search_term") %>
-      <span class="add-on"><i class="icon-search"></i></span>
+<div class="clearfix">
+  <div class="pull-right">
+    <%= link_to t("crud.action_title.new", :name => model_name), stored_params(:action => :new), :class => "btn" if can?(:create, resource) %>
+  </div>
+
+  <form class="form-search pull-right" method="GET">
+    <div class="input-append">
+      <%= text_field_tag :term, params[:term], :class => "search-query",
+        :placeholder => t("crud.message.enter_search_term") %>
+      <button id="search-button" type="submit" class="btn">
+        <i class="icon-search"></i>
+      </button>
     </div>
   </form>
-  <%= link_to t("crud.action_title.new", :name => model_name), stored_params(:action => :new), :class => "btn" if can?(:create, resource) %>
-</div>
-
-<div class="search-result">
-  <%= page_entries_info resources %>
 </div>
 
 <table class="table table-striped table-bordered">
@@ -40,4 +42,12 @@
   </tbody>
 </table>
 
-<%= paginate resources %>
+<div class="clearfix">
+  <div class="search-result muted pull-left">
+    <%= page_entries_info resources %>
+  </div>
+
+  <div class="pull-right">
+    <%= paginate resources %>
+  </div>
+</div>
