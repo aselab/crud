@@ -25,3 +25,4 @@ ja:
       successfully_updated: "%{name}を更新しました"
       successfully_deleted: "%{name}を削除しました"
       are_you_sure: "よろしいですか？"
+      enter_search_term: "検索キーワードを入力..."

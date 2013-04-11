@@ -25,3 +25,4 @@ en:
       successfully_updated: "%{name} was successfully updated."
       successfully_deleted: "%{name} was successfully deleted."
       are_you_sure: "Are you sure?"
+      enter_search_term: "Enter search term..."

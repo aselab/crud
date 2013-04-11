@@ -7,7 +7,9 @@ module Crud
         current = params[:sort_order]
         order = focus && current == "asc" ? "desc" : "asc"
         p = params.dup.update(:sort_key => key.to_s, :sort_order => order)
-        link_to(label, p, :class => focus ? current : nil)
+        icon = focus && current ? content_tag(:i, nil, :class =>
+          (current == "asc" ? "icon-caret-up" : "icon-caret-down")) : nil
+        link_to(p) { label.html_safe + icon }
       else
         label
       end

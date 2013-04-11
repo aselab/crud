@@ -1,5 +1,15 @@
 <h1><%= @title %></h1>
 
+<div>
+  <form method="GET">
+    <div class="navbar-search input-append">
+      <%= text_field_tag :term, params[:term], :placeholder => t("crud.message.enter_search_term") %>
+      <span class="add-on"><i class="icon-search"></i></span>
+    </div>
+  </form>
+  <%= link_to t("crud.action_title.new", :name => model_name), stored_params(:action => :new), :class => "btn" if can?(:create, resource) %>
+</div>
+
 <div class="search-result">
   <%= page_entries_info resources %>
 </div>
