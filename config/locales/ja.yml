@@ -43,3 +43,12 @@ ja:
           other: "%{count}件の結果を表示しています"
       more_pages:
         display_entries: "%{total}件中 %{first} - %{last}件目 の結果を表示しています"
+
+  simple_form:
+    "yes": 'はい'
+    "no": 'いいえ'
+    required:
+      text: '必須'
+      mark: '*'
+    error_notification:
+      default_message: "入力内容に誤りがあります。赤字の個所を修正してください。"
