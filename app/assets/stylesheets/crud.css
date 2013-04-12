@@ -1,0 +1,7 @@
+table th a.desc:after {
+  content: "▼";
+}
+
+table th a.asc:after {
+  content: "▲";
+}
