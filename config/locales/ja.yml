@@ -26,3 +26,20 @@ ja:
       successfully_deleted: "%{name}を削除しました"
       are_you_sure: "よろしいですか？"
       enter_search_term: "検索キーワードを入力..."
+
+  views:
+    pagination:
+      first: "&laquo; 最初"
+      last: "最後&raquo;"
+      previous: "&lsaquo; 前"
+      next: "次 &rsaquo;"
+      truncate: "..."
+  helpers:
+    page_entries_info:
+      one_page:
+        display_entries:
+          zero: "結果が見つかりません"
+          one: "1件の結果を表示しています"
+          other: "%{count}件の結果を表示しています"
+      more_pages:
+        display_entries: "%{total}件中 %{first} - %{last}件目 の結果を表示しています"
