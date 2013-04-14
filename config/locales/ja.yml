@@ -35,6 +35,11 @@ ja:
       next: "次 &rsaquo;"
       truncate: "..."
   helpers:
+    submit:
+      create: 作成する
+      update: 更新する
+      destroy: 削除する
+
     page_entries_info:
       one_page:
         display_entries:

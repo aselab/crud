@@ -15,10 +15,11 @@ module Crud
 
     def to_label(value, blank = nil)
       return blank if value.blank?
-      return value.map {|v| to_label(v)} if value.respond_to?(:map)
-      return value.label if value.respond_to?(:label)
-      return value.name if value.respond_to?(:name)
+      return value.map {|v| to_label(v, blank)} if value.is_a?(Enumerable)
       return I18n.l(value) if value.is_a?(Time) || value.is_a?(Date)
+      return value.label if value.respond_to?(:label)
+      return value.text if value.respond_to?(:text)
+      return value.name if value.respond_to?(:name)
       value.to_s
     end
 

@@ -3,6 +3,6 @@
 <dl class="dl-horizontal">
   <% columns.each do |column| %>
     <dt><%= model.human_attribute_name(column) %></dt>
-    <dd><%= simple_format(resource.try(column)) %></dd>
+    <dd><%= simple_format(to_label(resource.try(column))) %></dd>
   <% end %>
 </dl>
