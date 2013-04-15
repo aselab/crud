@@ -179,14 +179,14 @@ class Crud::ApplicationController < ApplicationController
       if reflection
         self.resources = resources.includes(c.to_sym)
         association = reflection.class_name.constantize
-        f = association.respond_to?(:search_field) ?
+        fields = association.respond_to?(:search_field) ?
           association.send(:search_field) :
           [:name, :title].find {|c| association.columns_hash.has_key?(c.to_s)}
-        "#{association.table_name}.#{f.to_s}"
+        Array(fields).map {|f| "#{association.table_name}.#{f.to_s}"}
       else
         "#{model.table_name}.#{model.columns_hash[c.to_s].name}"
       end
-    }
+    }.flatten
     self.resources = resources.where(search_query(columns, terms))
   end
 
