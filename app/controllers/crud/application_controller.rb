@@ -137,17 +137,6 @@ class Crud::ApplicationController < ApplicationController
     model.reflections.has_key?(key.to_sym)
   end
 
-  def search_query(columns, terms)
-    return nil if columns.empty? || terms.empty?
-
-    terms.map {|term|
-      "(" + columns.map {|column|
-        ActiveRecord::Base.send(:sanitize_sql_array,
-          ["#{column} like ?", "%#{term}%"])
-      }.join(" or ") + ")"
-    }.join(" and ")
-  end
-
   #
   # indexアクションで呼び出される内部メソッド.
   # オーバーライドしてself.resourcesに表示対象を格納するように実装する．
@@ -174,7 +163,8 @@ class Crud::ApplicationController < ApplicationController
   def search_by_sql
     terms = search_terms
 
-    columns = columns_for_search.map {|c|
+    model_columns = []
+    columns_for_search.each {|c|
       reflection = model.reflections[c.to_sym]
       if reflection
         self.resources = resources.includes(c.to_sym)
@@ -182,12 +172,30 @@ class Crud::ApplicationController < ApplicationController
         fields = association.respond_to?(:search_field) ?
           association.send(:search_field) :
           [:name, :title].find {|c| association.columns_hash.has_key?(c.to_s)}
-        Array(fields).map {|f| "#{association.table_name}.#{f.to_s}"}
+        Array(fields).each {|f| model_columns.push([association, f])}
       else
-        "#{model.table_name}.#{model.columns_hash[c.to_s].name}"
+        model_columns.push([model, c])
       end
-    }.flatten
-    self.resources = resources.where(search_query(columns, terms))
+    }
+    self.resources = resources.where(build_query(model_columns, terms))
+  end
+
+  def build_query(model_columns, terms)
+    return nil if model_columns.empty? || terms.empty?
+
+    terms.map {|term|
+      conds = model_columns.map {|model, column|
+        c = model.columns_hash[column.to_s]
+        column_name = "#{model.table_name}.#{c.name}"
+        case c.type
+        when :string, :text
+          model.send(:sanitize_sql_array, ["#{column_name} like ?", "%#{term}%"])
+        when :integer
+          model.send(:sanitize_sql_hash, column_name => Integer(term)) rescue nil
+        end
+      }.compact
+      conds.size > 1 ? "(#{conds.join(" OR ")})" : conds.first
+    }.compact.join(" AND ")
   end
 
   #
@@ -315,12 +323,12 @@ class Crud::ApplicationController < ApplicationController
 
   #
   # 検索に利用するカラムリスト.
-  # デフォルトではindexで表示する項目のうちtypeがstringであるものまたは関連
+  # デフォルトではindexで表示する項目のうちtypeがstring, text, integerであるものまたは関連
   #
   def columns_for_search
     columns_for(:index).select {|c|
       column = model.columns_hash[c.to_s]
-      column && column.type == :string || association_key?(c)
+      column && [:string, :text, :integer].include?(column.type) || association_key?(c)
     }
   end
 
