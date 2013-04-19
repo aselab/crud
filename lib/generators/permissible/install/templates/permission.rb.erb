@@ -1,5 +1,5 @@
 class Permission < ActiveRecord::Base
-  belongs_to :<%= principal_name.underscore %>
+  belongs_to :principal, :class_name => '<%= principal_name.camelize %>'
   belongs_to :permissible, :polymorphic => true
 
   attr_accessible :flags, :as => :admin
