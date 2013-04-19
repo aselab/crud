@@ -11,9 +11,32 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20130409131617) do
+ActiveRecord::Schema.define(:version => 20130419112250) do
+
+  create_table "events", :force => true do |t|
+    t.string   "name"
+    t.datetime "created_at", :null => false
+    t.datetime "updated_at", :null => false
+  end
 
   create_table "people", :force => true do |t|
+    t.string   "name"
+    t.datetime "created_at", :null => false
+    t.datetime "updated_at", :null => false
+  end
+
+  create_table "permissions", :force => true do |t|
+    t.integer "permissible_id",   :null => false
+    t.string  "permissible_type", :null => false
+    t.integer "principal_id",     :null => false
+    t.integer "flags",            :null => false
+  end
+
+  add_index "permissions", ["permissible_id", "permissible_type"], :name => "index_permissions_on_permissible_id_and_permissible_type"
+  add_index "permissions", ["principal_id"], :name => "index_permissions_on_principal_id"
+
+  create_table "principals", :force => true do |t|
+    t.string   "type"
     t.string   "name"
     t.datetime "created_at", :null => false
     t.datetime "updated_at", :null => false
