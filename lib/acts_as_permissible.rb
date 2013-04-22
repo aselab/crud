@@ -19,6 +19,16 @@ module Permissible
 
         accepts_nested_attributes_for :permissions, :allow_destroy => true
         attr_accessible :permissions_attributes, :as => :admin
+
+        scope :permissible, lambda {|principal_ids, action|
+          flag = permissions[action.to_sym]
+          raise ArgumentError.new("action #{action} is not defined (must be #{permissions.keys.join(", ")})") if flag.nil?
+
+          includes(:permissions).where([
+            "permissions.principal_id IN (:ids) AND permissions.flags & :flag = :flag",
+            :ids => principal_ids, :flag => flag
+          ])
+        }
       end
     end
   end

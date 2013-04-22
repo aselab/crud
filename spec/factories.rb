@@ -8,5 +8,6 @@ FactoryGirl.define do
   end
 
   factory :permission do
+    flags 0b01
   end
 end
