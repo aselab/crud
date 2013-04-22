@@ -16,6 +16,7 @@ module Crud
 
       def copy_views
         directory "application/", "app/views/#{controller_name}/"
+        route "resources :#{controller_name}"
       end
     end
 
