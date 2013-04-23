@@ -9,11 +9,11 @@ module Permissible
     # アクセス権をビットで定義する
     # {:manage => 0b111, :write => 0b011, :read => 0b001, :default => 0b001}
     def acts_as_permissible(permissions)
-      self.define_singleton_method(:defined_permissions) { permissions }
+      self.define_singleton_method(:flags) { permissions }
 
       self.class_eval do
         has_many :permissions, :as => :permissible, :dependent => :destroy,
-          :before_add => :assign_default_flags
+          :after_add => :assign_default_flags
 
         has_many :users, :through => :permissions
 
@@ -24,10 +24,9 @@ module Permissible
           flag = permissions[action.to_sym]
           raise ArgumentError.new("action #{action} is not defined (must be #{permissions.keys.join(", ")})") if flag.nil?
 
-          includes(:permissions).where([
-            "permissions.user_id IN (:ids) AND permissions.flags & :flag = :flag",
-            :ids => user_ids, :flag => flag
-          ])
+          includes(:permissions).
+            where("permissions.user_id" => user_ids).
+            where("permissions.flags & :flag = :flag", :flag => flag)
         }
       end
     end
@@ -36,7 +35,7 @@ module Permissible
   module InstanceMethods
     private
     def assign_default_flags(record)
-      record.flags ||= self.class.defined_permissions[:default]
+      record.flags ||= self.class.flags[:default]
     end
   end
 
