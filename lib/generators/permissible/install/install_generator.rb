@@ -14,7 +14,7 @@ module Permissible
       def create_models
         inject_into_class("app/models/#{principal_name.underscore}.rb",
           principal_name.camelize.constantize) do
-          "  has_many :permissions, :dependent => :destroy\n"
+          "  has_many :permissions, :foreign_key => "user_id", :dependent => :destroy\n"
         end
 
         template 'permission.rb.erb', 'app/models/permission.rb'

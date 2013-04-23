@@ -9,7 +9,7 @@ describe "acts_as_permissible" do
     end
 
     it "関連が追加されていること" do
-      @permission = create(:permission, :principal => @principal, :permissible => @event)
+      @permission = create(:permission, :user => @principal, :permissible => @event)
       @principal.permissions.should == [@permission]
       @event.permissions.should == [@permission]
     end
@@ -23,8 +23,8 @@ describe "acts_as_permissible" do
     before do
       @principal = create(:principal)
       @manage, @read, @none = create_list(:event, 3)
-      create(:permission, :principal => @principal, :permissible => @manage, :flags => 0b11)
-      create(:permission, :principal => @principal, :permissible => @read, :flags => 0b01)
+      create(:permission, :user => @principal, :permissible => @manage, :flags => 0b11)
+      create(:permission, :user => @principal, :permissible => @read, :flags => 0b01)
     end
 
     it "定義されていない権限を指定した時エラーになること" do

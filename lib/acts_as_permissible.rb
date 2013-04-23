@@ -15,18 +15,18 @@ module Permissible
         has_many :permissions, :as => :permissible, :dependent => :destroy,
           :before_add => :assign_default_flags
 
-        has_many :principals, :through => :permissions
+        has_many :users, :through => :permissions
 
         accepts_nested_attributes_for :permissions, :allow_destroy => true
         attr_accessible :permissions_attributes, :as => :admin
 
-        scope :permissible, lambda {|principal_ids, action|
+        scope :permissible, lambda {|user_ids, action|
           flag = permissions[action.to_sym]
           raise ArgumentError.new("action #{action} is not defined (must be #{permissions.keys.join(", ")})") if flag.nil?
 
           includes(:permissions).where([
-            "permissions.principal_id IN (:ids) AND permissions.flags & :flag = :flag",
-            :ids => principal_ids, :flag => flag
+            "permissions.user_id IN (:ids) AND permissions.flags & :flag = :flag",
+            :ids => user_ids, :flag => flag
           ])
         }
       end

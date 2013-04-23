@@ -28,12 +28,12 @@ ActiveRecord::Schema.define(:version => 20130419112250) do
   create_table "permissions", :force => true do |t|
     t.integer "permissible_id",   :null => false
     t.string  "permissible_type", :null => false
-    t.integer "principal_id",     :null => false
+    t.integer "user_id",          :null => false
     t.integer "flags",            :null => false
   end
 
   add_index "permissions", ["permissible_id", "permissible_type"], :name => "index_permissions_on_permissible_id_and_permissible_type"
-  add_index "permissions", ["principal_id"], :name => "index_permissions_on_principal_id"
+  add_index "permissions", ["user_id"], :name => "index_permissions_on_user_id"
 
   create_table "principals", :force => true do |t|
     t.string   "type"
