@@ -33,6 +33,25 @@ module Crud
     rescue ActionController::RoutingError
     end
 
+    #
+    # カラムのhtml表示出力用メソッド.
+    # 以下の優先順で表示する。
+    # 1. #{model_name}_#{column_name}_html という名前のhelperメソッド
+    # 2. #{column_name}_html という名前のhelperメソッド
+    # 3. #{column_name}_label という名前のmodelメソッド
+    #
+    def column_html(resource, column)
+      return nil unless resource && column
+      short_method = "#{column.to_s}_html"
+      method = model.model_name.underscore + "_" + short_method
+      return send(method) if respond_to?(method)
+      return send(short_method) if respond_to?(short_method)
+
+      method = "#{column.to_s}_label"
+      value = resource.send(resource.respond_to?(method) ? method : column)
+      simple_format to_label(value)
+    end
+
     def to_label(value, blank = nil)
       return blank if value.blank?
       return value.map {|v| to_label(v, blank)} if value.is_a?(Enumerable)

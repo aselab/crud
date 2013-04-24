@@ -30,7 +30,7 @@
     <% resources.each do |resource| %>
       <tr>
         <% columns.each do |column| %>
-          <td><%= to_label resource.send(column) %></td>
+          <td><%= column_html resource, column %></td>
         <% end %>
         <td>
           <%= link_to_action :show, resource %>
