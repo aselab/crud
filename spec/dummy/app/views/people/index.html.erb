@@ -1,0 +1,53 @@
+<h1><%= @title %></h1>
+
+<div class="clearfix">
+  <div class="pull-right">
+    <%= link_to t("crud.action_title.new", :name => model_name), stored_params(:action => :new), :class => "btn" if can?(:create, resource) %>
+  </div>
+
+  <form class="form-search pull-right" method="GET">
+    <div class="input-append">
+      <%= text_field_tag :term, params[:term], :class => "search-query",
+        :placeholder => t("crud.message.enter_search_term") %>
+      <button id="search-button" type="submit" class="btn">
+        <i class="icon-search"></i>
+      </button>
+    </div>
+  </form>
+</div>
+
+<table class="table table-striped table-bordered">
+  <thead>
+    <tr>
+      <% columns.each do |column| %>
+        <th><%= sort_link_to column %></th>
+      <% end %>
+      <th></th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <% resources.each do |resource| %>
+      <tr>
+        <% columns.each do |column| %>
+          <td><%= to_label resource.send(column) %></td>
+        <% end %>
+        <td>
+          <%= link_to t("crud.action.show"), stored_params(:action => "show", :id => resource), :class => "btn" if can?(:show, resource) %>
+          <%= link_to t("crud.action.edit"), stored_params(:action => "edit", :id => resource), :class => "btn" if can?(:update, resource) %>
+          <%= link_to t("crud.action.destroy"), stored_params(:action => "destroy", :id => resource), method: :delete, data: { confirm: t("crud.message.are_you_sure") }, :class => "btn btn-danger" if can?(:destroy, resource) %>
+        </td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<div class="clearfix">
+  <div class="search-result muted pull-left">
+    <%= page_entries_info resources %>
+  </div>
+
+  <div class="pull-right">
+    <%= paginate resources %>
+  </div>
+</div>

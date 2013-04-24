@@ -1,45 +1,47 @@
 module Crud
   module BootstrapHelper
-    def nav(type, options, &block)
+    def nav(type, &block)
       content_tag :ul, :class => "nav #{type}" do
-        block.call(Context::Nav.new(self, options))
+        block.call(Context::Nav.new(self))
       end
     end
 
-    def nav_tabs(options = nil, &block)
-      nav("nav-tabs", options, &block)
+    def nav_tabs(&block)
+      nav("nav-tabs", &block)
     end
 
-    def nav_pills(options = nil, &block)
-      nav("nav-pills", options, &block)
+    def nav_pills(&block)
+      nav("nav-pills", &block)
     end
 
     module Context
       class Base
-        attr_reader :context, :context_options
+        attr_reader :context
 
-        def initialize(context, context_options)
+        def initialize(context)
           @context = context
-          @context_options = context_options || {}
         end
       end
 
       class Nav < Base
         def method_missing(name, *args)
-          options = args.extract_options!
-          html_options = options.delete(:wrapper_options)
-          context.content_tag :li, context.send(name, *args, options), html_options
+          wrapper {context.send(name, *args)}
         end
 
-        def item(label, url_options, opts = {})
-          p, wrapper_options = params(url_options, opts)
-          link_to(label, {:wrapper_options => wrapper_options}.merge(context_options).merge(p).merge(opts))
+        def wrapper(options = nil, &block)
+          context.content_tag :li, block.call, options
         end
 
-        def dropdown(label, url_options, opts = {}, &block)
-          p, wrapper_options = params(url_options, opts)
-          wrapper_options[:class] = "dropdown #{wrapper_options[:class]}"
-          context.content_tag(:li, wrapper_options) do
+        def item(label, url, active_params = nil, options = {})
+          url = context.url_for(url)
+          active = active_params ? active_params.all?{|k, v| context.params[k] == v} : (context.url_for(context.params) == url)
+          wrapper_options = active ? {:class => "active"}.merge(options.delete(:wrapper_options) || {}) : {}
+          wrapper(wrapper_options) {context.link_to(label, url, options)}
+        end
+
+        def dropdown(label, options = {}, &block)
+          wrapper_options = {:class => "dropdown #{options.delete(:class)}"}.merge(options)
+          wrapper(wrapper_options) do
             <<-HTML.html_safe
               <a class="dropdown-toggle" href="#" data-toggle="dropdown">
                 #{label}<b class="caret"></b>
@@ -55,7 +57,7 @@ module Crud
         def params(url_options, opts)
           p = url_params(url_options)
           wrapper_options = opts.delete(:wrapper_options) || {}
-          wrapper_options[:class] ||= "active" if active?(p)
+          wrapper_options[:class] ||= "active" if opts[:active] || active?(p)
           [p, wrapper_options]
         end
 

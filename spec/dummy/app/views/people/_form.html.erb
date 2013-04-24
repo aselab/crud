@@ -1,0 +1,19 @@
+<%= simple_form_for(resource,
+  :url => resource.new_record? ?
+    stored_params(:action => :create) :
+    stored_params(:action => :update, :id => resource),
+  :html => {:class => "form-horizontal"}
+) do |f| %>
+  <%= f.error_notification %>
+
+  <div class="form-inputs">
+    <% columns.each do |column| %>
+      <%= simple_form_input f, column, input_options(column) %>
+    <% end %>
+  </div>
+
+  <div class="form-actions">
+    <%= f.button :submit, :class => "btn btn-primary" %>
+    <%= link_to t("crud.action.cancel"), stored_params(:action => :index), :class => "btn" %>
+  </div>
+<% end %>
