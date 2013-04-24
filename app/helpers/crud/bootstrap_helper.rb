@@ -24,6 +24,8 @@ module Crud
       end
 
       class Nav < Base
+        attr_accessor :disable_active
+
         def method_missing(name, *args)
           wrapper {context.send(name, *args)}
         end
@@ -34,14 +36,17 @@ module Crud
 
         def item(label, url, active_params = nil, options = {})
           url = context.url_for(url)
-          active = active_params ? active_params.all?{|k, v| context.params[k] == v} : (context.url_for(context.params) == url)
-          wrapper_options = active ? {:class => "active"}.merge(options.delete(:wrapper_options) || {}) : {}
+          wrapper_options = options.delete(:wrapper_options) || {}
+          if active?(url, active_params)
+            wrapper_options[:class] = "active #{wrapper_options[:class]}"
+          end
           wrapper(wrapper_options) {context.link_to(label, url, options)}
         end
 
         def dropdown(label, options = {}, &block)
           wrapper_options = {:class => "dropdown #{options.delete(:class)}"}.merge(options)
-          wrapper(wrapper_options) do
+          self.disable_active = true
+          result = wrapper(wrapper_options) do
             <<-HTML.html_safe
               <a class="dropdown-toggle" href="#" data-toggle="dropdown">
                 #{label}<b class="caret"></b>
@@ -51,27 +56,20 @@ module Crud
               </ul>
             HTML
           end
+          self.disable_active = false
+          result
         end
 
         private
-        def params(url_options, opts)
-          p = url_params(url_options)
-          wrapper_options = opts.delete(:wrapper_options) || {}
-          wrapper_options[:class] ||= "active" if opts[:active] || active?(p)
-          [p, wrapper_options]
+        def same_url?(a, b)
+          a.split("?").first == b.split("?").first
         end
 
-        def url_params(arg)
-          if arg.is_a?(String)
-            controller, action = arg.split("#")
-            {:controller => controller, :action => action}
-          else
-            arg
-          end
-        end
-
-        def active?(arg)
-          url_params(arg).all? {|k, v| context.params[k] == v}
+        def active?(url, active_params)
+          !disable_active && (active_params ?
+            active_params.all?{|k, v| context.params[k] == v} :
+            same_url?(context.url_for(context.params), url)
+          )
         end
       end
     end
