@@ -1,6 +1,6 @@
 module Crud
   module ApplicationHelper
-    def sort_link_to(key)
+    def link_to_sort(key)
       label = model.human_attribute_name(key)
       if column_key?(key) || association_key?(key)
         focus = params[:sort_key] == key.to_s

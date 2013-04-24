@@ -2,7 +2,7 @@
 require 'spec_helper'
 
 describe Crud::ApplicationHelper do
-  describe "#sort_link_to" do
+  describe "#link_to_sort" do
     before do
       @params = {:controller => "foo", :action => "bar",
         :sort_key => "sort_key", :sort_order => "asc"}
@@ -26,14 +26,14 @@ describe Crud::ApplicationHelper do
         helper.should_receive(:link_to).with("human name of aaa", 
           @params.dup.update(:sort_key => "aaa", :sort_order => "asc"),
           :class => nil).and_return("xxx")
-        helper.sort_link_to(:aaa).should == "xxx"
+        helper.link_to_sort(:aaa).should == "xxx"
       end
 
       it "sort_keyと一致した場合のリンクが正しいこと" do
         helper.should_receive(:link_to).with("human name of sort_key", 
           @params.dup.update(:sort_key => "sort_key", :sort_order => "desc"),
           :class => "asc").and_return("xxx")
-        helper.sort_link_to(:sort_key).should == "xxx"
+        helper.link_to_sort(:sort_key).should == "xxx"
       end
     end
 
@@ -46,19 +46,19 @@ describe Crud::ApplicationHelper do
         helper.should_receive(:link_to).with("human name of aaa", 
           @params.dup.update(:sort_key => "aaa", :sort_order => "asc"),
           :class => nil).and_return("xxx")
-        helper.sort_link_to(:aaa).should == "xxx"
+        helper.link_to_sort(:aaa).should == "xxx"
       end
 
       it "sort_keyと一致した場合のリンクが正しいこと" do
         helper.should_receive(:link_to).with("human name of sort_key", 
           @params.dup.update(:sort_key => "sort_key", :sort_order => "desc"),
           :class => "asc").and_return("xxx")
-        helper.sort_link_to(:sort_key).should == "xxx"
+        helper.link_to_sort(:sort_key).should == "xxx"
       end
     end
 
     it "DBカラムまたは関連でない場合はラベルを返すこと" do
-      helper.sort_link_to(:aaa).should == "human name of aaa"
+      helper.link_to_sort(:aaa).should == "human name of aaa"
     end
   end
 
