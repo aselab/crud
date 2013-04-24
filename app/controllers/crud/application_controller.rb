@@ -1,4 +1,5 @@
 class Crud::ApplicationController < ApplicationController
+  helper Crud::BootstrapHelper
   helper_method :model, :model_name, :resources, :resource, :columns,
     :stored_params, :column_key?, :association_key?
 
