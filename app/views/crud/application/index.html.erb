@@ -2,7 +2,7 @@
 
 <div class="clearfix">
   <div class="pull-right">
-    <%= link_to t("crud.action_title.new", :name => model_name), stored_params(:action => :new), :class => "btn" if can?(:create, resource) %>
+    <%= link_to_action :new, resource %>
   </div>
 
   <form class="form-search pull-right" method="GET">
@@ -33,9 +33,9 @@
           <td><%= to_label resource.send(column) %></td>
         <% end %>
         <td>
-          <%= link_to t("crud.action.show"), stored_params(:action => "show", :id => resource), :class => "btn" if can?(:show, resource) %>
-          <%= link_to t("crud.action.edit"), stored_params(:action => "edit", :id => resource), :class => "btn" if can?(:update, resource) %>
-          <%= link_to t("crud.action.destroy"), stored_params(:action => "destroy", :id => resource), method: :delete, data: { confirm: t("crud.message.are_you_sure") }, :class => "btn btn-danger" if can?(:destroy, resource) %>
+          <%= link_to_action :show, resource %>
+          <%= link_to_action :edit, resource %>
+          <%= link_to_action :destroy, resource %>
         </td>
       </tr>
     <% end %>

@@ -13,6 +13,26 @@ module Crud
       end
     end
 
+    def link_to_action(action, resource = nil, params = {})
+      if can?(action, resource)
+        label = action == :new ?
+          t("crud.action_title.new", :name => model_name) :
+          t("crud.action." + action.to_s)
+
+        options = {:class => "btn"}
+        if action == :destroy
+          options[:method] = :delete
+          options[:data] = { :confirm => t("crud.message.are_you_sure") }
+          options[:class] += " btn-danger"
+        end
+
+        url = stored_params(:action => action, :id => resource).merge(params)
+
+        link_to(label, url, options)
+      end
+    rescue ActionController::RoutingError
+    end
+
     def to_label(value, blank = nil)
       return blank if value.blank?
       return value.map {|v| to_label(v, blank)} if value.is_a?(Enumerable)

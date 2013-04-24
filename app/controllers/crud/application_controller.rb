@@ -357,7 +357,7 @@ class Crud::ApplicationController < ApplicationController
   def stored_params(*args)
     overwrites = args.extract_options!
     keys = args.blank? ? stored_params_keys : args
-    params.dup.extract!(keys).merge(overwrites)
+    params.dup.extract!(*keys).merge(overwrites)
   end
 
   def set_defaults
