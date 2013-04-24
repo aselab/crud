@@ -32,10 +32,31 @@ module Crud
         end
 
         def item(label, url_options, opts = {})
+          p, wrapper_options = params(url_options, opts)
+          link_to(label, {:wrapper_options => wrapper_options}.merge(context_options).merge(p).merge(opts))
+        end
+
+        def dropdown(label, url_options, opts = {}, &block)
+          p, wrapper_options = params(url_options, opts)
+          wrapper_options[:class] = "dropdown #{wrapper_options[:class]}"
+          context.content_tag(:li, wrapper_options) do
+            <<-HTML.html_safe
+              <a class="dropdown-toggle" href="#" data-toggle="dropdown">
+                #{label}<b class="caret"></b>
+              </a>
+              <ul class="dropdown-menu">
+                #{context.capture(context, &block)}
+              </ul>
+            HTML
+          end
+        end
+
+        private
+        def params(url_options, opts)
           p = url_params(url_options)
           wrapper_options = opts.delete(:wrapper_options) || {}
           wrapper_options[:class] ||= "active" if active?(p)
-          link_to(label, {:wrapper_options => wrapper_options}.merge(context_options).merge(p).merge(opts))
+          [p, wrapper_options]
         end
 
         def url_params(arg)
