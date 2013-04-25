@@ -3,20 +3,14 @@ module Permissible
   # アクセス権をビットで定義する
   # {:manage => 0b111, :write => 0b011, :read => 0b001, :default => 0b001}
   def acts_as_permissible(permissions)
-    self.define_singleton_method(:flags) {|key = nil|
-      begin
-        key ? permissions.fetch(key.to_sym) : permissions
-      rescue
-        raise ArgumentError.new("permission #{key} is not defined (must be #{permissions.keys.join(", ")})")
-      end
-    }
+    self.define_singleton_method(:all_flags) {permissions}
 
     self.class_eval do
       extend ClassMethods
       include InstanceMethods
 
       has_many :permissions, :as => :permissible, :dependent => :destroy,
-        :after_add => :assign_default_flags
+        :after_add => :set_default_flag
 
       has_many :users, :through => :permissions
 
@@ -35,6 +29,37 @@ module Permissible
     def permission_condition(permission)
       ["permissions.flags & :f = :f", :f => flags(permission)]
     end
+
+    def permission_translate(permission)
+      @permission_prefix ||= "permission.#{model_name.underscore}"
+      p = permission.to_s
+      I18n.t("#{@permission_prefix}.#{p}", :default => p.humanize)
+    end
+
+    def permission_label(flag, restrict = true)
+      keys = if restrict
+        @inverted_flags ||= flags.invert
+        Array(@inverted_flags[flag])
+      else
+        flags.map {|k, v| k if v & flag == flag}.compact
+      end
+      keys.map {|k| permission_translate(k)}.join(",") unless keys.empty?
+    end
+
+    def flags(key = nil)
+      unless @flags
+        @flags = all_flags.dup
+        @flags.delete(:default)
+        @flags.freeze
+      end
+      key ? @flags.fetch(key.to_sym) : @flags
+    rescue
+      raise ArgumentError.new("permission #{key} is not defined (must be #{@flags.keys.join(", ")})")
+    end
+
+    def default_flag
+      all_flags[:default]
+    end
   end
 
   module InstanceMethods
@@ -52,8 +77,8 @@ module Permissible
     end
 
     private
-    def assign_default_flags(record)
-      record.flags ||= self.class.flags[:default]
+    def set_default_flag(record)
+      record.flags ||= self.class.default_flag
     end
   end
 

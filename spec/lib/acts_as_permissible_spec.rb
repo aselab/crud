@@ -15,7 +15,7 @@ describe "acts_as_permissible" do
     end
 
     it "関連追加するときEventに設定したデフォルトフラグがセットされること" do
-      @event.permissions.build.flags.should == Event.flags[:default]
+      @event.permissions.build.flags.should == Event.default_flag
     end
   end
 
@@ -29,7 +29,7 @@ describe "acts_as_permissible" do
     end
 
     it "定義されていない権限を指定した時エラーになること" do
-      expect { Event.permissible(@p1, :foo) }.to raise_error(ArgumentError, "permission foo is not defined (must be manage, read, default)")
+      expect { Event.permissible(@p1, :foo) }.to raise_error(ArgumentError, "permission foo is not defined (must be manage, read)")
     end
 
     it "定義した権限のあるレコードを検索できること" do
@@ -78,6 +78,37 @@ describe "acts_as_permissible" do
     it "指定した権限を持つユーザを返すこと" do
       @event.authorized_users(:manage).should == [@p1]
       @event.authorized_users(:read).should == [@p1, @p2]
+    end
+  end
+
+  describe "#permission_translate" do
+    it 'permission.#{model_name}.#{permission_name} のキーで翻訳されること' do
+      Event.permission_translate(:manage).should == I18n.t("permission.event.manage")
+    end
+
+    it "翻訳がない場合はhumanizeした結果を返すこと" do
+      Event.permission_translate(:not_exists).should == "Not exists"
+    end
+  end
+
+  describe "#permission_label" do
+    it "定義されていないフラグを指定した場合はnilを返すこと" do
+      Event.permission_label(1111).should == nil
+    end
+
+    context "restrict is true" do
+      it "フラグが完全一致する権限のラベルのみを返すこと" do
+        Event.should_receive(:permission_translate).with(:read).and_return("read")
+        Event.permission_label(0b01, true).should == "read"
+      end
+    end
+
+    context "restrict is false" do
+      it "フラグを含むすべての権限のラベルを返すこと" do
+        Event.should_receive(:permission_translate).with(:manage).and_return("manage")
+        Event.should_receive(:permission_translate).with(:read).and_return("read")
+        Event.permission_label(0b01, false).should == "manage,read"
+      end
     end
   end
 end
