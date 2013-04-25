@@ -49,9 +49,9 @@ module Crud
 
       method = "#{column.to_s}_label"
       if resource.respond_to?(method)
-        resource.send(method)
+        escape_once resource.send(method)
       else
-        simple_format to_label(resource.send(column))
+        simple_format escape_once(to_label(resource.send(column)))
       end
     end
 

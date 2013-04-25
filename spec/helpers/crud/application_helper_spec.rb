@@ -123,8 +123,15 @@ describe Crud::ApplicationHelper do
     end
 
     context '#{column_name}_labelという名前のmodelメソッドが定義されているとき' do
-      before { @resource.should_receive(:aaa_label).and_return("label") }
-      it("その結果を返すこと") { should == "label" }
+      it "その結果を返すこと" do
+        @resource.should_receive(:aaa_label).and_return("label")
+        should == "label"
+      end
+
+      it "エスケープされること" do
+        @resource.should_receive(:aaa_label).and_return("<label>")
+        should == "&lt;label&gt;"
+      end
     end
 
     context "どのメソッドも定義されていないとき" do
@@ -132,6 +139,12 @@ describe Crud::ApplicationHelper do
         helper.should_receive(:to_label).with(@resource.aaa).and_return("to_label")
         helper.should_receive(:simple_format).with("to_label").and_return("simple_format")
         should == "simple_format"
+      end
+
+      it "エスケープされること" do
+        helper.should_receive(:to_label).with(@resource.aaa).and_return("<to_label>")
+        helper.should_receive(:simple_format).with("&lt;to_label&gt;").and_return("simple_format")
+        should == "simple_format" 
       end
     end
   end
