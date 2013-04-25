@@ -42,28 +42,71 @@ describe "acts_as_permissible" do
     end
   end
 
-  describe "#add_permission" do
+  describe "#permissions" do
     before do
       @event = create(:event)
       @user = create(:principal)
     end
 
-    it "定義されていない権限を指定した時エラーになること" do
-      expect { @event.add_permission(@user, :foo) }.to raise_error
+    describe "#add" do
+      it "定義されていない権限を指定した時エラーになること" do
+        expect { @event.permissions.add(@user, :foo) }.to raise_error
+      end
+
+      it "権限を指定しない場合はデフォルト権限で追加されること" do
+        p = @event.permissions.add(@user)
+        p.permissible.should == @event
+        p.user.should == @user
+        p.flags.should == Event.default_flag
+      end
+
+      it "権限をシンボルで追加できること" do
+        p = @event.permissions.add(@user, :manage)
+        p.permissible.should == @event
+        p.user.should == @user
+        p.flags.should == Event.flags[:manage]
+      end
+
+      it "権限をフラグで追加できること" do
+        p = @event.permissions.add(@user, Event.flags[:manage])
+        p.permissible.should == @event
+        p.user.should == @user
+        p.flags.should == Event.flags[:manage]
+      end
+
+      it "既に権限が追加されている場合、or演算で権限を追加すること" do
+        permission = create(:permission, :user => @user, :permissible => @event, :flags => 0b10)
+        p = @event.permissions.add(@user, Event.flags[:read])
+        p.id.should == permission.id
+        p.flags.should == 0b11
+      end
     end
 
-    it "権限をシンボルで追加できること" do
-      p = @event.add_permission(@user, :manage)
-      p.permissible.should == @event
-      p.user.should == @user
-      p.flags.should == Event.flags[:manage]
-    end
+    describe "#mod" do
+      it "定義されていない権限を指定した時エラーになること" do
+        expect { @event.permissions.mod(@user, :foo) }.to raise_error
+      end
 
-    it "権限をフラグで追加できること" do
-      p = @event.add_permission(@user, Event.flags[:manage])
-      p.permissible.should == @event
-      p.user.should == @user
-      p.flags.should == Event.flags[:manage]
+      it "権限をシンボルで変更できること" do
+        p = @event.permissions.mod(@user, :manage)
+        p.permissible.should == @event
+        p.user.should == @user
+        p.flags.should == Event.flags[:manage]
+      end
+
+      it "権限をフラグで変更できること" do
+        p = @event.permissions.mod(@user, Event.flags[:manage])
+        p.permissible.should == @event
+        p.user.should == @user
+        p.flags.should == Event.flags[:manage]
+      end
+
+      it "既に権限が追加されている場合、権限を上書きすること" do
+        permission = create(:permission, :user => @user, :permissible => @event, :flags => 0b10)
+        p = @event.permissions.mod(@user, Event.flags[:read])
+        p.id.should == permission.id
+        p.flags.should == Event.flags[:read]
+      end
     end
   end
 

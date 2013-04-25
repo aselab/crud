@@ -10,7 +10,7 @@ module Permissible
       include InstanceMethods
 
       has_many :permissions, :as => :permissible, :dependent => :destroy,
-        :after_add => :set_default_flag
+        :after_add => :set_default_flag, :extend => AssociationExtensions
 
       has_many :users, :through => :permissions
 
@@ -63,14 +63,6 @@ module Permissible
   end
 
   module InstanceMethods
-    def add_permission(user, permission)
-      p = self.permissions.build
-      p.user = user
-      p.flags = permission.is_a?(Symbol) ? self.class.flags(permission) : permission
-      p.save!
-      p
-    end
-
     def authorized_users(permission)
       self.users.includes(:permissions).
         where(self.class.permission_condition(permission))
@@ -79,6 +71,30 @@ module Permissible
     private
     def set_default_flag(record)
       record.flags ||= self.class.default_flag
+    end
+  end
+
+  module AssociationExtensions
+    def add(user, permission = nil)
+      create_or_update(user) {|p| p.flags |= flags(permission) if permission}
+    end
+
+    def mod(user, permission)
+      create_or_update(user) {|p| p.flags = flags(permission)}
+    end
+
+    private
+    def flags(permission)
+      permission.is_a?(Symbol) ?
+        proxy_association.owner.class.flags(permission) : permission
+    end
+
+    def create_or_update(user)
+      p = self.where(:user_id => user).first || self.build
+      p.user = user
+      yield p
+      p.save!
+      p
     end
   end
 
