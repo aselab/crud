@@ -3,7 +3,7 @@ class Crud::ApplicationController < ApplicationController
   helper_method :model, :model_name, :resources, :resource, :columns,
     :stored_params, :column_key?, :association_key?
 
-  before_filter :new_resource, :only => [:new, :create]
+  before_filter :new_resource, :only => [:index, :new, :create]
   before_filter :find_resource, :only => [:show, :edit, :update, :destroy]
   before_filter :set_defaults
 
