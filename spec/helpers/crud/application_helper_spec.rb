@@ -96,4 +96,43 @@ describe Crud::ApplicationHelper do
       helper.to_label(o).should == "label"
     end
   end
+
+  describe "#column_html" do
+    before do
+      model = double("model", :model_name => "ModelName")
+      @resource = double("resource", :aaa => "xxx")
+      helper.stub!(:model).and_return(model)
+    end
+
+    subject { helper.column_html(@resource, :aaa) }
+
+    it "引数がnilのときnilを返すこと" do
+      helper.column_html(nil, nil).should == nil
+      helper.column_html(nil, :aaa).should == nil
+      helper.column_html(@resource, nil).should == nil
+    end
+
+    context '#{model_name}_#{column_name}_htmlという名前のhelperメソッドが定義されているとき' do
+      before { helper.should_receive(:model_name_aaa_html).and_return("html") }
+      it("その結果を返すこと") { should == "html" }
+    end
+
+    context '#{column_name}_htmlという名前のhelperメソッドが定義されているとき' do
+      before { helper.should_receive(:aaa_html).and_return("short_html") }
+      it("その結果を返すこと") { should == "short_html" }
+    end
+
+    context '#{column_name}_labelという名前のmodelメソッドが定義されているとき' do
+      before { @resource.should_receive(:aaa_label).and_return("label") }
+      it("その結果を返すこと") { should == "label" }
+    end
+
+    context "どのメソッドも定義されていないとき" do
+      it "to_labelメソッドの結果ををsimple_formatして返すこと" do
+        helper.should_receive(:to_label).with(@resource.aaa).and_return("to_label")
+        helper.should_receive(:simple_format).with("to_label").and_return("simple_format")
+        should == "simple_format"
+      end
+    end
+  end
 end

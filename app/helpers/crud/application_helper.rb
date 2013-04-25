@@ -48,8 +48,11 @@ module Crud
       return send(short_method) if respond_to?(short_method)
 
       method = "#{column.to_s}_label"
-      value = resource.send(resource.respond_to?(method) ? method : column)
-      simple_format to_label(value)
+      if resource.respond_to?(method)
+        resource.send(method)
+      else
+        simple_format to_label(resource.send(column))
+      end
     end
 
     def to_label(value, blank = nil)
