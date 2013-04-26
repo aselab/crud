@@ -7,9 +7,12 @@ class Crud::ApplicationController < ApplicationController
   before_filter :find_resource, :only => [:show, :edit, :update, :destroy]
   before_filter :set_defaults
 
+  before_filter :assign_params, :only => [:create, :update]
+  before_filter :authorize_action, :except => [:show, :new, :edit]
+  before_filter :do_action, :except => [:create, :update]
+  before_filter :authorize_action, :only => [:show, :new, :edit]
+
   def index
-    authorize! :index, model
-    do_index
     respond_to do |format|
       format.html # index.html.erb
       format.json { render_json resources }
@@ -17,8 +20,6 @@ class Crud::ApplicationController < ApplicationController
   end
 
   def show
-    do_show
-    authorize! :read, resource
     respond_to do |format|
       format.html # show.html.erb
       format.json { render json: resource }
@@ -26,8 +27,6 @@ class Crud::ApplicationController < ApplicationController
   end
 
   def new
-    do_new
-    authorize! :create, resource
     respond_to do |format|
       format.html { render action: "edit" }
       format.json { render json: resource }
@@ -35,13 +34,9 @@ class Crud::ApplicationController < ApplicationController
   end
 
   def edit
-    do_edit
-    authorize! :update, resource
   end
 
   def create
-    assign_params
-    authorize! :create, resource
     respond_to do |format|
       if do_create
         format.html { redirect_after_success notice: t("crud.message.successfully_created", :name => model_name) }
@@ -54,8 +49,6 @@ class Crud::ApplicationController < ApplicationController
   end
 
   def update
-    assign_params
-    authorize! :update, resource
     respond_to do |format|
       if do_update
         format.html { redirect_after_success notice: t("crud.message.successfully_updated", :name => model_name) }
@@ -68,8 +61,6 @@ class Crud::ApplicationController < ApplicationController
   end
 
   def destroy
-    authorize! :destroy, resource
-    do_destroy
     respond_to do |format|
       format.html { redirect_after_success notice: t("crud.message.successfully_deleted", :name => model_name) }
       format.json { head :no_content }
@@ -136,6 +127,37 @@ class Crud::ApplicationController < ApplicationController
 
   def association_key?(key)
     model.reflections.has_key?(key.to_sym)
+  end
+
+  #
+  #=== 権限チェック
+  #
+  # デフォルトでは authorize! :action, resource でチェックする。
+  # authorize_:actionという名前のメソッドを定義すると、
+  # アクションごとの権限チェック処理をオーバーライドできる。
+  #
+  def authorize_action
+    method = "authorize_" + params[:action]
+    if respond_to?(method)
+      send(method)
+    else
+      authorize! params[:action].to_sym, resource
+    end
+  end
+
+  def authorize_index
+    authorize! :index, model
+  end
+
+  #
+  #=== アクション実行
+  #
+  # do_:action という名前のメソッドを定義すると、
+  # アクションごとの処理をオーバーライドできる。
+  #
+  def do_action
+    method = "do_" + params[:action]
+    send(method) if respond_to?(method)
   end
 
   #
@@ -238,27 +260,6 @@ class Crud::ApplicationController < ApplicationController
     do_filter
     do_sort
     do_page
-  end
-
-  #
-  # showメソッドで呼び出される内部メソッド.
-  # 表示対象はresource
-  #
-  def do_show
-  end
-
-  #
-  # newメソッドで呼び出される内部メソッド.
-  # 表示対象はresource
-  #
-  def do_new
-  end
-
-  #
-  # editメソッドで呼び出される内部メソッド.
-  # 表示対象はresource
-  #
-  def do_edit
   end
 
   #
