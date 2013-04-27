@@ -8,9 +8,9 @@ class Crud::ApplicationController < ApplicationController
   before_filter :set_defaults
 
   before_filter :assign_params, :only => [:create, :update]
-  before_filter :authorize_action, :except => [:show, :new, :edit]
+  before_filter :authorize_before_action, :except => [:show, :new, :edit]
   before_filter :do_action, :except => [:create, :update]
-  before_filter :authorize_action, :only => [:show, :new, :edit]
+  before_filter :authorize_after_action, :only => [:show, :new, :edit]
 
   def index
     respond_to do |format|
@@ -137,12 +137,20 @@ class Crud::ApplicationController < ApplicationController
   # アクションごとの権限チェック処理をオーバーライドできる。
   #
   def authorize_action
-    method = "authorize_" + params[:action]
+    method = "authorize_" + crud_action.to_s
     if respond_to?(method)
       send(method)
     else
-      authorize! params[:action].to_sym, resource
+      authorize! crud_action, resource
     end
+  end
+
+  def authorize_before_action
+    authorize_action
+  end
+
+  def authorize_after_action
+    authorize_action
   end
 
   def authorize_index
@@ -361,12 +369,17 @@ class Crud::ApplicationController < ApplicationController
     params.dup.extract!(*keys).merge(overwrites)
   end
 
+  def crud_action
+    @crud_action ||= case action = params[:action].to_sym
+    when :new then :create
+    when :edit then :update
+    else action
+    end
+  end
+
   def set_defaults
-    action = params[:action].to_sym
-    action = :create if action == :new
-    action = :update if action == :edit
-    @title = t("crud.action_title." + action.to_s, :name => model_name)
-    self.columns = columns_for(action)
+    @title = t("crud.action_title." + crud_action.to_s, :name => model_name)
+    self.columns = columns_for(crud_action)
   end
 
   def set_redirect_to(url)
