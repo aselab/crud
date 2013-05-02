@@ -39,7 +39,7 @@ class Crud::ApplicationController < ApplicationController
   def create
     respond_to do |format|
       if do_create
-        format.html { redirect_after_success notice: t("crud.message.successfully_created", :name => model_name) }
+        format.html { redirect_after_success notice: message(:successfully_created, :name => model_name) }
         format.json { render json: resource, status: :created, location: resource }
       else
         format.html { render action: "edit" }
@@ -51,7 +51,7 @@ class Crud::ApplicationController < ApplicationController
   def update
     respond_to do |format|
       if do_update
-        format.html { redirect_after_success notice: t("crud.message.successfully_updated", :name => model_name) }
+        format.html { redirect_after_success notice: message(:successfully_updated, :name => model_name) }
         format.json { head :no_content }
       else
         format.html { render action: "edit" }
@@ -62,7 +62,7 @@ class Crud::ApplicationController < ApplicationController
 
   def destroy
     respond_to do |format|
-      format.html { redirect_after_success notice: t("crud.message.successfully_deleted", :name => model_name) }
+      format.html { redirect_after_success notice: message(:successfully_deleted, :name => model_name) }
       format.json { head :no_content }
     end
   end
@@ -389,6 +389,10 @@ class Crud::ApplicationController < ApplicationController
   # 作成，更新，削除成功後のリダイレクト先
   def redirect_after_success(options)
     redirect_to(@redirect_to_url || stored_params(:action => :index), options)
+  end
+
+  def message(key, options = nil)
+    @message || t("crud.message." + key.to_s, options)
   end
 
   def render_json(resources)
