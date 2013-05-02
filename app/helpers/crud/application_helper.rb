@@ -36,14 +36,14 @@ module Crud
     #
     # カラムのhtml表示出力用メソッド.
     # 以下の優先順で表示する。
-    # 1. #{model_name}_#{column_name}_html という名前のhelperメソッド
+    # 1. #{controller_name}_#{column_name}_html という名前のhelperメソッド
     # 2. #{column_name}_html という名前のhelperメソッド
     # 3. #{column_name}_label という名前のmodelメソッド
     #
     def column_html(resource, column)
       return nil unless resource && column
       short_method = "#{column.to_s}_html"
-      method = model.model_name.underscore + "_" + short_method
+      method = params[:controller] + "_" + short_method
       return send(method) if respond_to?(method)
       return send(short_method) if respond_to?(short_method)
 
@@ -77,13 +77,13 @@ module Crud
     #
     # 入力フィールドの表示オプション.
     # カラムごとにsimple_formのinputに渡すオプションを指定できる．
-    # 例えばUser#nameカラムのinputに渡すオプションは
-    # def user_name_input_options または name_input_options
+    # 例えばUsersControllerのformでnameのinputに渡すオプションは
+    # def users_name_input_options または name_input_options
     # を定義して指定する規約にしている．
     #
     def input_options(column)
       short_method = column.to_s + "_input_options"
-      method = model.model_name.underscore + "_" + short_method
+      method = params[:controller] + "_" + short_method
       return send(method) if respond_to?(method)
       return send(short_method) if respond_to?(short_method)
       nil

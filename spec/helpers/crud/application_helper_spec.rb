@@ -99,9 +99,8 @@ describe Crud::ApplicationHelper do
 
   describe "#column_html" do
     before do
-      model = double("model", :model_name => "ModelName")
       @resource = double("resource", :aaa => "xxx")
-      helper.stub!(:model).and_return(model)
+      helper.stub!(:params).and_return({:controller => "controller_name"})
     end
 
     subject { helper.column_html(@resource, :aaa) }
@@ -112,8 +111,8 @@ describe Crud::ApplicationHelper do
       helper.column_html(@resource, nil).should == nil
     end
 
-    context '#{model_name}_#{column_name}_htmlという名前のhelperメソッドが定義されているとき' do
-      before { helper.should_receive(:model_name_aaa_html).and_return("html") }
+    context '#{controller_name}_#{column_name}_htmlという名前のhelperメソッドが定義されているとき' do
+      before { helper.should_receive(:controller_name_aaa_html).and_return("html") }
       it("その結果を返すこと") { should == "html" }
     end
 
