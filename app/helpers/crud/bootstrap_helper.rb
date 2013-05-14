@@ -14,6 +14,10 @@ module Crud
       nav("nav-pills", &block)
     end
 
+    def active_tab
+      @active_tab
+    end
+
     module Context
       class Base
         attr_reader :context
@@ -34,17 +38,19 @@ module Crud
           context.content_tag :li, block.call, options
         end
 
-        def item(label, url, active_params = nil, options = {})
+        def item(name, url, active_params = nil, options = {})
+          label = name.is_a?(Symbol) ? I18n.t("crud.tab.#{name.to_s}") : name
           url = context.url_for(url)
           wrapper_options = options.delete(:wrapper_options) || {}
-          if active?(url, active_params)
+          if active?(url, name, active_params)
             wrapper_options[:class] = "active #{wrapper_options[:class]}"
           end
           wrapper(wrapper_options) {context.link_to(label, url, options)}
         end
 
-        def dropdown(label, options = {}, &block)
-          wrapper_options = {:class => "dropdown #{options.delete(:class)}"}.merge(options)
+        def dropdown(label, active_params = nil, options = {}, &block)
+          active = active_params.all? {|k, v| context.params[k] == v}
+          wrapper_options = {:class => "dropdown #{options.delete(:class)} #{active ? "active" : ""}"}.merge(options)
           self.disable_active = true
           result = wrapper(wrapper_options) do
             <<-HTML.html_safe
@@ -65,11 +71,12 @@ module Crud
           a.split("?").first == b.split("?").first
         end
 
-        def active?(url, active_params)
-          !disable_active && (active_params ?
+        def active?(url, key, active_params)
+          tab = context.active_tab
+          !disable_active && (tab ? tab == key : (active_params ?
             active_params.all?{|k, v| context.params[k] == v} :
             same_url?(context.url_for(context.params), url)
-          )
+          ))
         end
       end
     end

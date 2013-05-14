@@ -1,7 +1,7 @@
 <%= nav_tabs do |nav| %>
   <%= nav.item "Home", root_path %>
-  <%= nav.item "People", people_path %>
-  <%= nav.dropdown "People" do %>
+  <%= nav.item :aaa, people_path %>
+  <%= nav.dropdown "People", :controller => "home" do %>
     <%= nav.item "item1", root_path %>
     <%= nav.item "item2", people_path %>
   <% end %>
