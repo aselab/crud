@@ -49,7 +49,7 @@ module Crud
         end
 
         def dropdown(label, active_params = nil, options = {}, &block)
-          active = active_params.all? {|k, v| context.params[k] == v}
+          active = active_params && active_params.all? {|k, v| context.params[k] == v}
           wrapper_options = {:class => "dropdown #{options.delete(:class)} #{active ? "active" : ""}"}.merge(options)
           self.disable_active = true
           result = wrapper(wrapper_options) do
