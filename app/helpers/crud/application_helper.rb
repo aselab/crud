@@ -67,8 +67,13 @@ module Crud
 
     def simple_form_input(f, column, options = nil)
       options ||= {}
-      if association_key?(column)
-        f.association column, options
+      return f.association column, options if association_key?(column)
+
+      case model.columns_hash[column.to_s].try(:type)
+      when :datetime then
+        f.input column, :as => :bootstrap_datetimepicker
+      when :date then
+        f.input column, :as => :bootstrap_datepicker
       else
         f.input column, options
       end
