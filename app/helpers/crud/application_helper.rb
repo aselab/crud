@@ -69,14 +69,15 @@ module Crud
       options ||= {}
       return f.association column, options if association_key?(column)
 
-      case model.columns_hash[column.to_s].try(:type)
-      when :datetime then
-        f.input column, options.merge({:as => :bootstrap_datetimepicker})
-      when :date then
-        f.input column, options.merge({:as => :bootstrap_datepicker})
-      else
-        f.input column, options
+      case f.object.class.columns_hash[column.to_s].try(:type)
+      when :datetime, :timestamp
+        options.merge!(:as => :bootstrap_datetimepicker)
+      when :date
+        options.merge!(:as => :bootstrap_datepicker)
+      when :time
+        options.merge!(:as => :bootstrap_timepicker)
       end
+      f.input column, options
     end
 
     #
