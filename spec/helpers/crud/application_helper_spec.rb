@@ -112,12 +112,12 @@ describe Crud::ApplicationHelper do
     end
 
     context '#{controller_name}_#{column_name}_htmlという名前のhelperメソッドが定義されているとき' do
-      before { helper.should_receive(:controller_name_aaa_html).and_return("html") }
+      before { helper.should_receive(:controller_name_aaa_html).with(@resource, "xxx").and_return("html") }
       it("その結果を返すこと") { should == "html" }
     end
 
     context '#{column_name}_htmlという名前のhelperメソッドが定義されているとき' do
-      before { helper.should_receive(:aaa_html).and_return("short_html") }
+      before { helper.should_receive(:aaa_html).with(@resource, "xxx").and_return("short_html") }
       it("その結果を返すこと") { should == "short_html" }
     end
 

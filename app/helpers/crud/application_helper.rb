@@ -44,14 +44,15 @@ module Crud
       return nil unless resource && column
       short_method = "#{column.to_s}_html"
       method = params[:controller] + "_" + short_method
-      return send(method) if respond_to?(method)
-      return send(short_method) if respond_to?(short_method)
+      value = resource.send(column)
+      return send(method, resource, value) if respond_to?(method)
+      return send(short_method, resource, value) if respond_to?(short_method)
 
       method = "#{column.to_s}_label"
       if resource.respond_to?(method)
         escape_once resource.send(method)
       else
-        simple_format escape_once(to_label(resource.send(column)))
+        simple_format escape_once(to_label(value))
       end
     end
 
