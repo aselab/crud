@@ -71,9 +71,9 @@ module Crud
 
       case model.columns_hash[column.to_s].try(:type)
       when :datetime then
-        f.input column, :as => :bootstrap_datetimepicker
+        f.input column, options.merge({:as => :bootstrap_datetimepicker})
       when :date then
-        f.input column, :as => :bootstrap_datepicker
+        f.input column, options.merge({:as => :bootstrap_datepicker})
       else
         f.input column, options
       end

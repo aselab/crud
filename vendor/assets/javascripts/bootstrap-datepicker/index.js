@@ -1,2 +1,2 @@
 //= require ./bootstrap-datepicker
-//= require ./bootstrap-datepicker.ja
+//= require ./locales/bootstrap-datepicker.ja

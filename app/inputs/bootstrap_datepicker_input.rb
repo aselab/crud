@@ -1,19 +1,15 @@
 # coding: utf-8
-class BootstrapDatepickerInput < SimpleForm::Inputs::Base
-  include ActionView::Helpers::TagHelper
-  include ActionView::Helpers::JavaScriptHelper
+class BootstrapDatepickerInput < BootstrapDatetimepickerInput
 
-  def self.date_picker(id, attribute_name, hidden, value)
+  def date_picker(id, attribute_name, hidden, value)
     date = value && value.strftime("%Y-%m-%d")
 
     date_picker = <<-EOT
-      <div class="input-append date" data-date-format="yyyy-mm-dd" style="margin-right: 5px; float:left;">
-        <input type="text" class="input-small" name="#{attribute_name.to_s + "_date_input"}" readonly="true" value="#{date}">
-        <span class="add-on">
-          <i class="icon-calendar"></i>
-        </span>
+      <div class="input-prepend date">
+        <span class="add-on"><i class="icon-calendar"></i></span>
+        <input type="text" class="input-small" name="#{attribute_name.to_s + "_date_input"}" value="#{date}"/>
       </div>
-      <i class="icon-remove" id="clear-#{id}" style="cursor: pointer"></i>
+      #{reset_button(id) unless @required}
       <div style="clear: none; padding-bottom: 20px;"></div>
     EOT
 
@@ -28,11 +24,7 @@ class BootstrapDatepickerInput < SimpleForm::Inputs::Base
             hiddenInput.val(dateInput.val());
           }
 
-          dateDiv.datepicker({
-            format: "yyyy-mm-dd",
-            autoclose: true,
-            language: "ja"
-          }).change(datetimeSync);
+          dateDiv.datepicker(#{datepicker_options.to_json}).change(datetimeSync);
 
           $("#clear-#{id}").click(function(){
             hiddenInput.val("");
@@ -46,9 +38,9 @@ class BootstrapDatepickerInput < SimpleForm::Inputs::Base
   end
 
   def input
-    id = input_html_options[:id] || object_name + "_" + attribute_name.to_s
+    id = input_html_options[:id] || object_name.gsub(/\[|\]\[/, "_").gsub(/\]/, "") + "_" + attribute_name.to_s
     hidden = @builder.hidden_field(attribute_name, input_html_options)
     value = @builder.object.send(attribute_name)
-    BootstrapDatepickerInput.date_picker(id, attribute_name, hidden, value)
+    date_picker(id, attribute_name, hidden, value)
   end
 end

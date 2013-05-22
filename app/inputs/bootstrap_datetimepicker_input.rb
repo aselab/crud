@@ -3,30 +3,56 @@ class BootstrapDatetimepickerInput < SimpleForm::Inputs::Base
   include ActionView::Helpers::TagHelper
   include ActionView::Helpers::JavaScriptHelper
 
+  def datepicker_options
+    date_options = options[:datepicker_options] || {}
+    date_options[:format] ||= "yyyy-mm-dd"
+    date_options[:autoclose] ||= true
+    date_options[:language] ||= "ja"
+    date_options[:todayBtn] ||= true
+    date_options[:todayHighlight] ||= true
+    date_options
+  end
+
+  def timepicker_options
+    time_options = options[:timepicker_options] || {}
+    time_options[:disableFocus] ||= true
+    time_options[:showSeconds] ||= false
+    time_options[:showMeridian] ||= false
+    time_options[:miniteStep] ||= 15
+    time_options[:showInputs] ||= false
+    time_options[:defaultTime] ||= "value"
+    time_options
+  end
+
+  def reset_button(id)
+    <<-EOT
+      <i class="icon-remove" id="clear-#{id}" style="cursor: pointer"></i>
+    EOT
+  end
+
   def input
-    id = input_html_options[:id] || object_name + "_" + attribute_name.to_s
+    binding.pry
+    id = input_html_options[:id] || object_name.gsub(/\[|\]\[/, "_").gsub(/\]/, "") + "_" + attribute_name.to_s
     hidden = @builder.hidden_field(attribute_name, input_html_options)
     value = @builder.object.send(attribute_name)
     date = value && value.strftime("%Y-%m-%d")
     time = value && value.strftime("%H:%M")
 
     date_picker = <<-EOT
-      <div class="input-append date" data-date-format="yyyy-mm-dd" style="margin-right: 5px; float: left;">
-        <input type="text" class="input-small" name="#{attribute_name.to_s + "_date_input"}" readonly="true" value="#{date}">
-        <span class="add-on">
-          <i class="icon-calendar"></i>
-        </span>
+      <div class="input-prepend date">
+        <span class="add-on"><i class="icon-calendar"></i></span>
+        <input type="text" class="input-small" name="#{attribute_name.to_s + "_date_input"}" value="#{date}"/>
       </div>
     EOT
 
     time_picker = <<-EOT
-      <div class="input-append bootstrap-timepicker-component" style="margin-right: 5px; float: left;">
-        <input type="text" class="input-small" name="#{attribute_name.to_s + "_datetime_input"}" readonly="true" value="#{time}">
-        <span class="add-on">
-          <i class="icon-time"></i>
-        </span>
+      <div class="input-prepend">
+        <span class="add-on prepend-left pull-left"><i class="icon-time"></i></span>
+        <div class="bootstrap-timepicker">
+          <input type="text" class="span1" name="#{attribute_name.to_s + "_datetime_input"}" value="#{time}"/>
+        </div>
       </div>
-      <i class="icon-remove" id="clear-#{id}" style="cursor: pointer"></i>
+      <span style="margin-left: 30px">#{reset_button(id) unless @required}</span>
       <div style="clear: none; padding-bottom: 20px;"></div>
     EOT
 
@@ -35,24 +61,15 @@ class BootstrapDatetimepickerInput < SimpleForm::Inputs::Base
         var hiddenInput = $("##{id}");
         var dateDiv = hiddenInput.next(".date");
         var dateInput = dateDiv.find("input");
-        var timeInput = hiddenInput.nextAll(".bootstrap-timepicker-component").children("input");
+        var timeInput = dateDiv.next(".input-prepend").find("input");
 
         function datetimeSync() {
           hiddenInput.val(dateInput.val() + " " + timeInput.val());
         }
 
-        dateDiv.datepicker({
-          format: "yyyy-mm-dd",
-          autoclose: true,
-          language: "ja"
-        }).change(datetimeSync);
+        dateDiv.datepicker(#{datepicker_options.to_json}).change(datetimeSync);
 
-        timeInput.timepicker({
-          showSeconds: false,
-          showMeridian: false,
-          miniteStep: 15,
-          defaultTime: "value"
-        }).change(datetimeSync).parent().children("span").click(function(){
+        timeInput.timepicker(#{timepicker_options.to_json}).change(datetimeSync).parent().children("span").click(function(){
           if (timeInput.val() == "") {
             timeInput.val("00:00");
           }
