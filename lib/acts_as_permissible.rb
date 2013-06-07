@@ -46,6 +46,10 @@ module Permissible
       keys.map {|k| permission_translate(k)}.join(",") unless keys.empty?
     end
 
+    def permission_options
+      flags.map {|k, v| [permission_translate(k), v]}
+    end
+
     def flags(key = nil)
       unless @flags
         @flags = all_flags.dup
