@@ -52,7 +52,7 @@ class Crud::ApplicationController < ApplicationController
     respond_to do |format|
       if do_update
         format.html { redirect_after_success notice: message(:successfully_updated, :name => model_name) }
-        format.json { head :no_content }
+        format.json { render json: resource }
       else
         format.html { render action: "edit" }
         format.json { render json: resource.errors, status: :unprocessable_entity }
