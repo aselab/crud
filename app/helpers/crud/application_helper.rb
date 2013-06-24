@@ -67,18 +67,23 @@ module Crud
     end
 
     def simple_form_input(f, column, options = nil)
-      options ||= {}
-      return f.association column, options if association_key?(column)
+      options ||= input_options(column) || {}
+
+      block = if append = options[:append_html]
+        proc { f.input_field(column, options) + append }
+      end
+
+      return f.association(column, options, &block) if association_key?(column)
 
       case f.object.class.columns_hash[column.to_s].try(:type)
       when :datetime, :timestamp
-        options.merge!(:as => :bootstrap_datetimepicker)
+        options[:as] ||= :bootstrap_datetimepicker
       when :date
-        options.merge!(:as => :bootstrap_datepicker)
+        options[:as] ||= :bootstrap_datepicker
       when :time
-        options.merge!(:as => :bootstrap_timepicker)
+        options[:as] ||= :bootstrap_timepicker
       end
-      f.input column, options
+      f.input(column, options, &block)
     end
 
     #
