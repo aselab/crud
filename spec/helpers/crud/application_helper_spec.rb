@@ -134,7 +134,7 @@ describe Crud::ApplicationHelper do
     end
 
     context "どのメソッドも定義されていないとき" do
-      it "to_labelメソッドの結果ををsimple_formatして返すこと" do
+      it "to_labelメソッドの結果をsimple_formatして返すこと" do
         helper.should_receive(:to_label).with(@resource.aaa).and_return("to_label")
         helper.should_receive(:simple_format).with("to_label").and_return("simple_format")
         should == "simple_format"

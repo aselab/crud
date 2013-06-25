@@ -42,11 +42,10 @@ module Crud
     #
     def column_html(resource, column)
       return nil unless resource && column
-      short_method = "#{column.to_s}_html"
-      method = params[:controller] + "_" + short_method
       value = resource.send(column)
-      return send(method, resource, value) if respond_to?(method)
-      return send(short_method, resource, value) if respond_to?(short_method)
+      if html = call_method_for_column(:html, column, resource, value)
+        return html
+      end
 
       method = "#{column.to_s}_label"
       if resource.respond_to?(method)
@@ -67,16 +66,20 @@ module Crud
     end
 
     def simple_form_input(f, column, options = nil)
-      options ||= {}
+      if html = call_method_for_column(:input, column, f)
+        return html
+      end
+
+      options ||= input_options(column) || {}
       return f.association column, options if association_key?(column)
 
       case f.object.class.columns_hash[column.to_s].try(:type)
       when :datetime, :timestamp
-        options.merge!(:as => :bootstrap_datetimepicker)
+        options[:as] ||= :bootstrap_datetimepicker
       when :date
-        options.merge!(:as => :bootstrap_datepicker)
+        options[:as] ||= :bootstrap_datepicker
       when :time
-        options.merge!(:as => :bootstrap_timepicker)
+        options[:as] ||= :bootstrap_timepicker
       end
       f.input column, options
     end
@@ -89,11 +92,7 @@ module Crud
     # を定義して指定する規約にしている．
     #
     def input_options(column)
-      short_method = column.to_s + "_input_options"
-      method = params[:controller] + "_" + short_method
-      return send(method) if respond_to?(method)
-      return send(short_method) if respond_to?(short_method)
-      nil
+      call_method_for_column(:input_options, column)
     end
 
     def password_input_options
@@ -104,5 +103,13 @@ module Crud
       password_input_options
     end
 
+    private
+    def call_method_for_column(suffix, column, *args)
+      short_method = column.to_s + "_" + suffix.to_s
+      method = params[:controller] + "_" + short_method
+      return send(method, *args) if respond_to?(method)
+      return send(short_method, *args) if respond_to?(short_method)
+      nil
+    end
   end
 end

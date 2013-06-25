@@ -3,7 +3,7 @@ PATH
   specs:
     crud (0.0.1)
       cancan
-      jquery-rails (= 2.2.1)
+      jquery-rails (<= 2.2.1)
       kaminari
       rails (~> 3.2.13)
       select2-rails
