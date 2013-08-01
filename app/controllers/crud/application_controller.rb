@@ -138,7 +138,7 @@ class Crud::ApplicationController < ApplicationController
   #
   def authorize_action
     method = "authorize_" + crud_action.to_s
-    if respond_to?(method)
+    if respond_to?(method, true)
       send(method)
     else
       authorize! crud_action, resource
@@ -165,7 +165,7 @@ class Crud::ApplicationController < ApplicationController
   #
   def do_action
     method = "do_" + params[:action]
-    send(method) if respond_to?(method)
+    send(method) if respond_to?(method, true)
   end
 
   #
@@ -200,7 +200,7 @@ class Crud::ApplicationController < ApplicationController
       if reflection
         self.resources = resources.includes(c.to_sym)
         association = reflection.class_name.constantize
-        fields = association.respond_to?(:search_field) ?
+        fields = association.respond_to?(:search_field, true) ?
           association.send(:search_field) :
           [:name, :title].find {|c| association.columns_hash.has_key?(c.to_s)}
         Array(fields).each {|f| model_columns.push([association, f])}
@@ -239,7 +239,7 @@ class Crud::ApplicationController < ApplicationController
       key = if reflection
         self.resources = resources.includes(key.to_sym)
         association = reflection.class_name.constantize
-        f = association.respond_to?(:sort_field) ?
+        f = association.respond_to?(:sort_field, true) ?
           association.send(:sort_field) :
           [:name, :title, :id].find {|c| association.columns_hash.has_key?(c.to_s)}
         "#{association.table_name}.#{f.to_s}"
@@ -328,7 +328,7 @@ class Crud::ApplicationController < ApplicationController
 
   def columns_for(action)
     column_method = "columns_for_" + action.to_s
-    self.respond_to?(column_method) ?  self.send(column_method) : model_columns
+    self.respond_to?(column_method, true) ?  self.send(column_method) : model_columns
   end
 
   #
