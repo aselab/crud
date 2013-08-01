@@ -71,6 +71,7 @@ module Crud
       end
 
       options ||= input_options(column) || {}
+      options[:collection] = [] if options[:as] == :select2 && (options[:ajax] || options[:url].present?)
       return f.association column, options if association_key?(column)
 
       case f.object.class.columns_hash[column.to_s].try(:type)

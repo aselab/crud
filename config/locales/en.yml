@@ -26,3 +26,7 @@ en:
       successfully_deleted: "%{name} was successfully deleted."
       are_you_sure: "Are you sure?"
       enter_search_term: "Enter search term..."
+
+  simple_form:
+    select2:
+      placeholder: "Select for %{name}"
