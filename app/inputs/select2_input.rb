@@ -29,7 +29,10 @@ class Select2Input < SimpleForm::Inputs::CollectionInput
 
   def multiple?
     if @multiple.nil?
-      @multiple = options[:multiple] || reflection.macro == :has_many || reflection.macro == :has_and_belongs_to_many
+      @multiple = options[:multiple]
+      if @multiple.nil?
+        @multiple = reflection ? reflection.macro == :has_many || reflection.macro == :has_and_belongs_to_many : false
+      end
     end
     @multiple
   end
