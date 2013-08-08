@@ -23,8 +23,12 @@
           dialog.modal("hide");
         },
         error: function(xhr) {
-          dialog.modal("hide");
-          $(document.body).append(xhr.responseText);
+          if (xhr.status == 422) {
+            dialog.modal("hide");
+            $(document.body).append(xhr.responseText);
+          } else {
+            alert(xhr.responseText);
+          }
         }
       });
       return false;
