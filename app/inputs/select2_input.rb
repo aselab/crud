@@ -5,6 +5,7 @@ class Select2Input < SimpleForm::Inputs::CollectionInput
   include Rails.application.routes.url_helpers
 
   def input
+    id = input_id
     multiple_js = <<-SCRIPT
       select.closest("form").submit(function() {
         var form = $(this);
@@ -17,7 +18,7 @@ class Select2Input < SimpleForm::Inputs::CollectionInput
 
     js = javascript_tag(<<-SCRIPT
       $(function() {
-        var select = $("##{input_id}");
+        var select = $("##{id}");
         select.select2(#{select2_options(input_options)}).select2("val", #{(object.send(attribute_name) || []).inspect});
         #{multiple_js if multiple?}
       });
@@ -46,7 +47,7 @@ class Select2Input < SimpleForm::Inputs::CollectionInput
   end
 
   def input_id
-    "select2_#{attribute_name}"
+    input_html_options['id'] ||= object_name.gsub(/\[|\]\[/, "_").gsub(/\]/, "") + "_" + attribute_name.to_s
   end
 
   def select2_options(options)
@@ -84,11 +85,5 @@ class Select2Input < SimpleForm::Inputs::CollectionInput
       }
     STRING
     {:multiple => multiple?, :allowClear => true, :width => "element"}.merge(options).to_json.sub(/}$/, append_options.join("") + "}")
-  end
-
-  def input_html_options
-    options = super
-    options['id'] ||= input_id
-    options
   end
 end
