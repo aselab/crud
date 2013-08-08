@@ -51,13 +51,13 @@ class Select2Input < SimpleForm::Inputs::CollectionInput
   end
 
   def select2_options(options)
-    label = options.delete(:label) || "name"
+    label = options.delete(:label_method) || "name"
     options[:placeholder] ||= "#{I18n.t("simple_form.select2.placeholder", :name => object.class.human_attribute_name(attribute_name))}"
 
     ids = object.send(attribute_name)
     append_options = []
     if ajax?
-      init_data = reflection.klass.where(:id => ids).select([:id, label]).map {|m| {id: m.id, text: m.send(label)}}
+      init_data = reflection.klass.where(:id => ids).map {|m| {id: m.id, text: m.send(label)}}
       init_data = init_data.first unless multiple?
       append_options << <<-STRING
         ,initSelection: function(element, callback) { callback(#{init_data.to_json}); }
