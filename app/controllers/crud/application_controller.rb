@@ -28,33 +28,46 @@ class Crud::ApplicationController < ApplicationController
 
   def new
     respond_to do |format|
-      format.html { render action: "edit" }
+      format.html { render_edit }
       format.json { render json: resource }
     end
   end
 
   def edit
+    render_edit
   end
 
   def create
+    result = do_create
+    if result && request.xhr?
+      render json: resource, status: :created, location: resource
+      return
+    end
+
     respond_to do |format|
-      if do_create
+      if result
         format.html { redirect_after_success notice: message(:successfully_created, :name => model_name) }
         format.json { render json: resource, status: :created, location: resource }
       else
-        format.html { render action: "edit" }
+        format.html { render_edit :unprocessable_entity }
         format.json { render json: resource.errors, status: :unprocessable_entity }
       end
     end
   end
 
   def update
+    result = do_update
+    if result && request.xhr?
+      render json: resource
+      return
+    end
+
     respond_to do |format|
-      if do_update
+      if result
         format.html { redirect_after_success notice: message(:successfully_updated, :name => model_name) }
         format.json { render json: resource }
       else
-        format.html { render action: "edit" }
+        format.html { render_edit :unprocessable_entity }
         format.json { render json: resource.errors, status: :unprocessable_entity }
       end
     end
@@ -404,6 +417,14 @@ class Crud::ApplicationController < ApplicationController
       }.to_json(:methods => :label)
     else
       render json: resources.to_json
+    end
+  end
+
+  def render_edit(status = :ok)
+    if request.xhr?
+      render action: "ajax_edit", layout: false, status: status
+    else
+      render action: "edit", status: status
     end
   end
 

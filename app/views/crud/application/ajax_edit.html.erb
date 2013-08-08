@@ -1,0 +1,35 @@
+<div id="modal_form" class="modal hide">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+    <h3><%= @title %></h3>
+  </div>
+  <div class="modal-body">
+    <%= render "form" %>
+  </div>
+
+  <%= javascript_tag do %>
+  $(function() {
+    var dialog = $("#modal_form");
+    dialog.find("a.btn-cancel").attr("data-dismiss", "modal");
+    dialog.find("form").submit(function() {
+      var form = $(this);
+      var action = form.attr("action");
+      $.ajax({
+        method: form.attr("method"),
+        url: action,
+        data: form.serialize(),
+        success: function(data) {
+          $("a[data-toggle='modal-form'][data-action='" + action + "']").trigger("crud:success", [data]);
+          dialog.modal("hide");
+        },
+        error: function(xhr) {
+          dialog.modal("hide");
+          $(document.body).append(xhr.responseText);
+        }
+      });
+      return false;
+    });
+    dialog.modal().on("hidden", function() { dialog.remove(); });
+  });
+  <% end %>
+</div>

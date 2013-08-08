@@ -34,6 +34,28 @@ module Crud
     end
 
     #
+    # Ajaxによる作成/更新リンク作成用メソッド。
+    # フォームをモーダル表示して作成/更新に成功したら、
+    # ブロックで指定したJavaScriptコールバック関数を実行する。
+    # コールバック関数の第2引数には、作成/更新したレコードデータが入っている。
+    # 
+    #  <%= link_to_modal("ラベル", new_item_path) do %>
+    #    function(event, data) { console.log(data); }
+    #  <% end %>
+    #
+    def link_to_modal(label, path, html_options = nil, &block)
+      html_options ||= {}
+      id = html_options[:id] ||= "modal-form-#{rand(100000000)}"
+      data = html_options[:data] ||= {}
+      data[:toggle] = "modal-form"
+      html = link_to(label, path, html_options)
+      html += javascript_tag <<-EOT if block
+        $(function() {$("##{id}").on("crud:success", #{capture(&block)})});
+      EOT
+      html
+    end
+
+    #
     # カラムのhtml表示出力用メソッド.
     # 以下の優先順で表示する。
     # 1. #{controller_name}_#{column_name}_html という名前のhelperメソッド
