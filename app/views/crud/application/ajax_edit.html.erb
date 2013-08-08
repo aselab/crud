@@ -11,24 +11,19 @@
   $(function() {
     var dialog = $("#modal_form");
     dialog.find("a.btn-cancel").attr("data-dismiss", "modal");
-    dialog.find("form").submit(function() {
+    dialog.find("form").on("submit", function() {
       var form = $(this);
+      var method = form.attr("method");
       var action = form.attr("action");
-      $.ajax({
-        method: form.attr("method"),
-        url: action,
-        data: form.serialize(),
-        success: function(data) {
-          $("a[data-toggle='modal-form'][data-action='" + action + "']").trigger("crud:success", [data]);
+      $[method](action, form.serialize(), function(data) {
+        $("a[data-toggle='modal-form'][data-action='" + action + "']").trigger("crud:success", [data]);
+        dialog.modal("hide");
+      }).fail(function(xhr) {
+        if (xhr.status == 422) {
           dialog.modal("hide");
-        },
-        error: function(xhr) {
-          if (xhr.status == 422) {
-            dialog.modal("hide");
-            $(document.body).append(xhr.responseText);
-          } else {
-            alert(xhr.responseText);
-          }
+          $(document.body).append(xhr.responseText);
+        } else {
+          alert(xhr.responseText);
         }
       });
       return false;
