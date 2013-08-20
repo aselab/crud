@@ -1,7 +1,8 @@
 class Crud::ApplicationController < ApplicationController
   helper Crud::BootstrapHelper
   helper_method :model, :model_name, :resources, :resource, :columns,
-    :stored_params, :column_key?, :association_key?
+    :stored_params, :column_key?, :association_key?, :sort_key?,
+    :sort_key, :sort_order
 
   before_filter :new_resource, :only => [:index, :new, :create]
   before_filter :find_resource, :only => [:show, :edit, :update, :destroy]
@@ -84,6 +85,34 @@ class Crud::ApplicationController < ApplicationController
   attr_accessor :resources, :resource, :columns
 
   #
+  #=== デフォルトのソートキー
+  #
+  # コントローラごとにsort_keyが指定されていない場合のデフォルト値を設定できる
+  #
+  #  class SampleController < Crud::ApplicationController
+  #    default_sort_key :name
+  #    default_sort_order :desc
+  #  end
+  #
+  def self.default_sort_key(value = nil)
+    value ? @default_sort_key = value : @default_sort_key
+  end
+
+  #
+  #=== デフォルトのソート順
+  #
+  # コントローラごとにsort_orderが指定されていない場合のデフォルト値を設定できる
+  #
+  #  class SampleController < Crud::ApplicationController
+  #    default_sort_key :name
+  #    default_sort_order :desc
+  #  end
+  #
+  def self.default_sort_order(value = nil)
+    value ? @default_sort_order = value : @default_sort_order
+  end
+
+  #
   #=== CRUD対象のモデルクラス
   #
   # デフォルトではコントローラクラス名から対応するモデルを自動選択する．
@@ -140,6 +169,10 @@ class Crud::ApplicationController < ApplicationController
 
   def association_key?(key)
     model.reflections.has_key?(key.to_sym)
+  end
+
+  def sort_key?(key)
+    respond_to?("sort_by_#{key}", true) || column_key?(key) || association_key?(key)
   end
 
   #
@@ -242,31 +275,54 @@ class Crud::ApplicationController < ApplicationController
     }.compact.join(" AND ")
   end
 
-  #
-  # order句
-  #
-  def order_by
-    if params.has_key?(:sort_key)
-      key = params[:sort_key]
-      reflection = model.reflections[key.to_sym]
-      key = if reflection
-        self.resources = resources.includes(key.to_sym)
-        association = reflection.class_name.constantize
-        f = association.respond_to?(:sort_field, true) ?
-          association.send(:sort_field) :
-          [:name, :title, :id].find {|c| association.columns_hash.has_key?(c.to_s)}
-        "#{association.table_name}.#{f.to_s}"
-      else
-        "#{model.table_name}.#{key}"
-      end
+  def sort_key
+    (params[:sort_key] || self.class.default_sort_key).try(:to_sym)
+  end
 
-      [key, params[:sort_order]].compact.join(" ")
+  def sort_order
+    case params[:sort_order]
+    when "asc", "desc"
+      params[:sort_order]
+    else
+      self.class.default_sort_order || :asc
+    end.to_sym
+  end
+
+  def order_by_column(name)
+    if reflection = model.reflections[name]
+      self.resources = resources.includes(name)
+      association = reflection.class_name.constantize
+      f = association.respond_to?(:sort_field, true) ?
+        association.send(:sort_field) :
+        [:name, :title, :id].find {|c| association.columns_hash.has_key?(c.to_s)}
+      "#{association.table_name}.#{f.to_s}" if f
+    else
+      c = model.columns_hash[name.to_s]
+      "#{model.table_name}.#{c.name}" if c
+    end
+  end
+
+  #
+  # sort_by_:column_name という名前のメソッドを定義すると、
+  # カラム毎のソート条件をカスタマイズできる。
+  #
+  #  def sort_by_name(order)
+  #    self.resources = resources.order("users.last_name #{order}, users.first_name #{order}")
+  #  end
+  #
+  def do_sort_by_column(name)
+    method = "sort_by_#{name}"
+    if respond_to?(method, true)
+      send(method, sort_order)
+    else
+      column = order_by_column(name)
+      self.resources = resources.order("#{column} #{sort_order}") if column
     end
   end
 
   def do_sort
-    order = order_by
-    self.resources = resources.order(order) if order
+    key = sort_key
+    do_sort_by_column(key) if key
   end
 
   def do_page

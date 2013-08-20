@@ -31,30 +31,4 @@ describe Crud::ApplicationController do
       controller.send(:tokenize, 'key"word "pre').should == ['key"word', '"pre']
     end
   end
-
-  describe "#order_by" do
-    before do
-      @model = mock_model("TestModel")
-      @model.stub!(:table_name).and_return("t")
-      @model.stub!(:reflections).and_return({})
-      controller.stub!(:model).and_return(@model)
-    end
-
-    it "sort_keyを指定していない場合" do
-      stub_params
-      controller.send(:order_by).should == nil
-      stub_params(:sort_order => "asc")
-      controller.send(:order_by).should == nil
-    end
-
-    it "sort_keyだけ指定している場合" do
-      stub_params(:sort_key => "abc")
-      controller.send(:order_by).should == "t.abc"
-    end
-
-    it "sort_keyとsort_orderを指定した場合" do
-      stub_params(:sort_key => "abc", :sort_order => "asc")
-      controller.send(:order_by).should == "t.abc asc"
-    end
-  end
 end

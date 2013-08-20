@@ -7,19 +7,20 @@ describe Crud::ApplicationHelper do
       @params = {:controller => "foo", :action => "bar",
         :sort_key => "sort_key", :sort_order => "asc"}
       helper.stub!(:params).and_return(@params)
+      helper.stub!(:sort_key).and_return(:sort_key)
+      helper.stub!(:sort_order).and_return(:asc)
 
       model = Object.new
       model.define_singleton_method(:human_attribute_name) {|key|
         "human name of #{key.to_s}"
       }
       helper.stub!(:model).and_return(model)
-      helper.stub!(:column_key?).and_return(false)
-      helper.stub!(:association_key?).and_return(false)
+      helper.stub!(:sort_key?).and_return(false)
     end
 
-    context "DBに存在するカラムの場合" do
+    context "ソートできるカラムの場合" do
       before do
-        helper.stub!(:column_key?).and_return(true)
+        helper.stub!(:sort_key?).and_return(true)
       end
 
       it "sort_keyと一致しない場合のリンクが正しいこと" do
@@ -37,27 +38,7 @@ describe Crud::ApplicationHelper do
       end
     end
 
-    context "関連の場合" do
-      before do
-        helper.stub!(:association_key?).and_return(true)
-      end
-
-      it "sort_keyと一致しない場合のリンクが正しいこと" do
-        helper.should_receive(:link_to).with("human name of aaa", 
-          @params.dup.update(:sort_key => "aaa", :sort_order => "asc"),
-          :class => nil).and_return("xxx")
-        helper.link_to_sort(:aaa).should == "xxx"
-      end
-
-      it "sort_keyと一致した場合のリンクが正しいこと" do
-        helper.should_receive(:link_to).with("human name of sort_key", 
-          @params.dup.update(:sort_key => "sort_key", :sort_order => "desc"),
-          :class => "asc").and_return("xxx")
-        helper.link_to_sort(:sort_key).should == "xxx"
-      end
-    end
-
-    it "DBカラムまたは関連でない場合はラベルを返すこと" do
+    it "ソートできない場合はラベルを返すこと" do
       helper.link_to_sort(:aaa).should == "human name of aaa"
     end
   end

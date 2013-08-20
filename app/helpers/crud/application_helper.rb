@@ -2,12 +2,12 @@ module Crud
   module ApplicationHelper
     def link_to_sort(key)
       label = model.human_attribute_name(key)
-      if column_key?(key) || association_key?(key)
-        focus = params[:sort_key] == key.to_s
-        current = params[:sort_order]
-        order = focus && current == "asc" ? "desc" : "asc"
-        p = params.dup.update(:sort_key => key.to_s, :sort_order => order)
-        link_to(label, p, :class => focus ? current : nil)
+      if sort_key?(key)
+        focus = sort_key == key.to_sym
+        current = sort_order
+        order = focus && current == :asc ? :desc : :asc
+        p = params.dup.update(:sort_key => key.to_s, :sort_order => order.to_s)
+        link_to(label, p, :class => focus ? current.to_s : nil)
       else
         label
       end
