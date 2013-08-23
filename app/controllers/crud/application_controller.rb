@@ -4,14 +4,14 @@ class Crud::ApplicationController < ApplicationController
     :stored_params, :column_key?, :association_key?, :sort_key?,
     :sort_key, :sort_order
 
-  before_filter :new_resource, :only => [:index, :new, :create]
-  before_filter :find_resource, :only => [:show, :edit, :update, :destroy]
-  before_filter :set_defaults
-
-  before_filter :assign_params, :only => [:create, :update]
-  before_filter :authorize_before_action, :except => [:show, :new, :edit]
-  before_filter :do_action, :except => [:create, :update]
-  before_filter :authorize_after_action, :only => [:show, :new, :edit]
+  before_filter :set_defaults, :only => [:index, :show, :new, :edit, :create, :update]
+  before_filter :before_index, :only => :index
+  before_filter :before_show, :only => :show
+  before_filter :before_new, :only => :new
+  before_filter :before_edit, :only => :edit
+  before_filter :before_create, :only => :create
+  before_filter :before_update, :only => :update
+  before_filter :before_destroy, :only => :destroy
 
   def index
     respond_to do |format|
@@ -189,18 +189,6 @@ class Crud::ApplicationController < ApplicationController
     else
       authorize! crud_action, resource
     end
-  end
-
-  def authorize_before_action
-    authorize_action
-  end
-
-  def authorize_after_action
-    authorize_action
-  end
-
-  def authorize_index
-    authorize! :index, model
   end
 
   #
@@ -486,5 +474,47 @@ class Crud::ApplicationController < ApplicationController
 
   unless method_defined?(:current_user)
     define_method(:current_user) {}
+  end
+
+  def before_index
+    authorize! :index, model
+    new_resource
+    do_action
+  end
+
+  def before_show
+    find_resource
+    do_action
+    authorize_action
+  end
+
+  def before_new
+    new_resource
+    do_action
+    authorize_action
+  end
+
+  def before_edit
+    find_resource
+    do_action
+    authorize_action
+  end
+
+  def before_create
+    new_resource
+    assign_params
+    authorize_action
+  end
+
+  def before_update
+    find_resource
+    assign_params
+    authorize_action
+  end
+
+  def before_destroy
+    find_resource
+    authorize_action
+    do_action
   end
 end
