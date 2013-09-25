@@ -90,6 +90,7 @@ module Crud
     def crud_form(resource, &block)
       method = nested? ? :simple_nested_form_for : :simple_form_for
       options = {
+        :as => model_key,
         :url => resource.new_record? ?
           stored_params(:action => :create) :
           stored_params(:action => :update, :id => resource),

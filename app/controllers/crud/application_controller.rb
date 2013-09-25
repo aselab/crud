@@ -1,6 +1,6 @@
 class Crud::ApplicationController < ApplicationController
   helper Crud::BootstrapHelper
-  helper_method :model, :model_name, :resources, :resource, :columns,
+  helper_method :model, :model_name, :model_key, :resources, :resource, :columns,
     :stored_params, :column_key?, :association_key?, :sort_key?, :nested?,
     :sort_key, :sort_order
 
@@ -137,7 +137,7 @@ class Crud::ApplicationController < ApplicationController
   # paramsからデータを取得する時に用いるキー．デフォルトはscaffoldと同様．
   # 
   def model_key
-    @model_key ||= model.model_name.underscore.to_sym
+    @model_key ||= model.model_name.param_key.to_sym
   end
 
   #
