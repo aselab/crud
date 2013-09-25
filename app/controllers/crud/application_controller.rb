@@ -1,7 +1,7 @@
 class Crud::ApplicationController < ApplicationController
   helper Crud::BootstrapHelper
   helper_method :model, :model_name, :resources, :resource, :columns,
-    :stored_params, :column_key?, :association_key?, :sort_key?,
+    :stored_params, :column_key?, :association_key?, :sort_key?, :nested?,
     :sort_key, :sort_order
 
   before_filter :set_defaults, :only => [:index, :show, :new, :edit, :create, :update]
@@ -173,6 +173,12 @@ class Crud::ApplicationController < ApplicationController
 
   def sort_key?(key)
     respond_to?("sort_by_#{key}", true) || column_key?(key) || association_key?(key)
+  end
+
+  def nested?
+    columns_for(crud_action).any? {|c|
+      model.nested_attributes_options.has_key?(c)
+    }
   end
 
   #

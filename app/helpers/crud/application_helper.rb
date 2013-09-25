@@ -87,6 +87,18 @@ module Crud
       value.to_s
     end
 
+    def crud_form(resource, &block)
+      method = nested? ? :simple_nested_form_for : :simple_form_for
+      options = {
+        :url => resource.new_record? ?
+          stored_params(:action => :create) :
+          stored_params(:action => :update, :id => resource),
+        :html => {:class => "form-horizontal"}
+      }
+
+      send(method, resource, options, &block)
+    end
+
     def simple_form_input(f, column, options = nil)
       if html = call_method_for_column(:input, column, f)
         return html

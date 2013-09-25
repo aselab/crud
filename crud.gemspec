@@ -20,6 +20,7 @@ Gem::Specification.new do |s|
   s.add_dependency "cancan"
   s.add_dependency "kaminari"
   s.add_dependency "simple_form"
+  s.add_dependency "nested_form"
   s.add_dependency "select2-rails"
 
   s.add_development_dependency "sqlite3"
@@ -31,6 +32,5 @@ Gem::Specification.new do |s|
 
   s.add_development_dependency "therubyracer"
   s.add_development_dependency "less-rails"
-  s.add_development_dependency "sass-rails"
   s.add_development_dependency "twitter-bootstrap-rails"
 end
