@@ -36,23 +36,32 @@ module Crud
     #
     # Ajaxによる作成/更新リンク作成用メソッド。
     # フォームをモーダル表示して作成/更新に成功したら、
-    # ブロックで指定したJavaScriptコールバック関数を実行する。
+    # 引数またはブロックで指定したJavaScriptコールバック関数を実行する。
     # コールバック関数の第2引数には、作成/更新したレコードデータが入っている。
     # 
     #  <%= link_to_modal("ラベル", new_item_path) do %>
     #    function(event, data) { console.log(data); }
     #  <% end %>
+    #  
+    #  <%= link_to_modal("ラベル", new_item_path, "function(event, data) { console.log(data); }") %>
     #
-    def link_to_modal(label, path, html_options = nil, &block)
+    def link_to_modal(label, path, callback_or_html_options = nil, html_options = nil, &block)
+      callback = callback_or_html_options
+      if block && html_options.nil?
+        callback = capture(&block).html_safe
+        html_options = callback_or_html_options
+      end
       html_options ||= {}
       id = html_options[:id] ||= "modal-form-#{rand(100000000)}"
       data = html_options[:data] ||= {}
       data[:toggle] = "modal-form"
       html = link_to(label, path, html_options)
-      html += javascript_tag <<-EOT if block
-        $(function() {$("##{id}").on("crud:success", #{capture(&block)})});
-      EOT
-      html
+      if callback
+        html += javascript_tag <<-EOT
+          $(function() {$("##{id}").on("crud:success", #{callback})});
+        EOT
+      end
+      html.html_safe
     end
 
     #
