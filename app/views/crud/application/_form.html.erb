@@ -6,5 +6,10 @@
       <%= simple_form_input f, column %>
     <% end %>
   </div>
-  <%= yield :form_actions %>
+  <% unless @skip_form_actions %>
+    <div class="form-actions">
+      <%= f.button :submit, @submit_label, :class => "btn btn-primary" %>
+      <%= link_to t("crud.action.cancel"), stored_params(:action => :index), :class => "btn btn-cancel" %>
+    </div>
+  <% end %>
 <% end %>

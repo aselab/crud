@@ -472,6 +472,7 @@ class Crud::ApplicationController < ApplicationController
 
   def render_edit(status = :ok)
     if request.xhr?
+      @skip_form_actions = true
       render action: "ajax_edit", layout: false, status: status
     else
       render action: "edit", status: status
