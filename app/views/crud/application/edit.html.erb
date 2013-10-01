@@ -1,4 +1,10 @@
 <h1><%= @title %></h1>
 
-<%= render 'form' %>
+<% content_for :form_actions do %>
+  <div class="form-actions">
+    <%= f.button :submit, @submit_label, :class => "btn btn-primary" %>
+    <%= link_to t("crud.action.cancel"), stored_params(:action => :index), :class => "btn btn-cancel" %>
+  </div>
+<% end %>
 
+<%= render 'form' %>

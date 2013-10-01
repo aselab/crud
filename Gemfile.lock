@@ -176,6 +176,7 @@ DEPENDENCIES
   crud!
   factory_girl_rails
   less-rails
+  nested_form
   pry-rails
   rspec-rails
   spork

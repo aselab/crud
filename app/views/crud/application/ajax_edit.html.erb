@@ -6,13 +6,17 @@
   <div class="modal-body">
     <%= render "form" %>
   </div>
+  <div class="modal-footer">
+    <button class="btn btn-primary"><%= t("crud.action.ok") %></button>
+    <button class="btn btn-cancel"><%= t("crud.action.cancel") %></button>
+  </div>
 
   <%= javascript_tag do %>
   $(function() {
     var dialog = $("#modal_form");
-    dialog.find("a.btn-cancel").attr("data-dismiss", "modal");
-    dialog.find("form").on("submit", function() {
-      var form = $(this);
+    dialog.find("button.btn-cancel").attr("data-dismiss", "modal");
+    dialog.find("button.btn-primary").on("click", function() {
+      var form = dialog.find("form");
       var method = form.attr("method");
       var action = form.attr("action");
       $[method](action, form.serialize(), function(data) {
@@ -26,7 +30,6 @@
           alert(xhr.responseText);
         }
       });
-      return false;
     });
     dialog.modal().on("hidden", function() { dialog.remove(); });
   });
