@@ -31,7 +31,7 @@ class BootstrapDatetimepickerInput < SimpleForm::Inputs::Base
   end
 
   def input
-    id = input_html_options[:id] || object_name.gsub(/\[|\]\[/, "_").gsub(/\]/, "") + "_" + attribute_name.to_s
+    id = input_html_options[:id] || object_name.to_s.gsub(/\[|\]\[/, "_").gsub(/\]/, "") + "_" + attribute_name.to_s
     hidden = @builder.hidden_field(attribute_name, input_html_options)
     value = @builder.object.send(attribute_name)
     date = value && value.strftime("%Y-%m-%d")
