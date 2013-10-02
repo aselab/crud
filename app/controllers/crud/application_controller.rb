@@ -497,12 +497,14 @@ class Crud::ApplicationController < ApplicationController
 
   def before_new
     new_resource
+    assign_params
     do_action
     authorize_action
   end
 
   def before_edit
     find_resource
+    assign_params
     do_action
     authorize_action
   end
