@@ -2,7 +2,8 @@
 class BootstrapTimepickerInput < BootstrapDatetimepickerInput
 
   def time_picker(id, attribute_name, hidden, value)
-    time = value && value.strftime("%H:%M")
+    timezone = options[:timezone] || Rails.configuration.time_zone
+    time = value && value.in_time_zone(timezone).strftime("%H:%M")
 
     time_picker = <<-EOT
       <div class="input-prepend">

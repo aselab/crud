@@ -33,9 +33,10 @@ class BootstrapDatetimepickerInput < SimpleForm::Inputs::Base
   def input
     id = input_html_options[:id] || object_name.to_s.gsub(/\[|\]\[/, "_").gsub(/\]/, "") + "_" + attribute_name.to_s
     hidden = @builder.hidden_field(attribute_name, input_html_options)
-    value = @builder.object.send(attribute_name)
-    date = value && value.strftime("%Y-%m-%d")
-    time = value && value.strftime("%H:%M")
+    value = @builder.object.send(attribute_name).utc
+    timezone = options[:timezone] || Rails.configuration.time_zone
+    date = value && value.in_time_zone(timezone).strftime("%Y-%m-%d")
+    time = value && value.in_time_zone(timezone).strftime("%H:%M")
 
     date_picker = <<-EOT
       <div class="input-prepend date">
