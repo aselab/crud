@@ -8,6 +8,7 @@ module Crud
 
       def copy_controller
         template 'templates/controller.rb.erb', "app/controllers/#{controller_name}_controller.rb"
+        route "resources :#{controller_name}"
       end
 
       def copy_views
