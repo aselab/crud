@@ -116,7 +116,7 @@ module Crud
 
       options ||= input_options(column) || {}
       options[:collection] = [] if options[:as] == :select2 && (options[:ajax] || options[:url].present?)
-      return f.association column, options if association_key?(column)
+      return f.association column, options if f.object.reflections.has_key?(column.to_sym)
 
       case f.object.class.columns_hash[column.to_s].try(:type)
       when :datetime, :timestamp
