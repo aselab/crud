@@ -61,9 +61,13 @@ class BootstrapDatetimepickerInput < SimpleForm::Inputs::Base
         var dateDiv = hiddenInput.next(".date");
         var dateInput = dateDiv.find("input");
         var timeInput = dateDiv.next(".input-prepend").find("input");
-
         function datetimeSync() {
-          hiddenInput.val(dateInput.val() + " " + timeInput.val());
+          var timepicker = timeInput.data("timepicker");
+          var hour = timepicker.hour < 10 ? '0' + timepicker.hour : timepicker.hour;
+          var minute = timepicker.minute < 10 ? '0' + timepicker.minute : timepicker.minute;
+          var second = timepicker.second < 10 ? '0' + timepicker.second : timepicker.second;
+          var time = hour + ':' + minute + (timepicker.showSeconds ? ':' + second : '');
+          hiddenInput.val(dateInput.val() + "T" + time);
         }
 
         dateDiv.datepicker(#{datepicker_options.to_json}).change(datetimeSync);
