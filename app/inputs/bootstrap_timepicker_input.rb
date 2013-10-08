@@ -13,7 +13,6 @@ class BootstrapTimepickerInput < BootstrapDatetimepickerInput
         </div>
       </div>
       <span style="margin-left: 30px">#{reset_button(id) unless @required}</span>
-      <div style="clear: none; padding-bottom: 20px;"></div>
     EOT
 
     js = javascript_tag(<<-SCRIPT

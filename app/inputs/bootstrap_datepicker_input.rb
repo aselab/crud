@@ -11,7 +11,6 @@ class BootstrapDatepickerInput < BootstrapDatetimepickerInput
         <input type="text" class="input-small" name="#{attribute_name.to_s + "_date_input"}" value="#{date}"/>
       </div>
       #{reset_button(id) unless @required}
-      <div style="clear: none; padding-bottom: 20px;"></div>
     EOT
 
     js = <<-SCRIPT
