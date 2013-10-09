@@ -511,14 +511,14 @@ class Crud::ApplicationController < ApplicationController
 
   def before_create
     new_resource
-    assign_params
     authorize_action
+    assign_params
   end
 
   def before_update
     find_resource
-    assign_params
     authorize_action
+    assign_params
   end
 
   def before_destroy
