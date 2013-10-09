@@ -6,15 +6,17 @@ class Select2Input < SimpleForm::Inputs::CollectionInput
 
   def input
     id = input_id
-    multiple_js = <<-SCRIPT
-      select.closest("form").submit(function() {
+    def multiple_js
+      <<-SCRIPT
+      select.closest('form').on("#{submit_event}", function () {
         var form = $(this);
         $.each(select.select2("val"), function() {
           if (this != "[]") form.append($("<input/>").attr({"type": "hidden", "name": "#{object_name}[#{attribute_name}][]"}).val(this));
         });
         select.remove();
       });
-    SCRIPT
+      SCRIPT
+    end
 
     js = javascript_tag(<<-SCRIPT
       $(function() {
@@ -31,11 +33,16 @@ class Select2Input < SimpleForm::Inputs::CollectionInput
   def multiple?
     if @multiple.nil?
       @multiple = options[:multiple]
+      @submit_event = @multiple if @multiple.is_a?(String)
       if @multiple.nil?
         @multiple = reflection ? reflection.macro == :has_many || reflection.macro == :has_and_belongs_to_many : false
       end
     end
     @multiple
+  end
+
+  def submit_event
+    @submit_event ||= "submit"
   end
 
   def url
