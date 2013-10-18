@@ -52,16 +52,26 @@ module Crud
         html_options = callback_or_html_options
       end
       html_options ||= {}
-      id = html_options[:id] ||= "modal-form-#{rand(100000000)}"
+      id = html_options[:id] ||= "modal-form-link-#{rand(100000000)}"
       data = html_options[:data] ||= {}
       data[:toggle] = "modal-form"
-      html = link_to(label, path, html_options)
-      if callback
-        html += javascript_tag <<-EOT
-          $(function() {$("##{id}").on("crud:success", #{callback})});
-        EOT
-      end
-      html.html_safe
+      link_to(label, path, html_options) + javascript_tag(<<-EOT).html_safe
+        $(function() {
+          $("##{id}").on("click", function() {
+            var a = $(this);
+            $.ajax({
+              method: "GET",
+              url: a.attr("href"),
+              success: function(data) {
+                var e = $(data);
+                $(document.body).append(e);
+                a.attr("data-action", e.find("form").attr("action"));
+              }
+            });
+            return false;
+          })#{%Q[.on("crud:success", #{callback})] if callback};
+        });
+      EOT
     end
 
     #
