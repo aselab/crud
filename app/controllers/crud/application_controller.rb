@@ -219,7 +219,7 @@ class Crud::ApplicationController < ApplicationController
     all_columns_exist = columns.all? {|c| column_key?(c)}
 
     self.resources = (associations.empty? && all_columns_exist) ?
-        model.select([:id] + columns).accessible_by(current_ability, :read) :
+        model.accessible_by(current_ability, :read) :
         model.includes(associations).accessible_by(current_ability, :read)
 
     search_by_sql
