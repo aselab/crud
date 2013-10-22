@@ -31,4 +31,15 @@ describe Crud::ApplicationController do
       controller.send(:tokenize, 'key"word "pre').should == ['key"word', '"pre']
     end
   end
+
+  describe "#do_search_by_column" do
+    it "search_by_column メソッドが定義されていたらそれを呼び出すこと" do
+      sql = ["test = ?", "name1"]
+      expect(controller).to receive(:search_by_name).with("name1").and_return(sql)
+      user = double("user model")
+      expect(user).to receive(:sanitize_sql_array).with(sql).and_return("sanitized sql")
+      controller.send(:do_search_by_column, user, "name", "name1").should == "sanitized sql"
+        "test = 'name1'"
+    end
+  end
 end
