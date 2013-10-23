@@ -209,6 +209,30 @@ class Crud::ApplicationController < ApplicationController
   end
 
   #
+  # search_by_:column_name という名前のメソッドを定義すると、
+  # カラム毎の検索条件をカスタマイズできる。
+  #
+  #  def search_by_name(term)
+  #    ["users.lastname like ? and users.firstname ?", "%#{term}%", "%#{term}%"]
+  #  end
+  #
+  def do_search_by_column(model, column, term)
+    method = "search_by_#{column}"
+    if respond_to?(method, true)
+      model.send(:sanitize_sql_array, send(method, term))
+    else
+      c = model.columns_hash[column.to_s]
+      column_name = "#{model.table_name}.#{c.name}"
+      case c.type
+      when :string, :text
+        model.send(:sanitize_sql_array, ["#{column_name} like ?", "%#{term}%"])
+      when :integer
+        model.send(:sanitize_sql_hash, column_name => Integer(term)) rescue "0 = 1"
+      end
+    end
+  end
+
+  #
   # indexアクションで呼び出される内部メソッド.
   # オーバーライドしてself.resourcesに表示対象を格納するように実装する．
   #
@@ -256,14 +280,7 @@ class Crud::ApplicationController < ApplicationController
 
     terms.map {|term|
       conds = model_columns.map {|model, column|
-        c = model.columns_hash[column.to_s]
-        column_name = "#{model.table_name}.#{c.name}"
-        case c.type
-        when :string, :text
-          model.send(:sanitize_sql_array, ["#{column_name} like ?", "%#{term}%"])
-        when :integer
-          model.send(:sanitize_sql_hash, column_name => Integer(term)) rescue nil
-        end
+        do_search_by_column(model, column, term)
       }.compact
       conds.size > 1 ? "(#{conds.join(" OR ")})" : conds.first
     }.compact.join(" AND ")
@@ -399,10 +416,13 @@ class Crud::ApplicationController < ApplicationController
   # デフォルトではindexで表示する項目のうちtypeがstring, text, integerであるものまたは関連
   #
   def columns_for_search
-    columns_for(:index).select {|c|
-      column = model.columns_hash[c.to_s]
-      column && [:string, :text, :integer].include?(column.type) || association_key?(c)
-    }
+    columns_for(:index).select {|c| search_column?(model, c)}
+  end
+
+  def search_column?(model, column_name)
+    return true if respond_to?("search_by_#{column_name}", true)
+    column = model.columns_hash[column_name.to_s]
+    column && [:string, :text, :integer].include?(column.type) || association_key?(column_name)
   end
 
   # JSON出力に利用するカラムリスト.

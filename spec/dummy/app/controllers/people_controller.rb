@@ -3,11 +3,15 @@ class PeopleController < Crud::ApplicationController
 
   protected
   def columns_for_index
-    [:name, :label, :position]
+    [:label, :position]
   end
 
   def sort_by_label(order)
     self.resources = resources.order("name #{order}")
+  end
+
+  def search_by_label(term)
+    ["name like ?", "%#{term}%"]
   end
 
   def sort_by_position(order)
