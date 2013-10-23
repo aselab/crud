@@ -6,10 +6,6 @@ class PeopleController < Crud::ApplicationController
     [:label, :position]
   end
 
-  def sort_by_label(order)
-    self.resources = resources.order("name #{order}")
-  end
-
   def search_by_label(term)
     ["name like ?", "%#{term}%"]
   end
@@ -18,7 +14,11 @@ class PeopleController < Crud::ApplicationController
     {:position => term}
   end
 
+  def sort_by_label(order)
+    "name #{order}"
+  end
+
   def sort_by_position(order)
-    self.resources = resources.order("position is null #{order}, position #{order}")
+    "position is null #{order}, position #{order}"
   end
 end

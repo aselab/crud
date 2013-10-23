@@ -209,30 +209,6 @@ class Crud::ApplicationController < ApplicationController
   end
 
   #
-  # search_by_:column_name という名前のメソッドを定義すると、
-  # カラム毎の検索条件をカスタマイズできる。
-  #
-  #  def search_by_name(term)
-  #    ["users.lastname like ? and users.firstname ?", "%#{term}%", "%#{term}%"]
-  #  end
-  #
-  def do_search_by_column(model, column, term)
-    method = "search_by_#{column}"
-    if respond_to?(method, true)
-      model.send(:sanitize_sql_for_conditions, send(method, term), model.table_name)
-    else
-      c = model.columns_hash[column.to_s]
-      column_name = "#{model.table_name}.#{c.name}"
-      case c.type
-      when :string, :text
-        model.send(:sanitize_sql_array, ["#{column_name} like ?", "%#{term}%"])
-      when :integer
-        model.send(:sanitize_sql_hash, column_name => Integer(term)) rescue "0 = 1"
-      end
-    end
-  end
-
-  #
   # indexアクションで呼び出される内部メソッド.
   # オーバーライドしてself.resourcesに表示対象を格納するように実装する．
   #
@@ -280,7 +256,7 @@ class Crud::ApplicationController < ApplicationController
 
     terms.map {|term|
       conds = model_columns.map {|model, column|
-        do_search_by_column(model, column, term)
+        search_sql_for_column(model, column, term)
       }.compact
       conds.size > 1 ? "(#{conds.join(" OR ")})" : conds.first
     }.compact.join(" AND ")
@@ -299,17 +275,27 @@ class Crud::ApplicationController < ApplicationController
     end.to_sym
   end
 
-  def order_by_column(name)
-    if reflection = model.reflections[name]
-      self.resources = resources.includes(name)
-      association = reflection.class_name.constantize
-      f = association.respond_to?(:sort_field, true) ?
-        association.send(:sort_field) :
-        [:name, :title, :id].find {|c| association.columns_hash.has_key?(c.to_s)}
-      "#{association.table_name}.#{f.to_s}" if f
+  #
+  # search_by_:column_name という名前のメソッドを定義すると、
+  # カラム毎の検索条件をカスタマイズできる。
+  #
+  #  def search_by_name(term)
+  #    ["users.lastname like ? and users.firstname ?", "%#{term}%", "%#{term}%"]
+  #  end
+  #
+  def search_sql_for_column(model, column, term)
+    method = "search_by_#{column}"
+    if respond_to?(method, true)
+      model.send(:sanitize_sql_for_conditions, send(method, term), model.table_name)
     else
-      c = model.columns_hash[name.to_s]
-      "#{model.table_name}.#{c.name}" if c
+      c = model.columns_hash[column.to_s]
+      column_name = "#{model.table_name}.#{c.name}"
+      case c.type
+      when :string, :text
+        model.send(:sanitize_sql_array, ["#{column_name} like ?", "%#{term}%"])
+      when :integer
+        model.send(:sanitize_sql_hash, column_name => Integer(term)) rescue "0 = 1"
+      end
     end
   end
 
@@ -318,22 +304,33 @@ class Crud::ApplicationController < ApplicationController
   # カラム毎のソート条件をカスタマイズできる。
   #
   #  def sort_by_name(order)
-  #    self.resources = resources.order("users.last_name #{order}, users.first_name #{order}")
+  #    "users.last_name #{order}, users.first_name #{order}"
   #  end
   #
-  def do_sort_by_column(name)
+  def sort_sql_for_column(name)
     method = "sort_by_#{name}"
     if respond_to?(method, true)
       send(method, sort_order)
     else
-      column = order_by_column(name)
-      self.resources = resources.order("#{column} #{sort_order}") if column
+      column = if reflection = model.reflections[name]
+        self.resources = resources.includes(name)
+        association = reflection.class_name.constantize
+        f = association.respond_to?(:sort_field, true) ?
+          association.send(:sort_field) :
+          [:name, :title, :id].find {|c| association.columns_hash.has_key?(c.to_s)}
+        "#{association.table_name}.#{f.to_s}" if f
+      else
+        c = model.columns_hash[name.to_s]
+        "#{model.table_name}.#{c.name}" if c
+      end
+      "#{column} #{sort_order}" if column
     end
   end
 
   def do_sort
-    key = sort_key
-    do_sort_by_column(key) if key
+    return unless key = sort_key
+    sql = sort_sql_for_column(key)
+    self.resources = resources.order(sql) if sql
   end
 
   def do_page
