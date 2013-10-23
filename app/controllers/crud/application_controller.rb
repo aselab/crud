@@ -219,7 +219,7 @@ class Crud::ApplicationController < ApplicationController
   def do_search_by_column(model, column, term)
     method = "search_by_#{column}"
     if respond_to?(method, true)
-      model.send(:sanitize_sql_array, send(method, term))
+      model.send(:sanitize_sql_for_conditions, send(method, term), model.table_name)
     else
       c = model.columns_hash[column.to_s]
       column_name = "#{model.table_name}.#{c.name}"

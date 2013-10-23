@@ -37,7 +37,8 @@ describe Crud::ApplicationController do
       sql = ["test = ?", "name1"]
       expect(controller).to receive(:search_by_name).with("name1").and_return(sql)
       user = double("user model")
-      expect(user).to receive(:sanitize_sql_array).with(sql).and_return("sanitized sql")
+      expect(user).to receive(:table_name).and_return("users")
+      expect(user).to receive(:sanitize_sql_for_conditions).with(sql, "users").and_return("sanitized sql")
       controller.send(:do_search_by_column, user, "name", "name1").should == "sanitized sql"
         "test = 'name1'"
     end

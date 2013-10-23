@@ -14,6 +14,10 @@ class PeopleController < Crud::ApplicationController
     ["name like ?", "%#{term}%"]
   end
 
+  def search_by_position(term)
+    {:position => term}
+  end
+
   def sort_by_position(order)
     self.resources = resources.order("position is null #{order}, position #{order}")
   end
