@@ -197,6 +197,10 @@ class Crud::ApplicationController < ApplicationController
     end
   end
 
+  def authorize_index
+    authorize! :index, model
+  end
+
   #
   #=== アクション実行
   #
@@ -501,7 +505,7 @@ class Crud::ApplicationController < ApplicationController
   end
 
   def before_index
-    authorize! :index, model
+    authorize_action
     new_resource
     do_action
   end
