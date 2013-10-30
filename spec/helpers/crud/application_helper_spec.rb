@@ -6,21 +6,21 @@ describe Crud::ApplicationHelper do
     before do
       @params = {:controller => "foo", :action => "bar",
         :sort_key => "sort_key", :sort_order => "asc"}
-      helper.stub!(:params).and_return(@params)
-      helper.stub!(:sort_key).and_return(:sort_key)
-      helper.stub!(:sort_order).and_return(:asc)
+      helper.stub(:params).and_return(@params)
+      helper.stub(:sort_key).and_return(:sort_key)
+      helper.stub(:sort_order).and_return(:asc)
 
       model = Object.new
       model.define_singleton_method(:human_attribute_name) {|key|
         "human name of #{key.to_s}"
       }
-      helper.stub!(:model).and_return(model)
-      helper.stub!(:sort_key?).and_return(false)
+      helper.stub(:model).and_return(model)
+      helper.stub(:sort_key?).and_return(false)
     end
 
     context "ソートできるカラムの場合" do
       before do
-        helper.stub!(:sort_key?).and_return(true)
+        helper.stub(:sort_key?).and_return(true)
       end
 
       it "sort_keyと一致しない場合のリンクが正しいこと" do
@@ -81,7 +81,7 @@ describe Crud::ApplicationHelper do
   describe "#column_html" do
     before do
       @resource = double("resource", :aaa => "xxx")
-      helper.stub!(:params).and_return({:controller => "controller_name"})
+      helper.stub(:params).and_return({:controller => "controller_name"})
     end
 
     subject { helper.column_html(@resource, :aaa) }

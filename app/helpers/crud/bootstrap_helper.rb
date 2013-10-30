@@ -71,12 +71,19 @@ module Crud
           a.split("?").first == b.split("?").first
         end
 
-        def active?(url, key, active_params)
-          tab = context.active_tab
-          !disable_active && (tab ? tab == key : (active_params ?
-            active_params.all?{|k, v| context.params[k] == v} :
-            same_url?(context.url_for(context.params), url)
-          ))
+        def active?(url, key, matcher = nil)
+          matcher ||= url
+          if disable_active
+            false
+          elsif tab = context.active_tab
+            tab == key
+          elsif matcher.is_a?(Proc)
+            matcher.call
+          elsif matcher.is_a?(Hash)
+            matcher.all?{|k, v| context.params[k] == v.to_s}
+          else
+            same_url?(context.url_for(context.params), matcher)
+          end
         end
       end
     end
