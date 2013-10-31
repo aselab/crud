@@ -237,8 +237,9 @@ class Crud::ApplicationController < ApplicationController
 
     model_columns = []
     columns_for_search.each {|c|
-      reflection = model.reflections[c.to_sym]
-      if reflection
+      if search_method_defined?(c)
+        model_columns.push([model, c])
+      elsif reflection = model.reflections[c.to_sym]
         self.resources = resources.includes(c.to_sym)
         association = reflection.class_name.constantize
         fields = association.respond_to?(:search_field, true) ?
@@ -418,8 +419,12 @@ class Crud::ApplicationController < ApplicationController
     columns_for(:index).select {|c| search_column?(model, c)}
   end
 
+  def search_method_defined?(column_name)
+    respond_to?("search_by_#{column_name}", true)
+  end
+
   def search_column?(model, column_name)
-    return true if respond_to?("search_by_#{column_name}", true)
+    return true if search_method_defined?(column_name)
     column = model.columns_hash[column_name.to_s]
     column && [:string, :text, :integer].include?(column.type) || association_key?(column_name)
   end
