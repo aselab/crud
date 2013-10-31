@@ -219,17 +219,14 @@ class Crud::ApplicationController < ApplicationController
   def do_search
     format = (params[:format] || :html).to_sym
     columns = format == :html ? columns_for(:index) : columns_for(format)
-    associations, columns = columns.partition {|c| association_key?(c)}
-    all_columns_exist = columns.all? {|c| column_key?(c)}
-
-    self.resources = (associations.empty? && all_columns_exist) ?
-        model.accessible_by(current_ability, :read) :
-        model.includes(associations).accessible_by(current_ability, :read)
+    associations = columns.select {|c| association_key?(c)}
+    self.resources = resources.includes(associations) unless associations.empty?
 
     search_by_sql
   end
 
   def do_filter
+    self.resources = resources.accessible_by(current_ability, :read)
     if ids = params[:except_ids]
       self.resources = resources.where(["#{model.table_name}.id not in (?)", ids])
     end
@@ -345,8 +342,9 @@ class Crud::ApplicationController < ApplicationController
   # indexメソッドで呼び出される内部メソッド.
   #
   def do_index
-    do_search
+    self.resources = model.scoped
     do_filter
+    do_search
     do_sort
     do_page
   end
@@ -487,7 +485,7 @@ class Crud::ApplicationController < ApplicationController
         :current_page => resources.current_page
       }.to_json(:methods => :label)
     else
-      render json: resources.to_json
+      render json: resources
     end
   end
 
