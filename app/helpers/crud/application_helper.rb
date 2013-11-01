@@ -14,23 +14,27 @@ module Crud
     end
 
     def link_to_action(action, resource = nil, params = {})
-      if can?(action, resource)
-        label = action == :new ?
-          t("crud.action_title.new", :name => model_name) :
-          t("crud.action." + action.to_s)
+      url_params = stored_params(:action => action, :id => resource).merge(params)
+      method = find_method("link_to_#{action}")
+      return send(method, url_params) if method
 
-        options = {:class => "btn"}
-        if action == :destroy
-          options[:method] = :delete
-          options[:data] = { :confirm => t("crud.message.are_you_sure") }
-          options[:class] += " btn-danger"
+      begin
+        if can?(action, resource)
+          label = action == :new ?
+            t("crud.action_title.new", :name => model_name) :
+            t("crud.action." + action.to_s)
+
+          options = {:class => "btn"}
+          if action == :destroy
+            options[:method] = :delete
+            options[:data] = { :confirm => t("crud.message.are_you_sure") }
+            options[:class] += " btn-danger"
+          end
+
+          link_to(label, url_params, options)
         end
-
-        url = stored_params(:action => action, :id => resource).merge(params)
-
-        link_to(label, url, options)
+      rescue ActionController::RoutingError
       end
-    rescue ActionController::RoutingError
     end
 
     #
@@ -160,10 +164,14 @@ module Crud
 
     private
     def call_method_for_column(suffix, column, *args)
-      short_method = column.to_s + "_" + suffix.to_s
+      method = find_method(column.to_s + "_" + suffix.to_s)
+      send(method, *args) if method
+    end
+
+    def find_method(short_method)
       method = params[:controller] + "_" + short_method
-      return send(method, *args) if respond_to?(method)
-      return send(short_method, *args) if respond_to?(short_method)
+      return method if respond_to?(method)
+      return short_method if respond_to?(short_method)
       nil
     end
   end

@@ -1,0 +1,15 @@
+<div class="clearfix">
+  <div class="pull-right">
+    <%= link_to_action :new, resource %>
+  </div>
+
+  <form class="form-search pull-right" method="GET">
+    <div class="input-append">
+      <%= text_field_tag :term, params[:term], :class => "search-query",
+        :placeholder => t("crud.message.enter_search_term") %>
+      <button id="search-button" type="submit" class="btn">
+        <i class="icon-search"></i>
+      </button>
+    </div>
+  </form>
+</div>

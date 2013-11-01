@@ -2,7 +2,7 @@ class Crud::ApplicationController < ApplicationController
   helper Crud::BootstrapHelper
   helper_method :model, :model_name, :model_key, :resources, :resource, :columns,
     :stored_params, :column_key?, :association_key?, :sort_key?, :nested?,
-    :sort_key, :sort_order
+    :sort_key, :sort_order, :index_actions
 
   before_filter :set_defaults, :only => [:index, :show, :new, :edit, :create, :update]
   before_filter :before_index, :only => :index
@@ -82,7 +82,7 @@ class Crud::ApplicationController < ApplicationController
   end
 
   protected
-  attr_accessor :resources, :resource, :columns
+  attr_accessor :resources, :resource, :columns, :index_actions
 
   #
   #=== デフォルトのソートキー
@@ -464,9 +464,14 @@ class Crud::ApplicationController < ApplicationController
     end
   end
 
+  def index_actions
+    [:show, :edit, :destroy]
+  end
+
   def set_defaults
     @title = t("crud.action_title." + crud_action.to_s, :name => model_name)
     self.columns = columns_for(crud_action)
+    self.index_actions = index_actions
   end
 
   def set_redirect_to(url)
