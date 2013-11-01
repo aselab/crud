@@ -22,7 +22,7 @@ class Crud::ApplicationController < ApplicationController
 
   def show
     respond_to do |format|
-      format.html # show.html.erb
+      format.html { render_show }
       format.json { render json: resource }
     end
   end
@@ -498,6 +498,15 @@ class Crud::ApplicationController < ApplicationController
       render json: resources
     end
   end
+
+  def render_show
+    if request.xhr?
+      render action: "ajax_show", layout: false
+    else
+      render action: "show"
+    end
+  end
+
 
   def render_edit(status = :ok)
     if request.xhr?
