@@ -1,15 +1,17 @@
-<div class="clearfix">
-  <div class="pull-right">
+<div class="navbar row">
+  <div class="navbar-btn navbar-right">
     <%= link_to_action :new, resource %>
   </div>
 
-  <form class="form-search pull-right" method="GET">
-    <div class="input-append">
-      <%= text_field_tag :term, params[:term], :class => "search-query",
+  <form class="navbar-form form-search" method="GET">
+    <div class="input-group col-sm-4 navbar-right">
+      <%= text_field_tag :term, params[:term], :class => "search-query form-control",
         :placeholder => t("crud.message.enter_search_term") %>
-      <button id="search-button" type="submit" class="btn">
-        <i class="icon-search"></i>
-      </button>
+      <div class="input-group-btn">
+        <button id="search-button" type="submit" class="btn btn-default">
+          <i class="icon-search"></i>
+        </button>
+      </div>
     </div>
   </form>
 </div>

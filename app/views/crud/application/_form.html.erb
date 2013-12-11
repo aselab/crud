@@ -1,15 +1,13 @@
 <%= crud_form resource do |f| %>
   <%= f.error_notification %>
 
-  <div class="form-inputs">
-    <% columns.each do |column| %>
-      <%= simple_form_input f, column %>
-    <% end %>
-  </div>
+  <% columns.each do |column| %>
+    <%= simple_form_input f, column %>
+  <% end %>
   <% unless @skip_form_actions %>
-    <div class="form-actions">
+    <div class="form-group">
       <%= f.button :submit, @submit_label, :class => "btn btn-primary" %>
-      <%= link_to t("crud.action.cancel"), stored_params(:action => :index), :class => "btn btn-cancel" %>
+      <%= link_to t("crud.action.cancel"), stored_params(:action => :index), :class => "btn btn-default btn-cancel" %>
     </div>
   <% end %>
 <% end %>

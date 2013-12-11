@@ -6,8 +6,14 @@ module Crud
         focus = sort_key == key.to_sym
         current = sort_order
         order = focus && current == :asc ? :desc : :asc
+        icon = order == :asc ? "icon-sort-up" : "icon-sort-down"
         p = params.dup.update(:sort_key => key.to_s, :sort_order => order.to_s)
-        link_to(label, p, :class => focus ? current.to_s : nil)
+        link = link_to(label, p)
+        if focus
+          link + content_tag(:i, nil, :class => icon)
+        else
+          link
+        end
       else
         label
       end
@@ -24,7 +30,7 @@ module Crud
             t("crud.action_title.new", :name => model_name) :
             t("crud.action." + action.to_s)
 
-          options = {:class => "btn"}
+          options = {:class => "btn btn-default"}
           if action == :destroy
             options[:method] = :delete
             options[:data] = { :confirm => t("crud.message.are_you_sure") }
@@ -117,7 +123,7 @@ module Crud
         :url => resource.new_record? ?
           stored_params(:action => :create) :
           stored_params(:action => :update, :id => resource),
-        :html => {:class => "form-horizontal"}
+        :defaults => { :input_html => { :class => "form-control" } }
       }
 
       send(method, resource, options, &block)
