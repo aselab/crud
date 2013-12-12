@@ -134,18 +134,22 @@ module Crud
         return html
       end
 
+      default = {}
+      case f.object.class.columns_hash[column.to_s].try(:type)
+      when :boolean
+        default = {:label => false, :inline_label => true, :input_html => {:class => ""}}
+      when :datetime, :timestamp
+        default[:as] = :bootstrap_datetimepicker
+      when :date
+        default[:as] = :bootstrap_datepicker
+      when :time
+        default[:as] = :bootstrap_timepicker
+      end
       options ||= input_options(column) || {}
+      options = default.merge(options)
       options[:collection] = [] if options[:as] == :select2 && (options[:ajax] || options[:url].present?)
       return f.association column, options if association_key?(column)
 
-      case f.object.class.columns_hash[column.to_s].try(:type)
-      when :datetime, :timestamp
-        options[:as] ||= :bootstrap_datetimepicker
-      when :date
-        options[:as] ||= :bootstrap_datepicker
-      when :time
-        options[:as] ||= :bootstrap_timepicker
-      end
       f.input column, options
     end
 
