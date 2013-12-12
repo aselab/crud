@@ -91,6 +91,6 @@ class Select2Input < SimpleForm::Inputs::CollectionInput
         }
       }
     STRING
-    {:multiple => multiple?, :allowClear => true, :width => "element"}.merge(options).to_json.sub(/}$/, append_options.join("") + "}")
+    {:multiple => multiple?, :allowClear => true}.merge(options).to_json.sub(/}$/, append_options.join("") + "}")
   end
 end
