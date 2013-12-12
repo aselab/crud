@@ -21,12 +21,14 @@
     this.isOpen = options.isOpen;
     this.minuteStep = options.minuteStep;
     this.modalBackdrop = options.modalBackdrop;
+    this.orientation = options.orientation;
     this.secondStep = options.secondStep;
     this.showInputs = options.showInputs;
     this.showMeridian = options.showMeridian;
     this.showSeconds = options.showSeconds;
     this.template = options.template;
     this.appendWidgetTo = options.appendWidgetTo;
+    this.showWidgetOnAddonClick = options.showWidgetOnAddonClick;
 
     this._init();
   };
@@ -37,7 +39,7 @@
     _init: function() {
       var self = this;
 
-      if (this.$element.parent().hasClass('input-append') || this.$element.parent().hasClass('input-prepend')) {
+      if (this.showWidgetOnAddonClick && (this.$element.parent().hasClass('input-append') || this.$element.parent().hasClass('input-prepend'))) {
         this.$element.parent('.input-append, .input-prepend').find('.add-on').on({
           'click.timepicker': $.proxy(this.showWidget, this)
         });
@@ -68,7 +70,7 @@
       }
 
       if (this.template !== false) {
-        this.$widget = $(this.getTemplate()).prependTo(this.$element.parents(this.appendWidgetTo)).on('click', $.proxy(this.widgetClick, this));
+        this.$widget = $(this.getTemplate()).on('click', $.proxy(this.widgetClick, this));
       } else {
         this.$widget = false;
       }
@@ -240,10 +242,10 @@
         templateContent;
 
       if (this.showInputs) {
-        hourTemplate = '<input type="text" class="bootstrap-timepicker-hour" maxlength="2"/>';
-        minuteTemplate = '<input type="text" class="bootstrap-timepicker-minute" maxlength="2"/>';
-        secondTemplate = '<input type="text" class="bootstrap-timepicker-second" maxlength="2"/>';
-        meridianTemplate = '<input type="text" class="bootstrap-timepicker-meridian" maxlength="2"/>';
+        hourTemplate = '<input type="text" class="bootstrap-timepicker-hour form-control" maxlength="2"/>';
+        minuteTemplate = '<input type="text" class="bootstrap-timepicker-minute form-control" maxlength="2"/>';
+        secondTemplate = '<input type="text" class="bootstrap-timepicker-second form-control" maxlength="2"/>';
+        meridianTemplate = '<input type="text" class="bootstrap-timepicker-meridian form-control" maxlength="2"/>';
       } else {
         hourTemplate = '<span class="bootstrap-timepicker-hour"></span>';
         minuteTemplate = '<span class="bootstrap-timepicker-minute"></span>';
@@ -253,16 +255,16 @@
 
       templateContent = '<table>'+
          '<tr>'+
-           '<td><a href="#" data-action="incrementHour"><i class="icon-chevron-up"></i></a></td>'+
+           '<td><a href="#" data-action="incrementHour"><i class="glyphicon glyphicon-chevron-up"></i></a></td>'+
            '<td class="separator">&nbsp;</td>'+
-           '<td><a href="#" data-action="incrementMinute"><i class="icon-chevron-up"></i></a></td>'+
+           '<td><a href="#" data-action="incrementMinute"><i class="glyphicon glyphicon-chevron-up"></i></a></td>'+
            (this.showSeconds ?
              '<td class="separator">&nbsp;</td>'+
-             '<td><a href="#" data-action="incrementSecond"><i class="icon-chevron-up"></i></a></td>'
+             '<td><a href="#" data-action="incrementSecond"><i class="glyphicon glyphicon-chevron-up"></i></a></td>'
            : '') +
            (this.showMeridian ?
              '<td class="separator">&nbsp;</td>'+
-             '<td class="meridian-column"><a href="#" data-action="toggleMeridian"><i class="icon-chevron-up"></i></a></td>'
+             '<td class="meridian-column"><a href="#" data-action="toggleMeridian"><i class="glyphicon glyphicon-chevron-up"></i></a></td>'
            : '') +
          '</tr>'+
          '<tr>'+
@@ -279,16 +281,16 @@
            : '') +
          '</tr>'+
          '<tr>'+
-           '<td><a href="#" data-action="decrementHour"><i class="icon-chevron-down"></i></a></td>'+
+           '<td><a href="#" data-action="decrementHour"><i class="glyphicon glyphicon-chevron-down"></i></a></td>'+
            '<td class="separator"></td>'+
-           '<td><a href="#" data-action="decrementMinute"><i class="icon-chevron-down"></i></a></td>'+
+           '<td><a href="#" data-action="decrementMinute"><i class="glyphicon glyphicon-chevron-down"></i></a></td>'+
            (this.showSeconds ?
             '<td class="separator">&nbsp;</td>'+
-            '<td><a href="#" data-action="decrementSecond"><i class="icon-chevron-down"></i></a></td>'
+            '<td><a href="#" data-action="decrementSecond"><i class="glyphicon glyphicon-chevron-down"></i></a></td>'
            : '') +
            (this.showMeridian ?
             '<td class="separator">&nbsp;</td>'+
-            '<td><a href="#" data-action="toggleMeridian"><i class="icon-chevron-down"></i></a></td>'
+            '<td><a href="#" data-action="toggleMeridian"><i class="glyphicon glyphicon-chevron-down"></i></a></td>'
            : '') +
          '</tr>'+
        '</table>';
@@ -317,7 +319,7 @@
     },
 
     getTime: function() {
-      if (!this.hour && !this.minute && !this.second) {
+      if (this.hour === '') {
         return '';
       }
 
@@ -349,6 +351,8 @@
       $(document).off('mousedown.timepicker, touchend.timepicker');
 
       this.isOpen = false;
+      // show/hide approach taken by datepicker
+      this.$widget.detach();
     },
 
     highlightUnit: function() {
@@ -602,6 +606,62 @@
       return false;
     },
 
+    // This method was adapted from bootstrap-datepicker.
+    place : function() {
+      if (this.isInline) {
+        return;
+      }
+      var widgetWidth = this.$widget.outerWidth(), widgetHeight = this.$widget.outerHeight(), visualPadding = 10, windowWidth =
+        $(window).width(), windowHeight = $(window).height(), scrollTop = $(window).scrollTop();
+
+      var zIndex = parseInt(this.$element.parents().filter(function() {}).first().css('z-index'), 10) + 10;
+      var offset = this.component ? this.component.parent().offset() : this.$element.offset();
+      var height = this.component ? this.component.outerHeight(true) : this.$element.outerHeight(false);
+      var width = this.component ? this.component.outerWidth(true) : this.$element.outerWidth(false);
+      var left = offset.left, top = offset.top;
+
+      this.$widget.removeClass('timepicker-orient-top timepicker-orient-bottom timepicker-orient-right timepicker-orient-left');
+
+      if (this.orientation.x !== 'auto') {
+        this.picker.addClass('datepicker-orient-' + this.orientation.x);
+        if (this.orientation.x === 'right') {
+          left -= widgetWidth - width;
+        }
+      } else{
+        // auto x orientation is best-placement: if it crosses a window edge, fudge it sideways
+        // Default to left
+        this.$widget.addClass('timepicker-orient-left');
+        if (offset.left < 0) {
+          left -= offset.left - visualPadding;
+        } else if (offset.left + widgetWidth > windowWidth) {
+          left = windowWidth - widgetWidth - visualPadding;
+        }
+      }
+      // auto y orientation is best-situation: top or bottom, no fudging, decision based on which shows more of the widget
+      var yorient = this.orientation.y, topOverflow, bottomOverflow;
+      if (yorient === 'auto') {
+        topOverflow = -scrollTop + offset.top - widgetHeight;
+        bottomOverflow = scrollTop + windowHeight - (offset.top + height + widgetHeight);
+        if (Math.max(topOverflow, bottomOverflow) === bottomOverflow) {
+          yorient = 'top';
+        } else {
+          yorient = 'bottom';
+        }
+      }
+      this.$widget.addClass('timepicker-orient-' + yorient);
+      if (yorient === 'top'){
+        top += height;
+      } else{
+        top -= widgetHeight + parseInt(this.$widget.css('padding-top'), 10);
+      }
+
+      this.$widget.css({
+        top : top,
+        left : left,
+        zIndex : zIndex
+      });
+    },
+
     remove: function() {
       $('document').off('.timepicker');
       if (this.$widget) {
@@ -793,10 +853,15 @@
         return;
       }
 
+      // show/hide approach taken by datepicker
+      this.$widget.appendTo(this.appendWidgetTo);
       var self = this;
       $(document).on('mousedown.timepicker, touchend.timepicker', function (e) {
-        // Clicked outside the timepicker, hide it
-        if ($(e.target).closest('.bootstrap-timepicker-widget').length === 0) {
+        // This condition was inspired by bootstrap-datepicker.
+        // The element the timepicker is invoked on is the input but it has a sibling for addon/button.
+        if (!(self.$element.parent().find(e.target).length ||
+            self.$widget.is(e.target) ||
+            self.$widget.find(e.target).length)) {
           self.hideWidget();
         }
       });
@@ -812,12 +877,13 @@
         }
       });
 
+      this.place();
       if (this.disableFocus) {
         this.$element.blur();
       }
 
       // widget shouldn't be empty on open
-      if (!this.hour) {
+      if (this.hour === '') {
         if (this.defaultTime) {
           this.setDefaultTime(this.defaultTime);
         } else {
@@ -841,6 +907,11 @@
     },
 
     update: function(ignoreWidget) {
+      this.updateElement();
+      if (!ignoreWidget) {
+        this.updateWidget();
+      }
+
       this.$element.trigger({
         'type': 'changeTime.timepicker',
         'time': {
@@ -851,11 +922,6 @@
           'meridian': this.meridian
         }
       });
-
-      this.updateElement();
-      if (!ignoreWidget) {
-        this.updateWidget();
-      }
     },
 
     updateElement: function() {
@@ -1016,12 +1082,14 @@
     isOpen: false,
     minuteStep: 15,
     modalBackdrop: false,
+    orientation: { x: 'auto', y: 'auto'},
     secondStep: 15,
     showSeconds: false,
     showInputs: true,
     showMeridian: true,
     template: 'dropdown',
-    appendWidgetTo: '.bootstrap-timepicker'
+    appendWidgetTo: 'body',
+    showWidgetOnAddonClick: true
   };
 
   $.fn.timepicker.Constructor = Timepicker;
