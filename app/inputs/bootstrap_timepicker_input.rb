@@ -6,29 +6,23 @@ class BootstrapTimepickerInput < BootstrapDatetimepickerInput
     time = value && value.in_time_zone(timezone).strftime("%H:%M")
 
     time_picker = <<-EOT
-      <div class="input-prepend">
-        <span class="add-on prepend-left pull-left"><i class="icon-time"></i></span>
-        <div class="bootstrap-timepicker">
-          <input type="text" class="span1" name="#{attribute_name.to_s + "_datetime_input"}" value="#{time}"/>
-        </div>
+      <div class="input-prepend input-group">
+        <span class="input-group-addon"><i class="icon-time"></i></span>
+        <input type="text" class="form-control" name="#{attribute_name.to_s + "_datetime_input"}" value="#{time}"/>
       </div>
-      <span style="margin-left: 30px">#{reset_button(id) unless @required}</span>
+      #{reset_button(id) unless @required}
     EOT
 
     js = javascript_tag(<<-SCRIPT
       $(document).ready(function() {
         var hiddenInput = $("##{id}");
-        var timeInput = hiddenInput.next(".input-prepend").find("input");
+        var timeInput = hiddenInput.next(".input-group").find("input");
 
         function datetimeSync() {
           hiddenInput.val(timeInput.val());
         }
 
-        timeInput.timepicker(#{timepicker_options.to_json}).change(datetimeSync).parent().children("span").click(function(){
-          if (timeInput.val() == "") {
-            timeInput.val("00:00");
-          }
-        });
+        timeInput.timepicker(#{timepicker_options.to_json}).change(datetimeSync);
 
         $("#clear-#{id}").click(function(){
           hiddenInput.val("");

@@ -39,28 +39,26 @@ class BootstrapDatetimepickerInput < SimpleForm::Inputs::Base
     time = value && value.in_time_zone(timezone).strftime("%H:%M")
 
     date_picker = <<-EOT
-      <div class="input-prepend date">
-        <span class="add-on"><i class="icon-calendar"></i></span>
-        <input type="text" class="input-small" name="#{attribute_name.to_s + "_date_input"}" value="#{date}"/>
+      <div class="input-group date col-xs-6">
+        <span class="input-group-addon add-on"><i class="icon-calendar"></i></span>
+        <input type="text" class="form-control" name="#{attribute_name.to_s + "_date_input"}" value="#{date}"/>
       </div>
     EOT
 
     time_picker = <<-EOT
-      <div class="input-prepend">
-        <span class="add-on prepend-left pull-left"><i class="icon-time"></i></span>
-        <div class="bootstrap-timepicker">
-          <input type="text" class="span1" name="#{attribute_name.to_s + "_datetime_input"}" value="#{time}"/>
-        </div>
+      <div class="input-prepend input-group col-xs-4">
+        <span class="input-group-addon"><i class="icon-time"></i></span>
+        <input type="text" class="form-control" name="#{attribute_name.to_s + "_datetime_input"}" value="#{time}"/>
       </div>
-      <span style="margin-left: 30px">#{reset_button(id) unless @required}</span>
+      #{reset_button(id) unless @required}
     EOT
 
     js = javascript_tag(<<-SCRIPT
       $(document).ready(function() {
         var hiddenInput = $("##{id}");
-        var dateDiv = hiddenInput.next(".date");
+        var dateDiv = hiddenInput.next().find(".date");
         var dateInput = dateDiv.find("input");
-        var timeInput = dateDiv.next(".input-prepend").find("input");
+        var timeInput = dateDiv.next(".input-group").find("input");
         function datetimeSync() {
           var timepicker = timeInput.data("timepicker");
           var hour = timepicker.hour < 10 ? '0' + timepicker.hour : timepicker.hour;
@@ -72,11 +70,7 @@ class BootstrapDatetimepickerInput < SimpleForm::Inputs::Base
 
         dateDiv.datepicker(#{datepicker_options.to_json}).change(datetimeSync);
 
-        timeInput.timepicker(#{timepicker_options.to_json}).change(datetimeSync).parent().children("span").click(function(){
-          if (timeInput.val() == "") {
-            timeInput.val("00:00");
-          }
-        });
+        timeInput.timepicker(#{timepicker_options.to_json}).change(datetimeSync);
 
         $("#clear-#{id}").click(function(){
           hiddenInput.val("");
@@ -91,6 +85,6 @@ class BootstrapDatetimepickerInput < SimpleForm::Inputs::Base
       });
       SCRIPT
     )
-    hidden + date_picker.html_safe + time_picker.html_safe + js
+    hidden + content_tag(:div, (date_picker + time_picker).html_safe, :class => "row") + js
   end
 end

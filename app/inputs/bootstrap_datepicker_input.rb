@@ -6,9 +6,9 @@ class BootstrapDatepickerInput < BootstrapDatetimepickerInput
     date = value && (value.is_a?(Date) ? value : value.in_time_zone(timezone)).strftime("%Y-%m-%d")
 
     date_picker = <<-EOT
-      <div class="input-prepend date">
-        <span class="add-on"><i class="icon-calendar"></i></span>
-        <input type="text" class="input-small" name="#{attribute_name.to_s + "_date_input"}" value="#{date}"/>
+      <div class="input-group date">
+        <span class="input-group-addon add-on"><i class="icon-calendar"></i></span>
+        <input type="text" class="form-control" name="#{attribute_name.to_s + "_date_input"}" value="#{date}"/>
       </div>
       #{reset_button(id) unless @required}
     EOT
