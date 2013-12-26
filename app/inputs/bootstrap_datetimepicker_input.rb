@@ -26,7 +26,7 @@ class BootstrapDatetimepickerInput < SimpleForm::Inputs::Base
 
   def reset_button(id)
     <<-EOT
-      <i class="icon-remove" id="clear-#{id}" style="cursor: pointer"></i>
+      <i class="glyphicon glyphicon-remove" id="clear-#{id}" style="cursor: pointer"></i>
     EOT
   end
 
@@ -40,14 +40,14 @@ class BootstrapDatetimepickerInput < SimpleForm::Inputs::Base
 
     date_picker = <<-EOT
       <div class="input-group date col-xs-6">
-        <span class="input-group-addon add-on"><i class="icon-calendar"></i></span>
+        <span class="input-group-addon add-on glyphicon glyphicon-calendar"></span>
         <input type="text" class="form-control" name="#{attribute_name.to_s + "_date_input"}" value="#{date}"/>
       </div>
     EOT
 
     time_picker = <<-EOT
       <div class="input-prepend input-group col-xs-4">
-        <span class="input-group-addon"><i class="icon-time"></i></span>
+        <span class="add-on input-group-addon glyphicon glyphicon-time"></span>
         <input type="text" class="form-control" name="#{attribute_name.to_s + "_datetime_input"}" value="#{time}"/>
       </div>
       #{reset_button(id) unless @required}

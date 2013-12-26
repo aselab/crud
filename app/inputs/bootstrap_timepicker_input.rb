@@ -7,7 +7,7 @@ class BootstrapTimepickerInput < BootstrapDatetimepickerInput
 
     time_picker = <<-EOT
       <div class="input-prepend input-group">
-        <span class="input-group-addon"><i class="icon-time"></i></span>
+        <span class="add-on input-group-addon glyphicon glyphicon-time"></span>
         <input type="text" class="form-control" name="#{attribute_name.to_s + "_datetime_input"}" value="#{time}"/>
       </div>
       #{reset_button(id) unless @required}

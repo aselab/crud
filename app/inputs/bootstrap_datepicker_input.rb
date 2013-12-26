@@ -7,7 +7,7 @@ class BootstrapDatepickerInput < BootstrapDatetimepickerInput
 
     date_picker = <<-EOT
       <div class="input-group date">
-        <span class="input-group-addon add-on"><i class="icon-calendar"></i></span>
+        <span class="input-group-addon add-on glyphicon glyphicon-calendar"></span>
         <input type="text" class="form-control" name="#{attribute_name.to_s + "_date_input"}" value="#{date}"/>
       </div>
       #{reset_button(id) unless @required}
