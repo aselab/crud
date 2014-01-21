@@ -2,6 +2,7 @@
 class BootstrapDatetimepickerInput < SimpleForm::Inputs::Base
   include ActionView::Helpers::TagHelper
   include ActionView::Helpers::JavaScriptHelper
+  include ActionView::Context
 
   def datepicker_options
     date_options = options[:datepicker_options] || {}
@@ -24,41 +25,42 @@ class BootstrapDatetimepickerInput < SimpleForm::Inputs::Base
     time_options
   end
 
-  def reset_button(id)
-    <<-EOT
-      <i class="glyphicon glyphicon-remove" id="clear-#{id}" style="cursor: pointer"></i>
-    EOT
-  end
-
-  def input
-    id = input_html_options[:id] || object_name.to_s.gsub(/\[|\]\[/, "_").gsub(/\]/, "") + "_" + attribute_name.to_s
-    hidden = @builder.hidden_field(attribute_name, input_html_options)
-    value = @builder.object.send(attribute_name).try(:utc)
-    timezone = options[:timezone] || Rails.configuration.time_zone
-    date = value && value.in_time_zone(timezone).strftime("%Y-%m-%d")
-    time = value && value.in_time_zone(timezone).strftime("%H:%M")
-
-    date_picker = <<-EOT
-      <div class="input-group date col-xs-6">
+  def date_picker
+    s = <<-EOT
+      <div class="input-group date">
         <span class="input-group-addon add-on glyphicon glyphicon-calendar"></span>
         <input type="text" class="form-control" name="#{attribute_name.to_s + "_date_input"}" value="#{date}"/>
       </div>
     EOT
+    s.html_safe
+  end
 
-    time_picker = <<-EOT
-      <div class="input-prepend input-group col-xs-4">
+  def time_picker
+    s = <<-EOT
+      <div class="input-prepend input-group">
         <span class="add-on input-group-addon glyphicon glyphicon-time"></span>
         <input type="text" class="form-control" name="#{attribute_name.to_s + "_datetime_input"}" value="#{time}"/>
       </div>
-      #{reset_button(id) unless @required}
     EOT
+    s.html_safe
+  end
 
-    js = javascript_tag(<<-SCRIPT
+  def reset_button
+    unless @required
+      s = <<-EOT
+        <i class="glyphicon glyphicon-remove" id="clear-#{input_id}" style="cursor: pointer"></i>
+      EOT
+      s.html_safe
+    end
+  end
+
+  def datetimepicker_js
+    javascript_tag <<-SCRIPT
       $(document).ready(function() {
-        var hiddenInput = $("##{id}");
+        var hiddenInput = $("##{input_id}");
         var dateDiv = hiddenInput.next().find(".date");
         var dateInput = dateDiv.find("input");
-        var timeInput = dateDiv.next(".input-group").find("input");
+        var timeInput = dateDiv.parent().next(".form-group").find("input");
         function datetimeSync() {
           var timepicker = timeInput.data("timepicker");
           var hour = timepicker.hour < 10 ? '0' + timepicker.hour : timepicker.hour;
@@ -69,22 +71,94 @@ class BootstrapDatetimepickerInput < SimpleForm::Inputs::Base
         }
 
         dateDiv.datepicker(#{datepicker_options.to_json}).change(datetimeSync);
-
         timeInput.timepicker(#{timepicker_options.to_json}).change(datetimeSync);
 
-        $("#clear-#{id}").click(function(){
+        $("#clear-#{input_id}").click(function(){
           hiddenInput.val("");
           dateInput.val("");
           timeInput.val("");
           return false;
         });
-
-        if ("#{time}" == "") {
-          timeInput.val("");
-        }
       });
-      SCRIPT
-    )
-    hidden + content_tag(:div, (date_picker + time_picker).html_safe, :class => "row") + js
+    SCRIPT
+  end
+
+  def datepicker_js
+    javascript_tag <<-SCRIPT
+      $(document).ready(function() {
+        var hiddenInput = $("##{input_id}");
+        var dateDiv = hiddenInput.next().find(".date");
+        var dateInput = dateDiv.find("input");
+
+        function datetimeSync() {
+          hiddenInput.val(dateInput.val());
+        }
+
+        dateDiv.datepicker(#{datepicker_options.to_json}).change(datetimeSync);
+
+        $("#clear-#{input_id}").click(function(){
+          hiddenInput.val("");
+          dateInput.val("");
+          return false;
+        });
+      });
+    SCRIPT
+  end
+
+  def timepicker_js
+    javascript_tag <<-SCRIPT
+      $(document).ready(function() {
+        var hiddenInput = $("##{input_id}");
+        var timeInput = hiddenInput.next().find("input");
+        function datetimeSync() {
+          hiddenInput.val(timeInput.val());
+        }
+
+        timeInput.timepicker(#{timepicker_options.to_json}).change(datetimeSync);
+
+        $("#clear-#{input_id}").click(function(){
+          hiddenInput.val("");
+          timeInput.val("");
+          return false;
+        });
+      });
+    SCRIPT
+  end
+
+  def input_id
+    @input_id ||= input_html_options[:id] || object_name.to_s.gsub(/\[|\]\[/, "_").gsub(/\]/, "") + "_" + attribute_name.to_s
+  end
+
+  def value
+    v = @builder.object.send(attribute_name)
+    v.respond_to?(:in_time_zone) ? v.in_time_zone(timezone) : v
+  end
+
+  def date
+    value.try(:strftime, "%Y-%m-%d")
+  end
+
+  def time
+    value.try(:strftime, "%H:%M")
+  end
+
+  def hidden_input
+    @builder.hidden_field(attribute_name, input_html_options)
+  end
+
+  def timezone
+    options[:timezone] || Rails.configuration.time_zone
+  end
+
+  def inline_elements(*elements)
+    content_tag(:div, :class => "form-inline") do
+      elements.compact.map {|elem|
+       content_tag(:div, elem, :class => "form-group")
+      }.reduce(:+)
+    end
+  end
+
+  def input
+    hidden_input + inline_elements(date_picker, time_picker, reset_button) + datetimepicker_js
   end
 end
