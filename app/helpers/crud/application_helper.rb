@@ -116,15 +116,16 @@ module Crud
       value.to_s
     end
 
-    def crud_form(resource, &block)
+    def crud_form(resource, options = {}, &block)
       method = nested? ? :simple_nested_form_for : :simple_form_for
       options = {
         :as => model_key,
         :url => resource.new_record? ?
           stored_params(:action => :create) :
           stored_params(:action => :update, :id => resource),
+        :html => { :class => "col-sm-9" },
         :defaults => { :input_html => { :class => "form-control" } }
-      }
+      }.merge(options)
 
       send(method, resource, options, &block)
     end

@@ -12,3 +12,7 @@
 ul.pagination {
   margin: 5px 0;
 }
+
+.table-vcenter td {
+  vertical-align: middle !important;
+}
