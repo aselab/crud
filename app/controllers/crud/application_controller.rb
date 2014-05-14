@@ -244,6 +244,18 @@ class ApplicationController < ::ApplicationController
     can? :update, resource
   end
 
+  def create?(resource)
+    can? :manage, resource
+  end
+
+  def update?(resource)
+    can? :manage, resource
+  end
+
+  def destroy?(resource)
+    can? :manage, resource
+  end
+
   #
   #=== アクション実行
   #
