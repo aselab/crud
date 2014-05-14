@@ -1,19 +1,22 @@
-class Crud::ApplicationController < ApplicationController
-  helper Crud::BootstrapHelper
+module Crud
+class ApplicationController < ::ApplicationController
+  helper BootstrapHelper
   helper_method :model, :model_name, :model_key, :resources, :resource, :columns,
     :stored_params, :column_key?, :association_key?, :sort_key?, :nested?,
-    :sort_key, :sort_order, :index_actions
+    :sort_key, :sort_order, :index_actions, :can?, :cannot?
 
-  before_filter :set_defaults, :only => [:index, :show, :new, :edit, :create, :update]
-  before_filter :before_index, :only => :index
-  before_filter :before_show, :only => :show
-  before_filter :before_new, :only => :new
-  before_filter :before_edit, :only => :edit
-  before_filter :before_create, :only => :create
-  before_filter :before_update, :only => :update
-  before_filter :before_destroy, :only => :destroy
+  before_action :set_defaults, :only => [:index, :show, :new, :edit, :create, :update]
+  before_action :before_index, :only => :index
+  before_action :before_show, :only => :show
+  before_action :before_new, :only => :new
+  before_action :before_edit, :only => :edit
+  before_action :before_create, :only => :create
+  before_action :before_update, :only => :update
+  before_action :before_destroy, :only => :destroy
+  before_action :authorize_action
 
   def index
+    do_index
     respond_to do |format|
       format.html # index.html.erb
       format.json { render_json resources }
@@ -21,6 +24,7 @@ class Crud::ApplicationController < ApplicationController
   end
 
   def show
+    do_action
     respond_to do |format|
       format.html { render_show }
       format.json { render json: resource }
@@ -28,6 +32,8 @@ class Crud::ApplicationController < ApplicationController
   end
 
   def new
+    assign_params if params.has_key?(model_key)
+    do_action
     respond_to do |format|
       format.html { render_edit }
       format.json { render json: resource }
@@ -35,10 +41,12 @@ class Crud::ApplicationController < ApplicationController
   end
 
   def edit
+    do_action
     render_edit
   end
 
   def create
+    assign_params
     result = do_create
     if result && request.xhr?
       render json: resource, status: :created, location: resource
@@ -57,6 +65,7 @@ class Crud::ApplicationController < ApplicationController
   end
 
   def update
+    assign_params
     result = do_update
     if result && request.xhr?
       render json: resource
@@ -75,6 +84,7 @@ class Crud::ApplicationController < ApplicationController
   end
 
   def destroy
+    do_action
     respond_to do |format|
       format.html { redirect_after_success notice: message(:successfully_deleted, :name => model_name) }
       format.json { head :no_content }
@@ -83,6 +93,18 @@ class Crud::ApplicationController < ApplicationController
 
   protected
   attr_accessor :resources, :resource, :columns, :index_actions
+
+  def self.permit_keys(*keys)
+    if keys.empty?
+      @permit_keys ||= []
+    else
+      @permit_keys = keys
+    end
+  end
+
+  def permit_params
+    params.require(model_key).permit(self.class.permit_keys)
+  end
 
   #
   #=== デフォルトのソートキー
@@ -143,14 +165,13 @@ class Crud::ApplicationController < ApplicationController
   #
   #=== 表示/更新対象のカラムリスト
   #
-  # デフォルト値はaccessible_attributes全て．
+  # デフォルト値はpermit_keys全て．
   # 変更したい場合はオーバーライドして対象カラム名の配列を返すように実装する．
   # アクションごとに対象カラムを変更したい場合はcolumns_for_:action という
   # 名前のメソッドを定義するとそちらが優先される．
   #
   def model_columns
-    @model_columns ||=
-      model.accessible_attributes.to_a.reject(&:blank?).map(&:to_sym)
+    @model_columns ||= self.class.permit_keys
   end
 
   def search_terms
@@ -184,21 +205,43 @@ class Crud::ApplicationController < ApplicationController
   #
   #=== 権限チェック
   #
-  # デフォルトでは authorize! :action, resource でチェックする。
-  # authorize_:actionという名前のメソッドを定義すると、
-  # アクションごとの権限チェック処理をオーバーライドできる。
+  # "authorize_#{action}"という名前のメソッドを定義すると、
+  # 各アクションの権限処理をオーバーライドできる。
+  # その場合は権限がないときCrud::NotAuthorizedErrorを投げるように実装する。
+  # デフォルトでは can? メソッドを呼び出して権限がない場合例外を投げるようになっている。
   #
   def authorize_action
-    method = "authorize_" + crud_action.to_s
+    action = crud_action
+    method = "authorize_" + action.to_s
     if respond_to?(method, true)
       send(method)
     else
-      authorize! crud_action, resource
+      raise NotAuthorizedError unless can? action, resource
     end
   end
 
   def authorize_index
-    authorize! :index, model
+  end
+
+  # 権限がある場合にtrueを返す。
+  # 各アクションの権限は def update?(resource) のようなメソッドを定義し、
+  # true or falseを返すように実装する。定義しない場合のデフォルトはtrueである。
+  def can?(action, resource)
+    method = action.to_s + "?"
+    respond_to?(method, true) ? send(method, resource) : true
+  end
+
+  # can?の逆
+  def cannot?(action, resource)
+    !can?(action, resource)
+  end
+
+  def new?(resource)
+    can? :create, resource
+  end
+
+  def edit?(resource)
+    can? :update, resource
   end
 
   #
@@ -214,21 +257,22 @@ class Crud::ApplicationController < ApplicationController
 
   #
   # indexアクションで呼び出される内部メソッド.
-  # オーバーライドしてself.resourcesに表示対象を格納するように実装する．
+  # オーバーライドして表示対象を返却するように実装する．
   #
   def do_search
     format = (params[:format] || :html).to_sym
     columns = format == :html ? columns_for(:index) : columns_for(format)
     associations = columns.select {|c| association_key?(c)}
-    self.resources = resources.includes(associations) unless associations.empty?
+    unless associations.empty?
+      self.resources = resources.includes(associations).references(associations)
+    end
 
     search_by_sql
   end
 
   def do_filter
-    self.resources = resources.accessible_by(current_ability, :read)
     if ids = params[:except_ids]
-      self.resources = resources.where(["#{model.table_name}.id not in (?)", ids])
+      resources.where(["#{model.table_name}.id not in (?)", ids])
     end
   end
 
@@ -240,7 +284,7 @@ class Crud::ApplicationController < ApplicationController
       if search_method_defined?(c)
         model_columns.push([model, c])
       elsif reflection = model.reflections[c.to_sym]
-        self.resources = resources.includes(c.to_sym)
+        self.resources = resources.includes(c.to_sym).references(c.to_sym)
         association = reflection.class_name.constantize
         fields = association.respond_to?(:search_field, true) ?
           association.send(:search_field) :
@@ -250,7 +294,7 @@ class Crud::ApplicationController < ApplicationController
         model_columns.push([model, c])
       end
     }
-    self.resources = resources.where(build_query(model_columns, terms))
+    resources.where(build_query(model_columns, terms))
   end
 
   def build_query(model_columns, terms)
@@ -315,7 +359,7 @@ class Crud::ApplicationController < ApplicationController
       send(method, sort_order)
     else
       column = if reflection = model.reflections[name]
-        self.resources = resources.includes(name)
+        self.resources = resources.includes(name).references(name)
         association = reflection.class_name.constantize
         f = association.respond_to?(:sort_field, true) ?
           association.send(:sort_field) :
@@ -332,22 +376,22 @@ class Crud::ApplicationController < ApplicationController
   def do_sort
     return unless key = sort_key
     sql = sort_sql_for_column(key)
-    self.resources = resources.order(sql) if sql
+    resources.order(sql) if sql
   end
 
   def do_page
-    self.resources = resources.page(params[:page]).per(params[:per])
+    resources.page(params[:page]).per(params[:per])
   end
 
   #
   # indexメソッドで呼び出される内部メソッド.
   #
   def do_index
-    self.resources = model.scoped
-    do_filter
-    do_search
-    do_sort
-    do_page
+    self.resources = model.all
+    self.resources = do_filter || resources
+    self.resources = do_search || resources
+    self.resources = do_sort || resources
+    self.resources = do_page || resources
   end
 
   #
@@ -376,30 +420,12 @@ class Crud::ApplicationController < ApplicationController
     resource.destroy
   end
 
-  #
-  # Mass-Assignmentスコープ.
-  # 必要であればオーバーライドしてスコープシンボルを返すように実装する．
-  #
-  #  例:
-  #  # model
-  #  attr_accessible :name
-  #  attr_accessible :name, :is_admin, :as => :admin
-  #  
-  #  # controller
-  #  def assignment_scope
-  #    current_user.admin? ? :admin : nil
-  #  end
-  #
-  def assignment_scope
-    nil
-  end
-
   def new_resource
     self.resource = model.new
   end
 
   def assign_params
-    resource.assign_attributes(params[model_key], :as => assignment_scope)
+    resource.assign_attributes(permit_params)
   end
 
   def find_resource
@@ -522,46 +548,31 @@ class Crud::ApplicationController < ApplicationController
   end
 
   def before_index
-    authorize_action
     new_resource
-    do_action
   end
 
   def before_show
     find_resource
-    do_action
-    authorize_action
   end
 
   def before_new
     new_resource
-    assign_params
-    do_action
-    authorize_action
   end
 
   def before_edit
     find_resource
-    assign_params
-    do_action
-    authorize_action
   end
 
   def before_create
     new_resource
-    authorize_action
-    assign_params
   end
 
   def before_update
     find_resource
-    authorize_action
-    assign_params
   end
 
   def before_destroy
     find_resource
-    authorize_action
-    do_action
   end
+end
 end

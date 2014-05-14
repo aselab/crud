@@ -1,10 +1,2 @@
-<%= nav_tabs do |nav| %>
-  <%= nav.item "Home", root_path %>
-  <%= nav.item :aaa, people_path %>
-  <%= nav.dropdown "People", :controller => "home" do %>
-    <%= nav.item "item1", root_path %>
-    <%= nav.item "item2", people_path %>
-  <% end %>
-<% end %>
-
-<%= link_to_modal "test", new_person_path, "function(e, data) {console.log(data);}" %>
+<h1>Home#index</h1>
+<p>Find me in app/views/home/index.html.erb</p>

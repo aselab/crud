@@ -1,10 +1,10 @@
-<div class="navbar row">
+<div class="navbar">
   <div class="navbar-btn navbar-right">
     <%= link_to_action :new, resource %>
   </div>
 
-  <form class="navbar-form form-search" method="GET">
-    <div class="input-group col-xs-6 col-sm-4 navbar-right">
+  <form class="navbar-form form-search navbar-right" method="GET">
+    <div class="input-group">
       <%= text_field_tag :term, params[:term], :class => "search-query form-control",
         :placeholder => t("crud.message.enter_search_term") %>
       <div class="input-group-btn">

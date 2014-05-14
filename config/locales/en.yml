@@ -28,5 +28,12 @@ en:
       enter_search_term: "Enter search term..."
 
   simple_form:
+    "yes": 'Yes'
+    "no": 'No'
+    required:
+      text: 'required'
+      mark: '*'
+    error_notification:
+      default_message: "Please review the problems below:"
     select2:
       placeholder: "Select for %{name}"

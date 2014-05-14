@@ -8,27 +8,27 @@ describe Crud::ApplicationController do
 
   describe "#tokenize" do
     it "nilを指定した場合" do
-      controller.send(:tokenize, nil).should == []
+      expect(controller.send(:tokenize, nil)).to match_array []
     end
 
     it "空文字を指定した場合" do
-      controller.send(:tokenize, "").should == []
+      expect(controller.send(:tokenize, "")).to match_array []
     end
 
     it "スペースを含まない文字を指定した場合" do
-      controller.send(:tokenize, "キーワード1").should == ["キーワード1"]
+      expect(controller.send(:tokenize, "キーワード1")).to match_array ["キーワード1"]
     end
 
     it "スペース区切りで分割されること" do
-      controller.send(:tokenize, " キーワード1 キーワード2　 キーワード3　").should == ["キーワード1", "キーワード2", "キーワード3"]
+      expect(controller.send(:tokenize, " キーワード1 キーワード2　 キーワード3　")).to match_array ["キーワード1", "キーワード2", "キーワード3"]
     end
 
     it "ダブルクォートでスペースを含むキーワードを指定できること" do
-      controller.send(:tokenize, 'abc "スペース含む キーワード" def').should == ["abc", "スペース含む キーワード", "def"]
+      expect(controller.send(:tokenize, 'abc "スペース含む キーワード" def')).to match_array ["abc", "スペース含む キーワード", "def"]
     end
 
     it "正しくダブルクォートが閉じられていない場合文字として扱うこと" do
-      controller.send(:tokenize, 'key"word "pre').should == ['key"word', '"pre']
+      expect(controller.send(:tokenize, 'key"word "pre')).to match_array ['key"word', '"pre']
     end
   end
 
@@ -39,7 +39,7 @@ describe Crud::ApplicationController do
       user = double("user model")
       expect(user).to receive(:table_name).and_return("users")
       expect(user).to receive(:sanitize_sql_for_conditions).with(sql, "users").and_return("sanitized sql")
-      controller.send(:search_sql_for_column, user, "name", "name1").should == "sanitized sql"
+      expect(controller.send(:search_sql_for_column, user, "name", "name1")).to eq "sanitized sql"
         "test = 'name1'"
     end
   end

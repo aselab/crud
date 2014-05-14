@@ -15,10 +15,9 @@ module Permissible
       has_many :users, :through => :permissions
 
       accepts_nested_attributes_for :permissions, :allow_destroy => true
-      attr_accessible :permissions_attributes, :as => :admin
 
       scope :permissible, lambda {|user_ids, permission|
-        includes(:permissions).
+        includes(:permissions).references(:permissions).
           where("permissions.user_id" => user_ids).
           where(permission_condition(permission))
       }
@@ -31,7 +30,7 @@ module Permissible
     end
 
     def permission_translate(permission)
-      @permission_prefix ||= "permission.#{model_name.underscore}"
+      @permission_prefix ||= "permission.#{model_name.i18n_key}"
       p = permission.to_s
       I18n.t("#{@permission_prefix}.#{p}", :default => p.humanize)
     end
@@ -68,7 +67,7 @@ module Permissible
 
   module InstanceMethods
     def authorized_users(permission)
-      self.users.includes(:permissions).
+      self.users.includes(:permissions).references(:permissions).
         where(self.class.permission_condition(permission))
     end
 

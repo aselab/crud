@@ -1,5 +1,6 @@
-Dummy::Application.routes.draw do
-  get '/' => "home#index", :as => :root
+Rails.application.routes.draw do
+  resources :users
+  resources :groups
+  root 'home#index'
 
-  resources :people
 end

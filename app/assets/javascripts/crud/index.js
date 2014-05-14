@@ -1,3 +1,4 @@
-//= require ./datetimepicker
 //= require select2
-//= require jquery_nested_form
+//= require select2_locale_ja
+//= require bootstrap-datepicker
+//= require bootstrap-timepicker
