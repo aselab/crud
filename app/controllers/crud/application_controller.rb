@@ -3,7 +3,7 @@ class ApplicationController < ::ApplicationController
   helper BootstrapHelper
   helper_method :model, :model_name, :model_key, :resources, :resource, :columns,
     :stored_params, :column_key?, :association_key?, :sort_key?, :nested?,
-    :sort_key, :sort_order, :index_actions, :can?, :cannot?
+    :sort_key, :sort_order, :index_actions, :column_type, :can?, :cannot?
 
   before_action :set_defaults, :only => [:index, :show, :new, :edit, :create, :update]
   before_action :before_index, :only => :index
@@ -106,6 +106,14 @@ class ApplicationController < ::ApplicationController
     params.require(model_key).permit(self.class.permit_keys)
   end
 
+  def activerecord?
+    !!(defined?(ActiveRecord::Base) && model <=> ActiveRecord::Base)
+  end
+
+  def mongoid?
+    !!(defined?(Mongoid::Document)) && model.include?(Mongoid::Document)
+  end
+
   #
   #=== デフォルトのソートキー
   #
@@ -184,12 +192,25 @@ class ApplicationController < ::ApplicationController
     }
   end
 
-  def column_key?(key)
-    model.columns_hash.has_key?(key.to_s)
+  def column_metadata(name, model = model)
+    if activerecord?
+      model.columns_hash[name.to_s]
+    elsif mongoid?
+      model.fields[name.to_s]
+    end
   end
 
-  def association_key?(key)
-    model.reflections.has_key?(key.to_sym)
+  def column_type(name, model = model)
+    type = column_metadata(name, model).try(:type)
+    type.is_a?(Class) ? type.name.downcase.to_sym : type
+  end
+
+  def column_key?(key, model = model)
+    !!column_metadata(key, model)
+  end
+
+  def association_key?(key, model = model)
+    !!model.reflect_on_association(key.to_sym)
   end
 
   def sort_key?(key)
@@ -197,9 +218,15 @@ class ApplicationController < ::ApplicationController
   end
 
   def nested?
-    columns_for(crud_action).any? {|c|
-      model.nested_attributes_options.has_key?(c)
-    }
+    if activerecord?
+      columns_for(crud_action).any? do |c|
+        model.nested_attributes_options.has_key?(c)
+      end
+    elsif mongoid?
+      columns_for(crud_action).any? do |c|
+        model.nested_attributes.has_key?(c.to_s + "_attributes")
+      end
+    end
   end
 
   #
@@ -284,7 +311,11 @@ class ApplicationController < ::ApplicationController
 
   def do_filter
     if ids = params[:except_ids]
-      resources.where(["#{model.table_name}.id not in (?)", ids])
+      if activerecord?
+        resources.where.not("#{model.table_name}.id" => ids)
+      elsif mongoid?
+        resources.not_in(id: ids)
+      end
     end
   end
 
@@ -300,7 +331,7 @@ class ApplicationController < ::ApplicationController
         association = reflection.class_name.constantize
         fields = association.respond_to?(:search_field, true) ?
           association.send(:search_field) :
-          [:name, :title].find {|c| association.columns_hash.has_key?(c.to_s)}
+          [:name, :title].find {|c| column_key?(c, association)}
         Array(fields).each {|f| model_columns.push([association, f])}
       else
         model_columns.push([model, c])
@@ -375,7 +406,7 @@ class ApplicationController < ::ApplicationController
         association = reflection.class_name.constantize
         f = association.respond_to?(:sort_field, true) ?
           association.send(:sort_field) :
-          [:name, :title, :id].find {|c| association.columns_hash.has_key?(c.to_s)}
+          [:name, :title, :id].find {|c| column_key?(c, association)}
         "#{association.table_name}.#{f.to_s}" if f
       else
         c = model.columns_hash[name.to_s]
@@ -463,8 +494,8 @@ class ApplicationController < ::ApplicationController
 
   def search_column?(model, column_name)
     return true if search_method_defined?(column_name)
-    column = model.columns_hash[column_name.to_s]
-    column && [:string, :text, :integer].include?(column.type) || association_key?(column_name)
+    type = column_type(column_name)
+    type && [:string, :text, :integer].include?(type) || association_key?(column_name)
   end
 
   # JSON出力に利用するカラムリスト.

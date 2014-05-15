@@ -136,7 +136,7 @@ module Crud
       end
 
       default = {}
-      case f.object.class.columns_hash[column.to_s].try(:type)
+      case column_type(column, f.object.class)
       when :boolean
         default = {:label => false, :inline_label => true, :input_html => {:class => ""}}
       when :datetime, :timestamp
