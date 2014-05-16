@@ -226,7 +226,8 @@ class ApplicationController < ::ApplicationController
   end
 
   def sort_key?(key)
-    respond_to?("sort_by_#{key}", true) || column_key?(key) || association_key?(key)
+    respond_to?("sort_by_#{key}", true) || column_key?(key) ||
+      (activerecord? && association_key?(key))
   end
 
   def nested?
@@ -437,11 +438,11 @@ class ApplicationController < ::ApplicationController
   #    "users.last_name #{order}, users.first_name #{order}"
   #  end
   #
-  def sort_sql_for_column(name)
+  def sort_condition_for_column(name)
     method = "sort_by_#{name}"
     if respond_to?(method, true)
       send(method, sort_order)
-    else
+    elsif activerecord?
       column = if association = association_class(name)
         include_association(name)
         f = association.respond_to?(:sort_field, true) ?
@@ -453,13 +454,20 @@ class ApplicationController < ::ApplicationController
         "#{model.table_name}.#{c.name}" if c
       end
       "#{column} #{sort_order}" if column
+    elsif mongoid?
+      { name => sort_order }
     end
   end
 
   def do_sort
     return unless key = sort_key
-    sql = sort_sql_for_column(key)
-    resources.order(sql) if sql
+    if cond = sort_condition_for_column(key)
+      if activerecord?
+        resources.order(cond) 
+      elsif mongoid?
+        resources.order_by(cond) 
+      end
+    end
   end
 
   def do_page
