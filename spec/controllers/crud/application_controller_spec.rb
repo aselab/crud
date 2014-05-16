@@ -40,15 +40,55 @@ describe Crud::ApplicationController do
     end
   end
 
-  describe "#search_sql_for_column" do
-    it "search_by_column メソッドが定義されていたらそれを呼び出すこと" do
-      sql = ["test = ?", "name1"]
-      expect(controller).to receive(:search_by_name).with("name1").and_return(sql)
-      user = double("user model")
-      expect(user).to receive(:table_name).and_return("users")
-      expect(user).to receive(:sanitize_sql_for_conditions).with(sql, "users").and_return("sanitized sql")
-      expect(controller.send(:search_sql_for_column, user, "name", "name1")).to eq "sanitized sql"
-        "test = 'name1'"
+  describe "#search_condition_for_column" do
+    context "ActiveRecord::Base" do
+      let(:model) { User }
+
+      it "search_by_xxx メソッドが定義されている場合それを呼び出すこと" do
+        cond= ["test = ?", "name1"]
+        expect(controller).to receive(:search_by_name).with("name1").and_return(cond)
+        expect(controller.send(:search_condition_for_column, "name", "name1")).to eq "test = 'name1'"
+      end
+
+      it "仮想カラムを検索できること" do
+        s = 3.years.ago.to_date.tomorrow
+        e = 2.years.ago.to_date
+        cond= {birth_date: s..e}
+        expect(controller).to receive(:search_by_age).with("2").and_return(cond)
+        expect(controller.send(:search_condition_for_column, "age", "2")).to eq %Q["users"."birth_date" BETWEEN '#{s}' AND '#{e}']
+      end
+
+      it "文字列カラムの場合like検索" do
+        expect(controller.send(:search_condition_for_column, "name", "name1")).to eq %Q["users"."name" LIKE '%name1%']
+      end
+
+      it "数値カラムの場合一致検索" do
+        expect(controller.send(:search_condition_for_column, "number", "3")).to eq %Q["users"."number" = 3]
+      end
+    end
+
+    context "Mongoid::Document" do
+      let(:model) { MongoUser }
+
+      it "仮想カラムを検索できること" do
+        s = 3.years.ago.to_date.tomorrow
+        e = 2.years.ago.to_date
+        cond= {birth_date: s..e}
+        expect(controller).to receive(:search_by_age).with("2").and_return(cond)
+        expect(controller.send(:search_condition_for_column, "age", "2")).to eq cond
+      end
+
+      it "文字列カラムの場合regexp検索" do
+        expect(controller.send(:search_condition_for_column, "name", "aaa")).to eq("name" => /aaa/)
+      end
+
+      it "数値カラムの場合一致検索" do
+        expect(controller.send(:search_condition_for_column, "number", "3")).to eq("number" => 3)
+      end
+
+      it "Array検索" do
+        expect(controller.send(:search_condition_for_column, "array", "aaa")).to eq("array" => "aaa")
+      end
     end
   end
 

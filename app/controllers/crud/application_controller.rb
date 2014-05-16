@@ -107,11 +107,19 @@ class ApplicationController < ::ApplicationController
   end
 
   def activerecord?
-    !!(defined?(ActiveRecord::Base) && model <=> ActiveRecord::Base)
+    if @is_activerecord.nil?
+      @is_activerecord =
+        !!(defined?(ActiveRecord::Base) && model <=> ActiveRecord::Base)
+    end
+    @is_activerecord
   end
 
   def mongoid?
-    !!(defined?(Mongoid::Document)) && model.include?(Mongoid::Document)
+    if @is_mongoid.nil?
+      @is_mongoid =
+        !!(defined?(Mongoid::Document)) && model.include?(Mongoid::Document)
+    end
+    @is_mongoid
   end
 
   #
@@ -213,6 +221,10 @@ class ApplicationController < ::ApplicationController
     !!model.reflect_on_association(key.to_sym)
   end
 
+  def association_class(key, model = model)
+    model.reflect_on_association(key.to_sym).try(:klass)
+  end
+
   def sort_key?(key)
     respond_to?("sort_by_#{key}", true) || column_key?(key) || association_key?(key)
   end
@@ -295,20 +307,10 @@ class ApplicationController < ::ApplicationController
   end
 
   #
-  # indexアクションで呼び出される内部メソッド.
-  # オーバーライドして表示対象を返却するように実装する．
+  # indexアクションで呼び出される内部メソッド。
+  # 権限によって検索対象を絞り込みたい場合などは、
+  # これをオーバーライドして実装する。
   #
-  def do_search
-    format = (params[:format] || :html).to_sym
-    columns = format == :html ? columns_for(:index) : columns_for(format)
-    associations = columns.select {|c| association_key?(c)}
-    unless associations.empty?
-      self.resources = resources.includes(associations).references(associations)
-    end
-
-    search_by_sql
-  end
-
   def do_filter
     if ids = params[:except_ids]
       if activerecord?
@@ -319,16 +321,22 @@ class ApplicationController < ::ApplicationController
     end
   end
 
-  def search_by_sql
-    terms = search_terms
+  #
+  # indexアクションで呼び出される内部メソッド.
+  # オーバーライドして検索結果を返却するように実装する．
+  #
+  def do_search
+    format = (params[:format] || :html).to_sym
+    columns = format == :html ? columns_for(:index) : columns_for(format)
+    association_columns = columns.select {|c| association_key?(c)}
 
+    terms = search_terms
     model_columns = []
-    columns_for_search.each {|c|
+    columns_for_search.each do |c|
       if search_method_defined?(c)
         model_columns.push([model, c])
-      elsif reflection = model.reflections[c.to_sym]
-        self.resources = resources.includes(c.to_sym).references(c.to_sym)
-        association = reflection.class_name.constantize
+      elsif association = association_class(c)
+        association_columns.push(c)
         fields = association.respond_to?(:search_field, true) ?
           association.send(:search_field) :
           [:name, :title].find {|c| column_key?(c, association)}
@@ -336,19 +344,33 @@ class ApplicationController < ::ApplicationController
       else
         model_columns.push([model, c])
       end
-    }
-    resources.where(build_query(model_columns, terms))
+    end
+
+    include_association(*association_columns)
+    terms.inject(resources) do |scope, term|
+      conds = model_columns.map {|model, column|
+        search_condition_for_column(column, term, model)
+      }
+      cond = if conds.size > 1
+        if activerecord?
+          "(#{conds.join(" OR ")})"
+        elsif mongoid?
+          {"$or" => conds}
+        end
+      else
+        conds.first
+      end
+      scope.where(cond)
+    end
   end
 
-  def build_query(model_columns, terms)
-    return nil if model_columns.empty? || terms.empty?
-
-    terms.map {|term|
-      conds = model_columns.map {|model, column|
-        search_sql_for_column(model, column, term)
-      }.compact
-      conds.size > 1 ? "(#{conds.join(" OR ")})" : conds.first
-    }.compact.join(" AND ")
+  def include_association(*associations)
+    return if associations.empty?
+    if activerecord?
+      self.resources = resources.includes(associations).references(associations)
+    elsif mongoid?
+      self.resources = resources.includes(associations)
+    end
   end
 
   def sort_key
@@ -367,23 +389,42 @@ class ApplicationController < ::ApplicationController
   #
   # search_by_:column_name という名前のメソッドを定義すると、
   # カラム毎の検索条件をカスタマイズできる。
+  # whereに渡す条件式を返すように実装する。
   #
   #  def search_by_name(term)
   #    ["users.lastname like ? and users.firstname ?", "%#{term}%", "%#{term}%"]
   #  end
   #
-  def search_sql_for_column(model, column, term)
+  def search_condition_for_column(column, term, model = model)
     method = "search_by_#{column}"
-    if respond_to?(method, true)
-      model.send(:sanitize_sql_for_conditions, send(method, term), model.table_name)
-    else
-      c = model.columns_hash[column.to_s]
-      column_name = "#{model.table_name}.#{c.name}"
-      case c.type
-      when :string, :text
-        model.send(:sanitize_sql_array, ["#{column_name} like ?", "%#{term}%"])
-      when :integer
-        model.send(:sanitize_sql_hash, column_name => Integer(term)) rescue "0 = 1"
+    if activerecord?
+      cond = if respond_to?(method, true)
+        model.where(send(method, term)).where_values.first
+      else
+        c = column_metadata(column, model)
+        t = model.arel_table
+        case c.type
+        when :string, :text
+          t[c.name].matches("%#{term}%")
+        when :integer
+          t[c.name].eq(Integer(term)) rescue "0 = 1"
+        else
+          t[c.name].eq(term)
+        end
+      end
+      cond.respond_to?(:to_sql) ? cond.to_sql : cond
+    elsif mongoid?
+      if respond_to?(method, true)
+        send(method, term)
+      else
+        c = column_metadata(column, model)
+        if c.type == String
+          { c.name => Regexp.new(term) }
+        elsif c.type == Integer
+          { c.name => Integer(term) } rescue { id: 0 }
+        else
+          { c.name => term }
+        end
       end
     end
   end
@@ -401,15 +442,14 @@ class ApplicationController < ::ApplicationController
     if respond_to?(method, true)
       send(method, sort_order)
     else
-      column = if reflection = model.reflections[name]
-        self.resources = resources.includes(name).references(name)
-        association = reflection.class_name.constantize
+      column = if association = association_class(name)
+        include_association(name)
         f = association.respond_to?(:sort_field, true) ?
           association.send(:sort_field) :
           [:name, :title, :id].find {|c| column_key?(c, association)}
         "#{association.table_name}.#{f.to_s}" if f
       else
-        c = model.columns_hash[name.to_s]
+        c = column_metadata(name)
         "#{model.table_name}.#{c.name}" if c
       end
       "#{column} #{sort_order}" if column
@@ -495,7 +535,8 @@ class ApplicationController < ::ApplicationController
   def search_column?(model, column_name)
     return true if search_method_defined?(column_name)
     type = column_type(column_name)
-    type && [:string, :text, :integer].include?(type) || association_key?(column_name)
+    (type && [:string, :text, :integer].include?(type)) ||
+      (activerecord? && association_key?(column_name))
   end
 
   # JSON出力に利用するカラムリスト.
