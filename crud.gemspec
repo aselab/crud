@@ -17,7 +17,6 @@ Gem::Specification.new do |s|
 
   s.add_dependency "rails", "~> 4.1.0"
   s.add_dependency "jquery-rails"
-  s.add_dependency "sass-rails", "~> 4.0.3"
   s.add_dependency "bootstrap-sass"
   s.add_dependency "font-awesome-sass-rails"
 
@@ -25,6 +24,7 @@ Gem::Specification.new do |s|
   s.add_dependency "simple_form", "~> 3.1.0.rc1"
   s.add_dependency "select2-rails"
 
+  s.add_development_dependency "sass-rails", "~> 4.0.3"
   s.add_development_dependency "sqlite3"
   s.add_development_dependency "mongoid", '~> 4.0.0.beta1'
   s.add_development_dependency "rspec-rails", '~> 3.0.0.beta2'
