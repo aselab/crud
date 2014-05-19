@@ -103,7 +103,9 @@ module Permissible
 
   class Railtie < ::Rails::Railtie #:nodoc:
     initializer "acts_as_permissible" do
-      ActiveRecord::Base.extend Acts::Permissible
+      ActiveSupport.on_load(:active_record) do
+        ActiveRecord::Base.extend Acts::Permissible
+      end
     end
   end
 end
