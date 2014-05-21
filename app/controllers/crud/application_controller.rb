@@ -32,7 +32,7 @@ class ApplicationController < ::ApplicationController
   end
 
   def new
-    assign_params if params.has_key?(model_key)
+    assign_params if params[model_key].present?
     do_action
     respond_to do |format|
       format.html { render_edit }
