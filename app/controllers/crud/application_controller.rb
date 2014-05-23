@@ -553,11 +553,15 @@ class ApplicationController < ::ApplicationController
       (activerecord? && association_key?(column_name))
   end
 
+  #
   # JSON出力に利用するカラムリスト.
-  # デフォルトでは各アクションで表示する項目 + id
   #
   def columns_for_json
-    [:id] + columns_for(crud_action)
+    if params[:action] == "new"
+      columns_for(crud_action)
+    else
+      [:id] + columns_for(crud_action)
+    end
   end
 
   #
