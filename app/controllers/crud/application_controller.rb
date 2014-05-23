@@ -27,7 +27,7 @@ class ApplicationController < ::ApplicationController
     do_action
     respond_to do |format|
       format.html { render_show }
-      format.json { render json: resource }
+      format.json { render_json resource }
     end
   end
 
@@ -36,7 +36,7 @@ class ApplicationController < ::ApplicationController
     do_action
     respond_to do |format|
       format.html { render_edit }
-      format.json { render json: resource }
+      format.json { render_json resource }
     end
   end
 
@@ -49,14 +49,14 @@ class ApplicationController < ::ApplicationController
     assign_params
     result = do_create
     if result && request.xhr?
-      render json: resource, status: :created, location: resource
+      render_json resource, status: :created
       return
     end
 
     respond_to do |format|
       if result
         format.html { redirect_after_success notice: message(:successfully_created, :name => model_name) }
-        format.json { render json: resource, status: :created, location: resource }
+        format.json { render_json resource, status: :created }
       else
         format.html { render_edit :unprocessable_entity }
         format.json { render json: resource.errors, status: :unprocessable_entity }
@@ -68,14 +68,14 @@ class ApplicationController < ::ApplicationController
     assign_params
     result = do_update
     if result && request.xhr?
-      render json: resource
+      render_json resource
       return
     end
 
     respond_to do |format|
       if result
         format.html { redirect_after_success notice: message(:successfully_updated, :name => model_name) }
-        format.json { render json: resource }
+        format.json { render_json resource }
       else
         format.html { render_edit :unprocessable_entity }
         format.json { render json: resource.errors, status: :unprocessable_entity }
@@ -176,6 +176,12 @@ class ApplicationController < ::ApplicationController
   # 
   def model_key
     @model_key ||= model.model_name.param_key.to_sym
+  end
+
+  def serializer
+    @serializer ||=
+      ("#{model.name}Serializer".constantize rescue nil) ||
+      Crud::DefaultSerializer
   end
 
   #
@@ -548,10 +554,10 @@ class ApplicationController < ::ApplicationController
   end
 
   # JSON出力に利用するカラムリスト.
-  # デフォルトではindexで表示する項目と同じ
+  # デフォルトでは各アクションで表示する項目 + id
   #
   def columns_for_json
-    columns_for(:index)
+    [:id] + columns_for(crud_action)
   end
 
   #
@@ -605,16 +611,32 @@ class ApplicationController < ::ApplicationController
     @message || t("crud.message." + key.to_s, options)
   end
 
-  def render_json(resources)
-    if resources.is_a?(Kaminari::PageScopeMethods)
-      render json: {
-        :data => resources,
-        :total_pages => resources.total_pages,
-        :current_page => resources.current_page
-      }.to_json(:methods => :label)
+  def serialization_scope
+    {
+      current_user: current_user,
+      columns: columns_for_json
+    }
+  end
+
+  def render_json(items, options = nil)
+    options ||= {}
+    options[:json] = items
+    options[:scope] = serialization_scope
+    options[:root] = false
+
+    if items.is_a?(Kaminari::PageScopeMethods)
+      options[:each_serializer] = serializer
+      options[:root] = "items"
+      options[:meta] = {
+        total_pages: items.total_pages,
+        current_page: items.current_page
+      }
+    elsif items.respond_to?(:to_ary)
+      options[:each_serializer] = serializer
     else
-      render json: resources
+      options[:serializer] = serializer
     end
+    render options
   end
 
   def render_show

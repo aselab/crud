@@ -86,8 +86,8 @@ class Select2Input < SimpleForm::Inputs::CollectionInput
           return {term: term, page: page};
         },
         results: function(d, page) {
-          $(d.data).each(function() { this.text = this.#{label}; });
-          return {results: d.data, more: page < d.current_page};
+          $(d.items).each(function() { this.text = this.#{label}; });
+          return {results: d.items, more: page < d.meta.current_page};
         }
       }
     STRING
