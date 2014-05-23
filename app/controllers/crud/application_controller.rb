@@ -632,6 +632,8 @@ class ApplicationController < ::ApplicationController
       options[:each_serializer] = serializer
       options[:root] = "items"
       options[:meta] = {
+        per_page: items.limit_value,
+        total_count: items.total_count,
         total_pages: items.total_pages,
         current_page: items.current_page
       }
