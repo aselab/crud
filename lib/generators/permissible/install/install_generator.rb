@@ -1,24 +1,42 @@
 require 'rails/generators'
-require 'rails/generators/active_record'
 
 module Permissible
   module Generators
     class InstallGenerator < Rails::Generators::Base
-      include ActiveRecord::Generators::Migration
-
       source_root File.expand_path('../templates', __FILE__)
       desc "Installs acts_as_permissible to your application."
+      class_option :principal, type: :string, default: "User"
+      class_option :permission, type: :string, default: "Permission"
+      class_option :permissible_name, type: :string, default: "permissible"
+      class_option :orm, type: :string, default: "active_record"
 
       def create_models
-        inject_into_class("app/models/user.rb", User) do
-          "  has_many :permissions, dependent: :destroy\n"
+        inject_into_class("app/models/#{principal_name}.rb", User) do
+          "  has_many :#{permission_name.pluralize}, dependent: :destroy\n"
         end
 
-        template 'permission.rb.erb', 'app/models/permission.rb'
+        template "permission.rb.erb", "app/models/#{permission_name}.rb"
       end
 
       def create_migrations
-        migration_template "migration.rb.erb", "db/migrate/create_permissions.rb"
+        if options[:orm] == "active_record"
+          require 'rails/generators/active_record'
+          self.class.send(:include, ActiveRecord::Generators::Migration)
+          migration_template "migration.rb.erb", "db/migrate/create_#{permission_name.pluralize}.rb"
+        end
+      end
+
+      private
+      def principal_name
+        options[:principal].underscore
+      end
+
+      def permission_name
+        options[:permission].underscore
+      end
+
+      def permissible_name
+        options[:permissible_name]
       end
     end
   end

@@ -109,7 +109,7 @@ class ApplicationController < ::ApplicationController
   def activerecord?
     if @is_activerecord.nil?
       @is_activerecord =
-        !!(defined?(ActiveRecord::Base) && model <=> ActiveRecord::Base)
+        !!(defined?(ActiveRecord::Base) && model <= ActiveRecord::Base)
     end
     @is_activerecord
   end

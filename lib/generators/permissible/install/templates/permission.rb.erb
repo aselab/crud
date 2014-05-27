@@ -1,4 +1,4 @@
-class Permission < ActiveRecord::Base
-  belongs_to :user
-  belongs_to :permissible, polymorphic: true
+class <%= options[:permission] %> < ActiveRecord::Base
+  belongs_to :<%= principal_name %>
+  belongs_to :<%= permissible_name %>, polymorphic: true
 end
