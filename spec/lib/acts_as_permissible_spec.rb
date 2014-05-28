@@ -111,7 +111,7 @@ describe "acts_as_permissible" do
       end
     end
 
-    describe ".authorized_users" do
+    describe "instance methods" do
       before do
         @p1, @p2, @p3 = create_list(:user, 3)
         @group = create(:group)
@@ -119,9 +119,24 @@ describe "acts_as_permissible" do
         create(:permission, :user => @p2, :permissible => @group, :flags => Group.flags[:read])
       end
 
-      it "指定した権限を持つユーザを返すこと" do
-        expect(@group.authorized_users(:manage)).to eq [@p1]
-        expect(@group.authorized_users(:read)).to eq [@p1, @p2]
+      describe "#authorized_users" do
+        it "指定した権限を持つユーザを返すこと" do
+          expect(@group.authorized_users(:manage)).to eq [@p1]
+          expect(@group.authorized_users(:read)).to eq [@p1, @p2]
+        end
+      end
+
+      describe "#authorized?" do
+        it "指定した権限を持つ場合true" do
+          expect(@group.authorized?(@p1, :manage)).to be true
+          expect(@group.authorized?(@p1, :read)).to be true
+          expect(@group.authorized?(@p2, :read)).to be true
+        end
+
+        it "指定した権限を持たない場合false" do
+          expect(@group.authorized?(@p2, :manage)).to be false
+          expect(@group.authorized?(@p3, :read)).to be false
+        end
       end
     end
 
@@ -270,16 +285,29 @@ describe "acts_as_permissible" do
         @group.mongo_permissions.create(:mongo_user => @p2, :flags => [1])
       end
 
-      describe ".users" do
+      describe "#users" do
         it "権限を持つ全てのユーザを返すこと" do
           expect(@group.mongo_users).to eq [@p1, @p2]
         end
       end
 
-      describe ".authorized_users" do
+      describe "#authorized_users" do
         it "指定した権限を持つユーザを返すこと" do
           expect(@group.authorized_mongo_users(:manage)).to eq [@p1]
           expect(@group.authorized_mongo_users(:read)).to eq [@p1, @p2]
+        end
+      end
+
+      describe "#authorized?" do
+        it "指定した権限を持つ場合true" do
+          expect(@group.authorized?(@p1, :manage)).to be true
+          expect(@group.authorized?(@p1, :read)).to be true
+          expect(@group.authorized?(@p2, :read)).to be true
+        end
+
+        it "指定した権限を持たない場合false" do
+          expect(@group.authorized?(@p2, :manage)).to be false
+          expect(@group.authorized?(@p3, :read)).to be false
         end
       end
     end

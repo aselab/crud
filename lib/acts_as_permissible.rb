@@ -82,7 +82,6 @@ module Acts
           principals = principal_name.underscore.pluralize.to_sym
           permissions = permission_name.underscore.pluralize.to_sym
           principal_key = "#{permissions}.#{principal_name.underscore}_id"
-          flags_key = "#{permissions}.flags"
 
           has_many permissions, as: permissible_name, dependent: :destroy,
             after_add: :set_default_flag, extend: AssociationExtensions
@@ -94,14 +93,20 @@ module Acts
           scope :permissible, lambda {|principal_ids, permission|
             includes(permissions).references(permissions).
               where(principal_key => principal_ids).
-              where(["#{flags_key} & :f = :f", f: flags(permission)])
+              where(permission_condition(permission))
           }
 
           class_eval <<-RUBY
             def authorized_#{principals}(permission)
               self.#{principals}.
                 includes(:#{permissions}).references(:#{permissions}).
-                where(["#{flags_key} & :f = :f", f: self.class.flags(permission)])
+                where(self.class.permission_condition(permission))
+            end
+
+            def authorized?(principal, permission)
+              self.#{principals}.joins(:#{permissions}).
+                where(self.class.permission_condition(permission)).
+                exists?("#{principals}.id" => principal)
             end
 
             private
@@ -109,6 +114,13 @@ module Acts
               record.flags ||= self.class.default_flag
             end
           RUBY
+        end
+
+        def permission_condition(permission)
+          [
+            "#{permission_name.underscore.pluralize}.flags & :f = :f",
+            f: flags(permission)
+          ]
         end
 
         module AssociationExtensions
@@ -154,7 +166,8 @@ module Acts
         def class_eval_scope
           principals = principal_name.underscore.pluralize.to_sym
           permissions = permission_name.underscore.pluralize.to_sym
-          principal_key = "#{permissions}.#{principal_name.underscore}_id"
+          principal_foreign_key = "#{principal_name.underscore}_id"
+          principal_key = "#{permissions}.#{principal_foreign_key}"
           flags_key = "#{permissions}.flags"
 
           embeds_many permissions, as: permissible_name,
@@ -174,15 +187,20 @@ module Acts
 
           class_eval <<-RUBY
             def #{principals}
-              ids = #{permissions}.map(&:#{principal_name.underscore}_id)
+              ids = #{permissions}.map(&:#{principal_foreign_key})
               #{principal_name}.find(ids)
             end
 
             def authorized_#{principals}(permission)
               ids = #{permissions}.where(
                 flags: {"$all" => self.class.split_flag(permission)}
-              ).map(&:#{principal_name.underscore}_id)
+              ).map(&:#{principal_foreign_key})
               #{principal_name}.find(ids)
+            end
+
+            def authorized?(principal, permission)
+              #{permissions}.where(#{principal_foreign_key}: principal).
+                where(flags: {"$all" => self.class.split_flag(permission)}).exists?
             end
 
             private
