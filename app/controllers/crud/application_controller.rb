@@ -376,6 +376,9 @@ class ApplicationController < ::ApplicationController
     if activerecord?
       self.resources = resources.includes(associations).references(associations)
     elsif mongoid?
+      associations.select! do |a|
+        !model.reflect_on_association(a).relation.embedded?
+      end
       self.resources = resources.includes(associations)
     end
   end

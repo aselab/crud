@@ -9,5 +9,7 @@ class MongoGroup
     permissible_name: :mongo_permissible
   })
 
+  embeds_many :mongo_resources
+
   field :name, type: String
 end
