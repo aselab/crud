@@ -521,7 +521,7 @@ class ApplicationController < ::ApplicationController
   end
 
   def new_resource
-    self.resource = model.new
+    model.new
   end
 
   def assign_params
@@ -529,7 +529,7 @@ class ApplicationController < ::ApplicationController
   end
 
   def find_resource
-    self.resource = model.find(params[:id])
+    model.find(params[:id])
   end
 
   def columns_for(action)
@@ -671,31 +671,31 @@ class ApplicationController < ::ApplicationController
   end
 
   def before_index
-    new_resource
+    self.resource = new_resource
   end
 
   def before_show
-    find_resource
+    self.resource = find_resource
   end
 
   def before_new
-    new_resource
+    self.resource = new_resource
   end
 
   def before_edit
-    find_resource
+    self.resource = find_resource
   end
 
   def before_create
-    new_resource
+    self.resource = new_resource
   end
 
   def before_update
-    find_resource
+    self.resource = find_resource
   end
 
   def before_destroy
-    find_resource
+    self.resource = find_resource
   end
 end
 end

@@ -9,11 +9,11 @@ class MongoResourcesController < Crud::ApplicationController
   end
 
   def new_resource
-    self.resource = @group.mongo_resources.new
+    @group.mongo_resources.new
   end
 
   def find_resource
-    self.resource = @group.mongo_resources.find(params[:id])
+    @group.mongo_resources.find(params[:id])
   end
 
   private
