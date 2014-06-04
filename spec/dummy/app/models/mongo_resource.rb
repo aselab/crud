@@ -1,7 +1,7 @@
 class MongoResource
   include Mongoid::Document
 
-  embedded_in :mongo_group, inverse_of: nil
+  embedded_in :mongo_group
 
   field :name, type: String
 end

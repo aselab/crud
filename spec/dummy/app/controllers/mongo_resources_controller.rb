@@ -9,7 +9,7 @@ class MongoResourcesController < Crud::ApplicationController
   end
 
   def new_resource
-    MongoResource.new(mongo_group: @group)
+    @group.mongo_resources.new
   end
 
   def find_resource
