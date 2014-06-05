@@ -95,11 +95,9 @@ class ApplicationController < ::ApplicationController
   attr_accessor :resources, :resource, :columns, :index_actions
 
   def self.permit_keys(*keys)
-    if keys.empty?
-      @permit_keys ||= []
-    else
-      @permit_keys = keys
-    end
+    @permit_keys ||= []
+    @permit_keys.concat(keys) unless keys.empty?
+    @permit_keys
   end
 
   def permit_params
