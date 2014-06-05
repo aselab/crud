@@ -15,6 +15,8 @@ class ApplicationController < ::ApplicationController
   before_action :before_destroy, :only => :destroy
   before_action :authorize_action
 
+  class_attribute :_permit_keys
+
   def index
     do_index
     respond_to do |format|
@@ -95,9 +97,9 @@ class ApplicationController < ::ApplicationController
   attr_accessor :resources, :resource, :columns, :index_actions
 
   def self.permit_keys(*keys)
-    @permit_keys ||= []
-    @permit_keys.concat(keys) unless keys.empty?
-    @permit_keys
+    self._permit_keys ||= []
+    self._permit_keys += keys unless keys.empty?
+    self._permit_keys
   end
 
   def permit_params
