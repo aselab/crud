@@ -168,7 +168,6 @@ module Acts
           permissions = permission_name.underscore.pluralize.to_sym
           principal_foreign_key = "#{principal_name.underscore}_id"
           principal_key = "#{permissions}.#{principal_foreign_key}"
-          flags_key = "#{permissions}.flags"
 
           embeds_many permissions, as: permissible_name,
             after_add: :set_default_flag, extend: AssociationExtensions
@@ -181,8 +180,10 @@ module Acts
             ids = Array(principal_ids).map {|p|
               p.is_a?(Mongoid::Document) ? p.id : p
             }
-            where(principal_key => {"$in" => ids}).
-            where(flags_key => {"$all" => split_flag(permission)})
+            where(permissions => { "$elemMatch" => {
+              principal_foreign_key => {"$in" => ids},
+              "flags" => {"$all" => split_flag(permission)}
+            }})
           }
 
           class_eval <<-RUBY

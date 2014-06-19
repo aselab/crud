@@ -183,11 +183,12 @@ describe "acts_as_permissible" do
 
     describe ".permissible" do
       before do
-        @u1, @u2 = create_list(:mongo_user, 2)
+        @u1, @u2, @u3 = create_list(:mongo_user, 3)
         @manage, @read, @none = create_list(:mongo_group, 3)
         @manage.mongo_permissions.create(mongo_user: @u1, flags: [2, 1])
         @read.mongo_permissions.create(mongo_user: @u1, flags: [1])
         @read.mongo_permissions.create(mongo_user: @u2, flags: [1])
+        @read.mongo_permissions.create(mongo_user: @u3, flags: [2])
       end
 
       it "定義されていない権限を指定した時エラーになること" do
@@ -201,6 +202,10 @@ describe "acts_as_permissible" do
 
       it "複数ユーザ指定でレコードを重複なく検索できること" do
         expect(MongoGroup.permissible([@u1, @u2], :read)).to eq [@manage, @read]
+      end
+
+      it "ユーザと権限がor検索になっていないこと($elemMatchであること)" do
+        expect(MongoGroup.permissible(@u2, :manage)).to be_empty
       end
     end
 
