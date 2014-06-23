@@ -270,7 +270,7 @@ module Crud
   end
 
   def authorization
-    @authorization ||= (self.class::Authorization rescue DefaultAuthorization).new
+    @authorization ||= (self.class::Authorization rescue DefaultAuthorization).new(current_user)
   end
 
   # 権限がある場合にtrueを返す。
@@ -680,6 +680,11 @@ module Crud
 
   class DefaultAuthorization
     extend Memoist
+    attr_reader :user
+
+    def initialize(user)
+      @user = user
+    end
 
     # 各アクションの権限は def update?(resource) のようなメソッドを定義し、
     # true or falseを返すように実装する。定義しない場合のデフォルトはtrueである。

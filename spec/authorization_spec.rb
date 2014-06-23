@@ -1,6 +1,7 @@
 require 'spec_helper'
 
 describe Crud::ApplicationController::DefaultAuthorization do
+  subject { Crud::ApplicationController::DefaultAuthorization.new(nil) }
   let(:resource) { Object.new }
 
   describe "can?" do
