@@ -680,10 +680,10 @@ module Crud
 
   class DefaultAuthorization
     extend Memoist
-    attr_reader :user
+    attr_reader :current_user
 
     def initialize(user)
-      @user = user
+      @current_user = user
     end
 
     # 各アクションの権限は def update?(resource) のようなメソッドを定義し、
