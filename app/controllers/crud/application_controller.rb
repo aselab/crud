@@ -1,5 +1,5 @@
 module Crud
-class ApplicationController < ::ApplicationController
+ class ApplicationController < ::ApplicationController
   helper BootstrapHelper
   helper_method :model, :model_name, :model_key, :resources, :resource, :columns,
     :stored_params, :column_key?, :association_key?, :sort_key?, :nested?,
@@ -269,37 +269,18 @@ class ApplicationController < ::ApplicationController
   def authorize_index
   end
 
+  def authorization
+    @authorization ||= (self.class::Authorization rescue DefaultAuthorization).new
+  end
+
   # 権限がある場合にtrueを返す。
-  # 各アクションの権限は def update?(resource) のようなメソッドを定義し、
-  # true or falseを返すように実装する。定義しない場合のデフォルトはtrueである。
   def can?(action, resource)
-    method = action.to_s + "?"
-    respond_to?(method, true) ? send(method, resource) : true
+    authorization.can?(action, resource)
   end
 
   # can?の逆
   def cannot?(action, resource)
     !can?(action, resource)
-  end
-
-  def new?(resource)
-    can? :create, resource
-  end
-
-  def edit?(resource)
-    can? :update, resource
-  end
-
-  def create?(resource)
-    can? :manage, resource
-  end
-
-  def update?(resource)
-    can? :manage, resource
-  end
-
-  def destroy?(resource)
-    can? :manage, resource
   end
 
   #
@@ -696,5 +677,38 @@ class ApplicationController < ::ApplicationController
   def before_destroy
     self.resource = find_resource
   end
-end
+
+  class DefaultAuthorization
+    extend Memoist
+
+    # 各アクションの権限は def update?(resource) のようなメソッドを定義し、
+    # true or falseを返すように実装する。定義しない場合のデフォルトはtrueである。
+    def can?(action, resource)
+      method = action.to_s + "?"
+      respond_to?(method) ? send(method, resource) : true
+    end
+
+    def new?(resource)
+      can? :create, resource
+    end
+
+    def edit?(resource)
+      can? :update, resource
+    end
+
+    def create?(resource)
+      can? :manage, resource
+    end
+
+    def update?(resource)
+      can? :manage, resource
+    end
+
+    def destroy?(resource)
+      can? :manage, resource
+    end
+
+    memoize :can?
+  end
+ end
 end

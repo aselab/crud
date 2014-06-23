@@ -7,6 +7,7 @@ require 'select2-rails'
 require 'crud/engine'
 require 'acts_as_permissible'
 require 'active_model_serializers'
+require 'memoist'
 
 begin
   require 'mongoid'
