@@ -104,6 +104,7 @@ module Acts
             end
 
             def authorized?(principal, permission)
+              return false unless principal
               self.#{principals}.joins(:#{permissions}).
                 where(self.class.permission_condition(permission)).
                 exists?("#{principals}.id" => principal)
