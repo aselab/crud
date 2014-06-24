@@ -94,7 +94,16 @@ module Crud
   end
 
   protected
-  attr_accessor :resources, :resource, :columns, :index_actions
+  attr_accessor :columns, :index_actions
+  attr_writer :resources, :resource
+
+  def resources
+    @resources ||= model.all
+  end
+
+  def resource
+    @resource ||= find_resource
+  end
 
   def self.permit_keys(*keys)
     self._permit_keys ||= []
@@ -468,7 +477,6 @@ module Crud
   # indexメソッドで呼び出される内部メソッド.
   #
   def do_index
-    self.resources = model.all
     self.resources = do_filter || resources
     self.resources = do_search || resources
     self.resources = do_sort || resources
@@ -510,6 +518,10 @@ module Crud
   end
 
   def find_resource
+    find_resource! if params[:id]
+  end
+
+  def find_resource!
     model.find(params[:id])
   end
 
@@ -655,7 +667,6 @@ module Crud
   end
 
   def before_show
-    self.resource = find_resource
   end
 
   def before_new
@@ -663,7 +674,6 @@ module Crud
   end
 
   def before_edit
-    self.resource = find_resource
   end
 
   def before_create
@@ -671,11 +681,9 @@ module Crud
   end
 
   def before_update
-    self.resource = find_resource
   end
 
   def before_destroy
-    self.resource = find_resource
   end
 
   class DefaultAuthorization
