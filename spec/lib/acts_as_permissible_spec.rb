@@ -41,6 +41,10 @@ describe "acts_as_permissible" do
       it "複数ユーザ指定でレコードを重複なく検索できること" do
         expect(Group.permissible([@p1, @p2], :read)).to eq [@manage, @read]
       end
+
+      it "権限を指定しない場合任意の権限で検索すること" do
+        expect(Group.permissible(@p1)).to eq [@manage, @read]
+      end
     end
 
     describe ".permissions" do
@@ -206,6 +210,10 @@ describe "acts_as_permissible" do
 
       it "ユーザと権限がor検索になっていないこと($elemMatchであること)" do
         expect(MongoGroup.permissible(@u2, :manage)).to be_empty
+      end
+
+      it "権限を指定しない場合任意の権限で検索すること" do
+        expect(MongoGroup.permissible(@u1)).to eq [@manage, @read]
       end
     end
 

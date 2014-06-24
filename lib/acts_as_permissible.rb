@@ -90,7 +90,7 @@ module Acts
 
           accepts_nested_attributes_for permissions, allow_destroy: true
 
-          scope :permissible, lambda {|principal_ids, permission|
+          scope :permissible, lambda {|principal_ids, permission = nil|
             includes(permissions).references(permissions).
               where(principal_key => principal_ids).
               where(permission_condition(permission))
@@ -118,6 +118,7 @@ module Acts
         end
 
         def permission_condition(permission)
+          return nil unless permission
           [
             "#{permission_name.underscore.pluralize}.flags & :f = :f",
             f: flags(permission)
@@ -177,14 +178,13 @@ module Acts
 
           accepts_nested_attributes_for permissions, allow_destroy: true
 
-          scope :permissible, lambda {|principal_ids, permission|
+          scope :permissible, lambda {|principal_ids, permission = nil|
             ids = Array(principal_ids).map {|p|
               p.is_a?(Mongoid::Document) ? p.id : p
             }
-            where(permissions => { "$elemMatch" => {
-              principal_foreign_key => {"$in" => ids},
-              "flags" => {"$all" => split_flag(permission)}
-            }})
+            cond = { principal_foreign_key => {"$in" => ids } }
+            cond[:flags] = {"$all" => split_flag(permission)} if permission
+            where(permissions => { "$elemMatch" => cond })
           }
 
           class_eval <<-RUBY
