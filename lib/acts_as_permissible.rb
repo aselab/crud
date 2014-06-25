@@ -103,7 +103,7 @@ module Acts
                 where(self.class.permission_condition(permission))
             end
 
-            def authorized?(principal, permission)
+            def authorized?(principal, permission = nil)
               return false unless principal
               self.#{principals}.joins(:#{permissions}).
                 where(self.class.permission_condition(permission)).
@@ -200,9 +200,10 @@ module Acts
               #{principal_name}.find(ids)
             end
 
-            def authorized?(principal, permission)
-              #{permissions}.where(#{principal_foreign_key}: principal).
-                where(flags: {"$all" => self.class.split_flag(permission)}).exists?
+            def authorized?(principal, permission = nil)
+              s = #{permissions}.where(#{principal_foreign_key}: principal)
+              s = s.where(flags: {"$all" => self.class.split_flag(permission)}) if permission
+              s.exists?
             end
 
             private

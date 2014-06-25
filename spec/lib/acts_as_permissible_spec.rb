@@ -141,6 +141,12 @@ describe "acts_as_permissible" do
           expect(@group.authorized?(@p2, :manage)).to be false
           expect(@group.authorized?(@p3, :read)).to be false
         end
+
+        it "権限を指定しない場合任意の権限でtrue/false" do
+          expect(@group.authorized?(@p1)).to be true
+          expect(@group.authorized?(@p2)).to be true
+          expect(@group.authorized?(@p3)).to be false
+        end
       end
     end
 
@@ -321,6 +327,12 @@ describe "acts_as_permissible" do
         it "指定した権限を持たない場合false" do
           expect(@group.authorized?(@p2, :manage)).to be false
           expect(@group.authorized?(@p3, :read)).to be false
+        end
+
+        it "権限を指定しない場合任意の権限でtrue/false" do
+          expect(@group.authorized?(@p1)).to be true
+          expect(@group.authorized?(@p2)).to be true
+          expect(@group.authorized?(@p3)).to be false
         end
       end
     end
