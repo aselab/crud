@@ -415,7 +415,7 @@ module Crud
       else
         c = column_metadata(column, model)
         if c.type == String
-          { c.name => Regexp.new(term) }
+          { c.name => Regexp.new(Regexp.escape(term)) }
         elsif c.type == Integer
           { c.name => Integer(term) } rescue { id: 0 }
         else
