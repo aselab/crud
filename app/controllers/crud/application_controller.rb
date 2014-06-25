@@ -260,22 +260,18 @@ module Crud
   #
   #=== 権限チェック
   #
-  # "authorize_#{action}"という名前のメソッドを定義すると、
+  # Authorizationクラスにaction名と同じメソッドを定義すると、
   # 各アクションの権限処理をオーバーライドできる。
   # その場合は権限がないときCrud::NotAuthorizedErrorを投げるように実装する。
   # デフォルトでは can? メソッドを呼び出して権限がない場合例外を投げるようになっている。
   #
   def authorize_action
     action = crud_action
-    method = "authorize_" + action.to_s
-    if respond_to?(method, true)
-      send(method)
+    if authorization.respond_to?(action)
+      authorization.send(action)
     else
       raise NotAuthorizedError unless can? action, resource
     end
-  end
-
-  def authorize_index
   end
 
   def authorization
@@ -693,6 +689,9 @@ module Crud
 
     def initialize(user)
       @current_user = user
+    end
+
+    def index
     end
 
     # 各アクションの権限は def update?(resource) のようなメソッドを定義し、
