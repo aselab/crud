@@ -615,6 +615,10 @@ module Crud
     }
   end
 
+  def json_metadata
+    {}
+  end
+
   def render_json(items, options = nil)
     options ||= {}
     options[:json] = items
@@ -624,12 +628,12 @@ module Crud
     if items.is_a?(Kaminari::PageScopeMethods)
       options[:each_serializer] = serializer
       options[:root] = "items"
-      options[:meta] = {
+      options[:meta] = json_metadata.merge({
         per_page: items.limit_value,
         total_count: items.total_count,
         total_pages: items.total_pages,
         current_page: items.current_page
-      }
+      })
     elsif items.respond_to?(:to_ary)
       options[:each_serializer] = serializer
     else
