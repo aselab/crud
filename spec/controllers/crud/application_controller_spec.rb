@@ -120,7 +120,7 @@ describe Crud::ApplicationController do
   end
 
   [User, MongoUser].each do |m|
-    context m do
+    context m.name do
       let(:model) { m }
 
       it "#column_metadata" do
@@ -143,7 +143,7 @@ describe Crud::ApplicationController do
 
   describe "#association_key?" do
     [ActiveRecordModel, MongoidModel].each do |m|
-      context m do
+      context m.name do
         let(:model) { m }
         it "関連だったらtrue" do
           expect(controller.send(:association_key?, :items)).to be true
