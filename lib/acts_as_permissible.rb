@@ -184,7 +184,7 @@ module Acts
             }
             cond = { principal_foreign_key => {"$in" => ids } }
             cond[:flags] = {"$all" => split_flag(permission)} if permission
-            where(permissions => { "$elemMatch" => cond })
+            scoped.and(permissions => { "$elemMatch" => cond })
           }
 
           class_eval <<-RUBY
