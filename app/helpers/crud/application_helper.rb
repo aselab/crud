@@ -180,7 +180,7 @@ module Crud
     end
 
     def find_method(short_method)
-      method = params[:controller] + "_" + short_method
+      method = params[:controller].gsub("/", "_") + "_" + short_method
       return method if respond_to?(method)
       return short_method if respond_to?(short_method)
       nil
