@@ -174,7 +174,7 @@ module Acts
           embeds_many permissions, as: permissible_name,
             after_add: :set_default_flag, extend: AssociationExtensions
 
-          index({principal_key: 1, flags: 1}, {unique: true})
+          index({principal_key: 1, flags: 1})
 
           accepts_nested_attributes_for permissions, allow_destroy: true
 
