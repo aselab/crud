@@ -348,7 +348,7 @@ module Crud
         if activerecord?
           "(#{conds.join(" OR ")})"
         elsif mongoid?
-          {"$or" => conds}
+          {"$and" => [{"$or" => conds}]}
         end
       else
         conds.first
