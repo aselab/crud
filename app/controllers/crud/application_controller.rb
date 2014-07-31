@@ -202,7 +202,7 @@ module Crud
   # 名前のメソッドを定義するとそちらが優先される．
   #
   def model_columns
-    @model_columns ||= self.class.permit_keys
+    @model_columns ||= self.class.permit_keys.flat_map {|key| key.is_a?(Hash) ? key.keys : key}
   end
 
   def search_terms
