@@ -169,6 +169,7 @@ module Acts
           principals = principal_name.underscore.pluralize.to_sym
           permissions = permission_name.underscore.pluralize.to_sym
           principal_foreign_key = "#{principal_name.underscore}_id"
+          plural_principal_foreign_key = principal_foreign_key.pluralize
           principal_key = "#{permissions}.#{principal_foreign_key}"
 
           embeds_many permissions, as: permissible_name,
@@ -193,11 +194,14 @@ module Acts
               #{principal_name}.find(ids)
             end
 
-            def authorized_#{principals}(permission)
-              ids = #{permissions}.where(
+            def authorized_#{plural_principal_foreign_key}(permission)
+              #{permissions}.where(
                 flags: {"$all" => self.class.split_flag(permission)}
               ).map(&:#{principal_foreign_key})
-              #{principal_name}.find(ids)
+            end
+
+            def authorized_#{principals}(permission)
+              #{principal_name}.find(authorized_#{plural_principal_foreign_key}(permission))
             end
 
             def authorized?(principal, permission = nil)
