@@ -612,6 +612,7 @@ module Crud
 
   def serialization_scope
     {
+      action: params[:action],
       current_user: current_user,
       authorization: authorization,
       columns: columns_for_json
