@@ -624,10 +624,17 @@ module Crud
   end
 
   def render_json(items, options = nil)
-    options ||= {}
-    options[:json] = items
-    options[:scope] = serialization_scope
-    options[:root] = false
+    render_options = render_json_options(items)
+    render_options.merge!(options) if options
+    render render_options
+  end
+
+  def render_json_options(items)
+    options = {
+      json: items,
+      scope: serialization_scope,
+      root: false
+    }
 
     if items.is_a?(Kaminari::PageScopeMethods)
       options[:each_serializer] = serializer
@@ -643,7 +650,7 @@ module Crud
     else
       options[:serializer] = serializer
     end
-    render options
+    options
   end
 
   def render_show
