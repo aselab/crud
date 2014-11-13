@@ -114,8 +114,12 @@ module Crud
     self._permit_keys
   end
 
+  def permit_keys
+    self.class.permit_keys
+  end
+
   def permit_params
-    params.require(model_key).permit(self.class.permit_keys)
+    params.require(model_key).permit(permit_keys)
   end
 
   def activerecord?
