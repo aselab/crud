@@ -165,7 +165,7 @@ describe "acts_as_permissible" do
       context "restrict is true" do
         it "フラグが完全一致する権限のラベルのみを返すこと" do
           expect(Group).to receive(:permission_translate).with(:read).and_return("read")
-          expect(Group.permission_label(0b01, true)).to eq "read"
+          expect(Group.permission_label(0b01, restrict: true)).to eq "read"
         end
       end
 
@@ -173,7 +173,7 @@ describe "acts_as_permissible" do
         it "フラグを含むすべての権限のラベルを返すこと" do
           expect(Group).to receive(:permission_translate).with(:manage).and_return("manage")
           expect(Group).to receive(:permission_translate).with(:read).and_return("read")
-          expect(Group.permission_label(0b01, false)).to eq "manage,read"
+          expect(Group.permission_label(0b01, restrict: false)).to eq "manage,read"
         end
       end
     end

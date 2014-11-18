@@ -38,8 +38,9 @@ module Acts
           I18n.t("#{@permission_prefix}.#{p}", default: p.humanize)
         end
 
-        def permission_label(flag, restrict = true)
-          keys = if restrict
+        def permission_label(flag, options = nil)
+          options = {restrict: true}.merge(options || {})
+          keys = if options[:restrict]
             @inverted_flags ||= flags.invert
             Array(@inverted_flags[flag])
           else
@@ -48,8 +49,10 @@ module Acts
           keys.map {|k| permission_translate(k)}.join(",") unless keys.empty?
         end
 
-        def permission_options
-          flags.map {|k, v| [permission_translate(k), v]}
+        def permission_options(options = nil)
+          options = {translate: true}.merge(options || {})
+          translate = options[:translate]
+          flags.map {|k, v| [translate ? permission_translate(k) : k, v]}
         end
 
         def flags(key = nil)
