@@ -187,7 +187,7 @@ describe "acts_as_permissible" do
       end
 
       it "関連追加するときgroupに設定したデフォルトフラグがセットされること" do
-        expect(@group.mongo_permissions.build.flags).to eq [1]
+        expect(@group.mongo_permissions.build.flags).to eq Group.default_flag
       end
     end
 
@@ -247,26 +247,26 @@ describe "acts_as_permissible" do
         it "権限を指定しない場合はデフォルト権限で追加されること" do
           p = @group.mongo_permissions.add(@user)
           expect(p.mongo_user).to eq @user
-          expect(p.flags).to eq [1]
+          expect(p.flags).to eq Group.default_flag
         end
 
         it "権限をシンボルで追加できること" do
           p = @group.mongo_permissions.add(@user, :manage)
           expect(p.mongo_user).to eq @user
-          expect(p.flags).to match_array [2,1]
+          expect(p.flags).to eq Group.flags[:manage]
         end
 
         it "権限をフラグで追加できること" do
           p = @group.mongo_permissions.add(@user, 0b10011)
           expect(p.mongo_user).to eq @user
-          expect(p.flags).to match_array [0b10000, 0b10, 0b1]
+          expect(p.flags).to eq 0b10011
         end
 
         it "既に権限が設定されている場合、権限を追加すること" do
           permission = @group.mongo_permissions.create(mongo_user: @user, flags: [0b10])
           p = @group.mongo_permissions.add(@user, 0b01)
           expect(p.id).to eq permission.id
-          expect(p.flags).to match_array [0b10, 0b01]
+          expect(p.flags).to eq 0b11
         end
       end
 
@@ -278,20 +278,20 @@ describe "acts_as_permissible" do
         it "権限をシンボルで変更できること" do
           p = @group.mongo_permissions.mod(@user, :manage)
           expect(p.mongo_user).to eq @user
-          expect(p.flags).to match_array [2,1]
+          expect(p.flags).to eq Group.flags[:manage]
         end
 
         it "権限をフラグで変更できること" do
           p = @group.mongo_permissions.mod(@user, 0b10011)
           expect(p.mongo_user).to eq @user
-          expect(p.flags).to match_array [0b10000, 0b10, 0b1]
+          expect(p.flags).to eq 0b10011
         end
 
         it "既に権限が追加されている場合、権限を上書きすること" do
           permission = @group.mongo_permissions.create(mongo_user: @user, flags: [0b10])
           p = @group.mongo_permissions.mod(@user, 0b01)
           expect(p.id).to eq permission.id
-          expect(p.flags).to eq [0b01]
+          expect(p.flags).to eq 0b01
         end
       end
     end

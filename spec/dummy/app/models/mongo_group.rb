@@ -6,7 +6,7 @@ class MongoGroup
   }, {
     principal_name: "MongoUser",
     permission_name: "MongoPermission",
-    permissible_name: :mongo_permissible
+    permissible: :mongo_permissible
   })
 
   embeds_many :mongo_resources

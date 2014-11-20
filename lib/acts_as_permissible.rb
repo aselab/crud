@@ -66,6 +66,10 @@ module Acts
           raise ArgumentError.new("permission #{key} is not defined (must be #{@flags.keys.join(", ")})")
         end
 
+        def to_flags(name_or_value)
+          name_or_value.is_a?(Symbol) ? flags(name_or_value) : name_or_value
+        end
+
         def default_flag
           all_flags[:default]
         end
@@ -235,10 +239,7 @@ module Acts
         module AssociationExtensions
           def add(principal, permission = nil)
             create_or_update(principal) do |p|
-              if permission
-                a = p.flags || []
-                p.flags = (a + flags(permission)).uniq
-              end
+              p.flags |= base.class.to_flags(permission) if permission
             end
           end
 
