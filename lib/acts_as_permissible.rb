@@ -212,6 +212,7 @@ module Acts
             end
 
             def authorized?(principal, permission = nil)
+              return false unless principal
               s = #{permissions}.where(#{principal_foreign_key}: principal)
               s = s.where(flags: {"$all" => self.class.split_flag(permission)}) if permission
               s.exists?
