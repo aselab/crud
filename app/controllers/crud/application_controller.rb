@@ -332,7 +332,10 @@ module Crud
 
     terms = search_terms
     model_columns = []
+    conditions = []
     columns_for_search.each do |c|
+      param = params[c] if params.has_key?(c)
+      cond = [c, param, model] if param
       if search_method_defined?(c)
         model_columns.push([model, c])
       elsif association = association_class(c)
@@ -340,17 +343,21 @@ module Crud
         fields = association.respond_to?(:search_field, true) ?
           association.send(:search_field) :
           [:name, :title].find {|c| column_key?(c, association)}
-        Array(fields).each {|f| model_columns.push([association, f])}
+        Array(fields).each do |f|
+          model_columns.push([association, f])
+          cond = [f, param, association] if param
+        end
       else
         model_columns.push([model, c])
       end
+      conditions.push(search_condition_for_column(*cond)) if cond
     end
 
     include_association(*association_columns)
-    terms.inject(resources) do |scope, term|
-      conds = model_columns.map {|model, column|
+    r = terms.inject(resources) do |scope, term|
+      conds = model_columns.map do |model, column|
         search_condition_for_column(column, term, model)
-      }
+      end
       cond = if conds.size > 1
         if activerecord?
           "(#{conds.join(" OR ")})"
@@ -360,6 +367,9 @@ module Crud
       else
         conds.first
       end
+      scope.where(cond)
+    end
+    conditions.inject(r) do |scope, cond|
       scope.where(cond)
     end
   end
