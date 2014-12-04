@@ -483,7 +483,7 @@ module Crud
   end
 
   def do_page
-    resources.page(params[:page]).per(params[:per])
+    resources.page(params[:page]).per(params[:per]) unless params[:page] == "false"
   end
 
   #
