@@ -34,7 +34,6 @@ module Crud
   end
 
   def new
-    assign_params if params[model_key].present?
     do_action
     respond_to do |format|
       format.html { render_edit }
@@ -48,7 +47,6 @@ module Crud
   end
 
   def create
-    assign_params
     result = do_create
     if result && request.xhr?
       render_json resource, status: :created
@@ -67,7 +65,6 @@ module Crud
   end
 
   def update
-    assign_params
     result = do_update
     if result && request.xhr?
       render_json resource
@@ -697,6 +694,7 @@ module Crud
 
   def before_new
     self.resource = new_resource
+    assign_params if params[model_key].present?
   end
 
   def before_edit
@@ -704,9 +702,11 @@ module Crud
 
   def before_create
     self.resource = new_resource
+    assign_params
   end
 
   def before_update
+    assign_params
   end
 
   def before_destroy
