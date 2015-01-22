@@ -1,7 +1,21 @@
 require 'spec_helper'
 
-describe Crud::ApplicationController::DefaultAuthorization do
-  subject { Crud::ApplicationController::DefaultAuthorization.new(nil) }
+describe Crud::Authorization do
+  class FakeController < ApplicationController
+    include Crud::Authorization
+    class Authorization < Crud::Authorization::Default
+    end
+  end
+
+  subject { FakeController.new }
+  
+  it "#authorization" do
+    expect(subject.authorization).to be_a FakeController::Authorization
+  end
+end
+
+describe Crud::Authorization::Default do
+  subject { Crud::Authorization::Default.new(nil) }
   let(:resource) { Object.new }
 
   describe "can?" do
