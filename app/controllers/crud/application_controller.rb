@@ -1,6 +1,13 @@
 module Crud
  class ApplicationController < ::ApplicationController
-  include Crud::Authorization
+  [
+    Crud::Authorization,
+    Crud::Serialization,
+  ].each do |mod|
+    include mod
+    protected *mod.instance_methods
+  end
+
   helper BootstrapHelper
   helper_method :model, :model_name, :model_key, :resources, :resource, :columns,
     :stored_params, :column_key?, :association_key?, :sort_key?, :nested?,
@@ -190,12 +197,6 @@ module Crud
   # 
   def model_key
     @model_key ||= model.model_name.param_key.to_sym
-  end
-
-  def serializer
-    @serializer ||=
-      ("#{model.name}Serializer".constantize rescue nil) ||
-      Crud::DefaultSerializer
   end
 
   #
@@ -603,6 +604,11 @@ module Crud
     @message || t("crud.message." + key.to_s, options)
   end
 
+  def serializer
+    @serializer ||=
+      ("#{model.name}Serializer".constantize rescue nil) || super
+  end
+
   def serialization_scope
     {
       action: params[:action],
@@ -612,38 +618,8 @@ module Crud
     }
   end
 
-  def json_metadata
-    {}
-  end
-
   def render_json(items, options = nil)
-    render_options = render_json_options(items)
-    render_options.merge!(options) if options
-    render render_options
-  end
-
-  def render_json_options(items)
-    options = {
-      json: items,
-      scope: serialization_scope,
-      root: false
-    }
-
-    if items.is_a?(Kaminari::PageScopeMethods)
-      options[:each_serializer] = serializer
-      options[:root] = "items"
-      options[:meta] = json_metadata.merge({
-        per_page: items.limit_value,
-        total_count: items.total_count,
-        total_pages: items.total_pages,
-        current_page: items.current_page
-      })
-    elsif items.respond_to?(:to_ary)
-      options[:each_serializer] = serializer
-    else
-      options[:serializer] = serializer
-    end
-    options
+    render render_json_options(items, options)
   end
 
   def render_show
