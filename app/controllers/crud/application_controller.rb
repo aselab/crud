@@ -517,8 +517,7 @@ module Crud
   end
 
   def render_json_errors(item)
-    #render json_errors_options(item)
-    render json: item.errors, status: :unprocessable_entity
+    render json_errors_options(item)
   end
 
   def render_show
@@ -564,7 +563,5 @@ module Crud
 
   def before_destroy
   end
-
-  DefaultAuthorization = Crud::Authorization::Default
  end
 end

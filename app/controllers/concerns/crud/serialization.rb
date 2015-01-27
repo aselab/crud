@@ -46,11 +46,9 @@ module Crud
           next unless errors.has_key?(key)
           target = item.send(key)
           errors[key] = if target.respond_to?(:to_ary)
-            e = {}
-            target.each.with_index do |o, i|
-              e[i] = o.errors.messages
+            target.each.with_index.each_with_object({}) do |(o, i), h|
+              h[i] = o.errors.messages unless o.errors.empty?
             end
-            e
           else
             target.errors.messages
           end
