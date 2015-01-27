@@ -517,6 +517,7 @@ module Crud
   end
 
   def render_json_errors(item)
+    #render json_errors_options(item)
     render json: item.errors, status: :unprocessable_entity
   end
 

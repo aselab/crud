@@ -1,6 +1,7 @@
 module Crud
   module Serialization
     extend ActiveSupport::Concern
+    include Crud::ModelMethods
 
     def serializer
       Crud::DefaultSerializer
@@ -35,6 +36,27 @@ module Crud
         defaults[:serializer] = serializer
       end
       options ? defaults.merge(options) : defaults
+    end
+
+    def json_errors_options(item)
+      errors = item.errors.messages.dup
+      if self.class.mongoid?(item)
+        item.associations.keys.each do |key|
+          key = key.to_sym
+          next unless errors.has_key?(key)
+          target = item.send(key)
+          errors[key] = if target.respond_to?(:to_ary)
+            e = {}
+            target.each.with_index do |o, i|
+              e[i] = o.errors.messages
+            end
+            e
+          else
+            target.errors.messages
+          end
+        end
+      end
+      { json: errors, status: :unprocessable_entity }
     end
   end
 end
