@@ -14,7 +14,7 @@ module Crud
       {}
     end
 
-    def render_json_options(items, options = nil)
+    def json_options(items, options = nil)
       defaults = {
         json: items,
         scope: serialization_scope,

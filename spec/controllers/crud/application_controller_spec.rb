@@ -1,17 +1,8 @@
 # coding: utf-8
 require 'spec_helper'
 
-class ActiveRecordModel < ActiveRecord::Base
-  has_many :items
-end
-
-class MongoidModel
-  include Mongoid::Document
-  has_many :items
-end
-
 describe Crud::ApplicationController do
-  let(:model) { ActiveRecordModel }
+  let(:model) { }
   before { allow(controller).to receive(:model).and_return(model) }
 
   describe "#tokenize" do
@@ -92,66 +83,4 @@ describe Crud::ApplicationController do
     end
   end
 
-  describe "モデル判定" do
-
-    context "ActiveRecord::Base" do
-      let(:model) { ActiveRecordModel }
-
-      it "activerecord? is true" do
-        expect(controller.send(:activerecord?)).to be true
-      end
-
-      it "mongoid? is false" do
-        expect(controller.send(:mongoid?)).to be false
-      end
-    end
-
-    context "Mongoid::Document" do
-      let(:model) { MongoidModel }
-
-      it "activerecord? is false" do
-        expect(controller.send(:activerecord?)).to be false
-      end
-
-      it "mongoid? is true" do
-        expect(controller.send(:mongoid?)).to be true
-      end
-    end
-  end
-
-  [User, MongoUser].each do |m|
-    context m.name do
-      let(:model) { m }
-
-      it "#column_metadata" do
-        expect(controller.send(:column_metadata, :name)).not_to be nil
-        expect(controller.send(:column_metadata, :zzz)).to be nil
-      end
-
-      it "#column_type" do
-        expect(controller.send(:column_type, :name)).to be :string
-        expect(controller.send(:column_type, :birth_date)).to be :date
-        expect(controller.send(:column_type, :zzz)).to be nil
-      end
-
-      it "#column_key?" do
-        expect(controller.send(:column_key?, :name)).to be true
-        expect(controller.send(:column_key?, :zzz)).to be false
-      end
-    end
-  end
-
-  describe "#association_key?" do
-    [ActiveRecordModel, MongoidModel].each do |m|
-      context m.name do
-        let(:model) { m }
-        it "関連だったらtrue" do
-          expect(controller.send(:association_key?, :items)).to be true
-        end
-        it "関連でなかったらfalse" do
-          expect(controller.send(:association_key?, :zzz)).to be false
-        end
-      end
-    end
-  end
 end

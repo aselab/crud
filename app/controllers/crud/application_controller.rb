@@ -1,6 +1,7 @@
 module Crud
  class ApplicationController < ::ApplicationController
   [
+    Crud::ModelMethods,
     Crud::Authorization,
     Crud::Serialization,
   ].each do |mod|
@@ -10,7 +11,7 @@ module Crud
 
   helper BootstrapHelper
   helper_method :model, :model_name, :model_key, :resources, :resource, :columns,
-    :stored_params, :column_key?, :association_key?, :sort_key?, :nested?,
+    :stored_params, :column_key?, :association_key?, :sort_key?, :has_nested?,
     :sort_key, :sort_order, :index_actions, :column_type, :can?, :cannot?
 
   before_action :set_defaults, :only => [:index, :show, :new, :edit, :create, :update]
@@ -22,8 +23,6 @@ module Crud
   before_action :before_update, :only => :update
   before_action :before_destroy, :only => :destroy
   before_action :authorize_action
-
-  class_attribute :_permit_keys
 
   def index
     do_index
@@ -67,7 +66,7 @@ module Crud
         format.json { render_json resource, status: :created }
       else
         format.html { render_edit :unprocessable_entity }
-        format.json { render json: resource.errors, status: :unprocessable_entity }
+        format.json { render_json_errors resource }
       end
     end
   end
@@ -85,7 +84,7 @@ module Crud
         format.json { render_json resource }
       else
         format.html { render_edit :unprocessable_entity }
-        format.json { render json: resource.errors, status: :unprocessable_entity }
+        format.json { render_json_errors resource }
       end
     end
   end
@@ -102,45 +101,22 @@ module Crud
   attr_accessor :columns, :index_actions
   attr_writer :resources, :resource
 
+  #
+  #=== CRUD対象のモデルクラス
+  #
+  # デフォルトではコントローラクラス名から対応するモデルを自動選択する．
+  # 名前が一致しない場合はオーバーライドしてモデルの参照を返すように実装する．
+  #
+  def model
+    @model ||= self.class.name.sub(/Controller$/, "").singularize.constantize
+  end
+
   def resources
     @resources ||= model.all
   end
 
   def resource
     @resource ||= find_resource
-  end
-
-  def self.permit_keys(*keys)
-    self._permit_keys ||= []
-    keys.each do |key|
-      self._permit_keys.push(key)
-      self._permit_keys += key.keys if key.is_a?(Hash)
-    end
-    self._permit_keys
-  end
-
-  def permit_keys
-    self.class.permit_keys
-  end
-
-  def permit_params
-    params.require(model_key).permit(permit_keys)
-  end
-
-  def activerecord?
-    if @is_activerecord.nil?
-      @is_activerecord =
-        !!(defined?(ActiveRecord::Base) && model <= ActiveRecord::Base)
-    end
-    @is_activerecord
-  end
-
-  def mongoid?
-    if @is_mongoid.nil?
-      @is_mongoid =
-        !!(defined?(Mongoid::Document)) && model.include?(Mongoid::Document)
-    end
-    @is_mongoid
   end
 
   #
@@ -171,46 +147,6 @@ module Crud
     value ? @default_sort_order = value : @default_sort_order
   end
 
-  #
-  #=== CRUD対象のモデルクラス
-  #
-  # デフォルトではコントローラクラス名から対応するモデルを自動選択する．
-  # 名前が一致しない場合はオーバーライドしてモデルの参照を返すように実装する．
-  #
-  def model
-    @model ||= self.class.name.sub(/Controller$/, "").singularize.constantize
-  end
-
-  #
-  #=== モデル名
-  #
-  # viewでの表示に利用される．デフォルトではmodel_name.humanが用いられる．
-  #
-  def model_name
-    @model_name ||= model.model_name.human
-  end
-
-  #
-  #=== モデルのキー
-  #
-  # paramsからデータを取得する時に用いるキー．デフォルトはscaffoldと同様．
-  # 
-  def model_key
-    @model_key ||= model.model_name.param_key.to_sym
-  end
-
-  #
-  #=== 表示/更新対象のカラムリスト
-  #
-  # デフォルト値はpermit_keys全て．
-  # 変更したい場合はオーバーライドして対象カラム名の配列を返すように実装する．
-  # アクションごとに対象カラムを変更したい場合はcolumns_for_:action という
-  # 名前のメソッドを定義するとそちらが優先される．
-  #
-  def model_columns
-    @model_columns ||= self.class.permit_keys.flat_map {|key| key.is_a?(Hash) ? key.keys : key}
-  end
-
   def search_terms
     tokenize(params[:term])
   end
@@ -221,46 +157,9 @@ module Crud
     }
   end
 
-  def column_metadata(name, model = model)
-    if activerecord?
-      model.columns_hash[name.to_s]
-    elsif mongoid?
-      model.fields[name.to_s]
-    end
-  end
-
-  def column_type(name, model = model)
-    type = column_metadata(name, model).try(:type)
-    type.is_a?(Class) ? type.name.downcase.to_sym : type
-  end
-
-  def column_key?(key, model = model)
-    !!column_metadata(key, model)
-  end
-
-  def association_key?(key, model = model)
-    !!model.reflect_on_association(key.to_sym)
-  end
-
-  def association_class(key, model = model)
-    model.reflect_on_association(key.to_sym).try(:klass)
-  end
-
   def sort_key?(key)
     respond_to?("sort_by_#{key}", true) || column_key?(key) ||
       (activerecord? && association_key?(key))
-  end
-
-  def nested?
-    if activerecord?
-      columns_for(crud_action).any? do |c|
-        model.nested_attributes_options.has_key?(c)
-      end
-    elsif mongoid?
-      columns_for(crud_action).any? do |c|
-        model.nested_attributes.has_key?(c.to_s + "_attributes")
-      end
-    end
   end
 
   #
@@ -518,11 +417,6 @@ module Crud
     model.find(params[:id])
   end
 
-  def columns_for(action)
-    column_method = "columns_for_" + action.to_s
-    self.respond_to?(column_method, true) ?  self.send(column_method) : model_columns
-  end
-
   #
   # 検索に利用するカラムリスト.
   # デフォルトではindexで表示する項目のうちtypeがstring, text, integerであるものまたは関連
@@ -619,7 +513,11 @@ module Crud
   end
 
   def render_json(items, options = nil)
-    render render_json_options(items, options)
+    render json_options(items, options)
+  end
+
+  def render_json_errors(item)
+    render json: item.errors, status: :unprocessable_entity
   end
 
   def render_show
