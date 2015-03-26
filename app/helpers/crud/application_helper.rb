@@ -39,7 +39,7 @@ module Crud
 
           link_to(label, url_params, options)
         end
-      rescue ActionController::RoutingError
+      rescue ActionController::RoutingError, ActionController::UrlGenerationError
       end
     end
 
