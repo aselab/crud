@@ -67,7 +67,8 @@ module Crud
       params.require(model_key).permit(permit_keys)
     end
 
-    def column_metadata(name, model = model)
+    def column_metadata(name, model = nil)
+      model ||= self.model
       if activerecord?
         model.columns_hash[name.to_s]
       elsif mongoid?
@@ -75,24 +76,29 @@ module Crud
       end
     end
 
-    def column_type(name, model = model)
+    def column_type(name, model = nil)
+      model ||= self.model
       type = column_metadata(name, model).try(:type)
       type.is_a?(Class) ? type.name.downcase.to_sym : type
     end
 
-    def column_key?(key, model = model)
+    def column_key?(key, model = nil)
+      model ||= self.model
       !!column_metadata(key, model)
     end
 
-    def association_key?(key, model = model)
+    def association_key?(key, model = nil)
+      model ||= self.model
       !!model.reflect_on_association(key.to_sym)
     end
 
-    def association_class(key, model = model)
+    def association_class(key, model = nil)
+      model ||= self.model
       model.reflect_on_association(key.to_sym).try(:klass)
     end
 
-    def has_nested?(action, model = model)
+    def has_nested?(action, model = nil)
+      model ||= self.model
       if activerecord?
         columns_for(action).any? do |c|
           model.nested_attributes_options.has_key?(c)

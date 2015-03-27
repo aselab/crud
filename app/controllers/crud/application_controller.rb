@@ -287,7 +287,8 @@ module Crud
   #    ["users.lastname like ? and users.firstname ?", "%#{term}%", "%#{term}%"]
   #  end
   #
-  def search_condition_for_column(column, term, model = model)
+  def search_condition_for_column(column, term, model = nil)
+    model ||= self.model
     method = "search_by_#{column}"
     if activerecord?
       cond = if respond_to?(method, true)
