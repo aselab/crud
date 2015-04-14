@@ -20,16 +20,16 @@ module Crud
         scope: serialization_scope,
         root: false
       }
-      if items.is_a?(Kaminari::PageScopeMethods)
-        defaults[:each_serializer] = serializer
-        defaults[:root] = "items"
-        defaults[:meta] = json_metadata.merge(
-          per_page: items.limit_value,
-          total_count: items.total_count,
-          total_pages: items.total_pages,
-          current_page: items.current_page
-        )
-      elsif items.respond_to?(:to_ary)
+      if items.respond_to?(:to_ary)
+        if items.is_a?(Kaminari::PageScopeMethods)
+          defaults[:root] = "items"
+          defaults[:meta] = json_metadata.merge(
+            per_page: items.limit_value,
+            total_count: items.total_count,
+            total_pages: items.total_pages,
+            current_page: items.current_page
+          )
+        end
         items = items.to_ary
         defaults[:each_serializer] = serializer
       else
