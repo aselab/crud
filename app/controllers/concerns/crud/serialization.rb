@@ -17,7 +17,6 @@ module Crud
 
     def json_options(items, options = nil)
       defaults = {
-        json: items,
         scope: serialization_scope,
         root: false
       }
@@ -31,10 +30,12 @@ module Crud
           current_page: items.current_page
         )
       elsif items.respond_to?(:to_ary)
+        items = items.to_ary
         defaults[:each_serializer] = serializer
       else
         defaults[:serializer] = serializer
       end
+      defaults[:json] = items
       options ? defaults.merge(options) : defaults
     end
 
