@@ -27,7 +27,7 @@ class BootstrapDatetimepickerInput < SimpleForm::Inputs::Base
 
   def date_picker
     s = <<-EOT
-      <div class="input-group date">
+      <div class="input-group date" style="width: 224px;">
         <span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span></span>
         <input type="text" class="form-control" name="#{attribute_name.to_s + "_date_input"}" value="#{date}"/>
       </div>
@@ -37,7 +37,7 @@ class BootstrapDatetimepickerInput < SimpleForm::Inputs::Base
 
   def time_picker
     s = <<-EOT
-      <div class="input-group">
+      <div class="input-group" style="width: 224px;">
         <span class="input-group-addon"><span class="glyphicon glyphicon-time"></span></span>
         <input type="text" class="form-control" name="#{attribute_name.to_s + "_datetime_input"}" value="#{time}"/>
       </div>
