@@ -47,11 +47,12 @@ module Crud
           next unless errors.has_key?(key)
           target = item.send(key)
           errors[key] = if target.respond_to?(:to_ary)
-            target.each.with_index.each_with_object({}) do |(o, i), h|
+            e = target.each.with_index.each_with_object({}) do |(o, i), h|
               h[i] = o.errors.messages unless o.errors.empty?
             end
+            e.empty? ? errors[key] : e
           else
-            target.errors.messages
+            target.errors.empty? ? errors[key] : target.errors.messages
           end
         end
       end
