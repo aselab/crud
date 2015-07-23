@@ -2,45 +2,85 @@
 require 'spec_helper'
 
 describe Crud::ApplicationController do
-  def stub_params(params = nil)
-    controller.stub!(:params).and_return(params || {})
-  end
+  let(:model) { }
+  before { allow(controller).to receive(:model).and_return(model) }
 
   describe "#tokenize" do
     it "nilを指定した場合" do
-      controller.send(:tokenize, nil).should == []
+      expect(controller.send(:tokenize, nil)).to match_array []
     end
 
     it "空文字を指定した場合" do
-      controller.send(:tokenize, "").should == []
+      expect(controller.send(:tokenize, "")).to match_array []
     end
 
     it "スペースを含まない文字を指定した場合" do
-      controller.send(:tokenize, "キーワード1").should == ["キーワード1"]
+      expect(controller.send(:tokenize, "キーワード1")).to match_array ["キーワード1"]
     end
 
     it "スペース区切りで分割されること" do
-      controller.send(:tokenize, " キーワード1 キーワード2　 キーワード3　").should == ["キーワード1", "キーワード2", "キーワード3"]
+      expect(controller.send(:tokenize, " キーワード1 キーワード2　 キーワード3　")).to match_array ["キーワード1", "キーワード2", "キーワード3"]
     end
 
     it "ダブルクォートでスペースを含むキーワードを指定できること" do
-      controller.send(:tokenize, 'abc "スペース含む キーワード" def').should == ["abc", "スペース含む キーワード", "def"]
+      expect(controller.send(:tokenize, 'abc "スペース含む キーワード" def')).to match_array ["abc", "スペース含む キーワード", "def"]
     end
 
     it "正しくダブルクォートが閉じられていない場合文字として扱うこと" do
-      controller.send(:tokenize, 'key"word "pre').should == ['key"word', '"pre']
+      expect(controller.send(:tokenize, 'key"word "pre')).to match_array ['key"word', '"pre']
     end
   end
 
-  describe "#search_sql_for_column" do
-    it "search_by_column メソッドが定義されていたらそれを呼び出すこと" do
-      sql = ["test = ?", "name1"]
-      expect(controller).to receive(:search_by_name).with("name1").and_return(sql)
-      user = double("user model")
-      expect(user).to receive(:table_name).and_return("users")
-      expect(user).to receive(:sanitize_sql_for_conditions).with(sql, "users").and_return("sanitized sql")
-      controller.send(:search_sql_for_column, user, "name", "name1").should == "sanitized sql"
-        "test = 'name1'"
+  describe "#search_condition_for_column" do
+    context "ActiveRecord::Base" do
+      let(:model) { User }
+
+      it "search_by_xxx メソッドが定義されている場合それを呼び出すこと" do
+        cond= ["test = ?", "name1"]
+        expect(controller).to receive(:search_by_name).with("name1").and_return(cond)
+        expect(controller.send(:search_condition_for_column, "name", "name1")).to eq "test = 'name1'"
+      end
+
+      it "仮想カラムを検索できること" do
+        s = 3.years.ago.to_date.tomorrow
+        e = 2.years.ago.to_date
+        cond= {birth_date: s..e}
+        expect(controller).to receive(:search_by_age).with("2").and_return(cond)
+        expect(controller.send(:search_condition_for_column, "age", "2")).to eq %Q["users"."birth_date" BETWEEN '#{s}' AND '#{e}']
+      end
+
+      it "文字列カラムの場合like検索" do
+        expect(controller.send(:search_condition_for_column, "name", "name1")).to eq %Q["users"."name" LIKE '%name1%']
+      end
+
+      it "数値カラムの場合一致検索" do
+        expect(controller.send(:search_condition_for_column, "number", "3")).to eq %Q["users"."number" = 3]
+      end
+    end
+
+    context "Mongoid::Document" do
+      let(:model) { MongoUser }
+
+      it "仮想カラムを検索できること" do
+        s = 3.years.ago.to_date.tomorrow
+        e = 2.years.ago.to_date
+        cond= {birth_date: s..e}
+        expect(controller).to receive(:search_by_age).with("2").and_return(cond)
+        expect(controller.send(:search_condition_for_column, "age", "2")).to eq cond
+      end
+
+      it "文字列カラムの場合regexp検索" do
+        expect(controller.send(:search_condition_for_column, "name", "aaa")).to eq("name" => /aaa/)
+      end
+
+      it "数値カラムの場合一致検索" do
+        expect(controller.send(:search_condition_for_column, "number", "3")).to eq("number" => 3)
+      end
+
+      it "Array検索" do
+        expect(controller.send(:search_condition_for_column, "array", "aaa")).to eq("array" => "aaa")
+      end
     end
   end
+
 end

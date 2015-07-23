@@ -39,7 +39,7 @@ module Crud
 
           link_to(label, url_params, options)
         end
-      rescue ActionController::RoutingError
+      rescue ActionController::RoutingError, ActionController::UrlGenerationError
       end
     end
 
@@ -117,12 +117,13 @@ module Crud
     end
 
     def crud_form(resource, options = {}, &block)
-      method = nested? ? :simple_nested_form_for : :simple_form_for
+      action = resource.new_record? ? :create : :update
+      method = has_nested?(action) ? :simple_nested_form_for : :simple_form_for
       options = {
         :as => model_key,
         :url => resource.new_record? ?
-          stored_params(:action => :create) :
-          stored_params(:action => :update, :id => resource),
+          stored_params(:action => action) :
+          stored_params(:action => action, :id => resource),
         :html => { :class => "col-sm-9" },
         :defaults => { :input_html => { :class => "form-control" } }
       }.merge(options)
@@ -136,7 +137,7 @@ module Crud
       end
 
       default = {}
-      case f.object.class.columns_hash[column.to_s].try(:type)
+      case column_type(column, f.object.class)
       when :boolean
         default = {:label => false, :inline_label => true, :input_html => {:class => ""}}
       when :datetime, :timestamp
@@ -180,7 +181,7 @@ module Crud
     end
 
     def find_method(short_method)
-      method = params[:controller] + "_" + short_method
+      method = params[:controller].gsub("/", "_") + "_" + short_method
       return method if respond_to?(method)
       return short_method if respond_to?(short_method)
       nil

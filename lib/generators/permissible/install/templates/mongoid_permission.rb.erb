@@ -1,0 +1,17 @@
+class <%= options[:permission] %>
+  include Mongoid::Document
+
+  belongs_to :<%= principal_name %>
+  embedded_in :<%= permissible_name %>, polymorphic: true
+  field :flags, type: Array
+
+  def flags
+    read_attribute(:flags).try(:inject, :+)
+  end
+
+  def flags=(value)
+    value = value.is_a?(Array) ? value : <%= permissible_name %>.class.split_flag(value.to_i)
+    write_attribute(:flags, value)
+    flags
+  end
+end

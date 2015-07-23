@@ -27,8 +27,8 @@ class BootstrapDatetimepickerInput < SimpleForm::Inputs::Base
 
   def date_picker
     s = <<-EOT
-      <div class="input-group date">
-        <span class="input-group-addon add-on glyphicon glyphicon-calendar"></span>
+      <div class="input-group date" style="width: 224px;">
+        <span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span></span>
         <input type="text" class="form-control" name="#{attribute_name.to_s + "_date_input"}" value="#{date}"/>
       </div>
     EOT
@@ -37,8 +37,8 @@ class BootstrapDatetimepickerInput < SimpleForm::Inputs::Base
 
   def time_picker
     s = <<-EOT
-      <div class="input-prepend input-group">
-        <span class="add-on input-group-addon glyphicon glyphicon-time"></span>
+      <div class="input-group" style="width: 224px;">
+        <span class="input-group-addon"><span class="glyphicon glyphicon-time"></span></span>
         <input type="text" class="form-control" name="#{attribute_name.to_s + "_datetime_input"}" value="#{time}"/>
       </div>
     EOT
@@ -126,7 +126,7 @@ class BootstrapDatetimepickerInput < SimpleForm::Inputs::Base
   end
 
   def input_id
-    @input_id ||= input_html_options[:id] || object_name.to_s.gsub(/[\[|\]\[|\/]/, "_").gsub(/\]/, "") + "_" + attribute_name.to_s
+    @input_id ||= input_html_options[:id] || object_name.to_s.gsub(/\/|\[|\]\[/, "_").gsub(/\]/, "") + "_" + attribute_name.to_s
   end
 
   def value
@@ -152,9 +152,9 @@ class BootstrapDatetimepickerInput < SimpleForm::Inputs::Base
 
   def inline_elements(*elements)
     content_tag(:div, :class => "form-inline") do
-      elements.compact.map {|elem|
-       content_tag(:div, elem, :class => "form-group")
-      }.reduce(:+)
+      elements.compact.map do |elem|
+        content_tag(:div, elem, :class => "form-group")
+      end.reduce(:+)
     end
   end
 

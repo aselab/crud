@@ -1,2 +1,2 @@
-Rails.application.routes.draw do
+Crud::Engine.routes.draw do
 end

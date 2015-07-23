@@ -1,5 +1,10 @@
-Dummy::Application.routes.draw do
-  get '/' => "home#index", :as => :root
+Rails.application.routes.draw do
+  resources :mongo_users
+  resources :mongo_groups do
+    resources :mongo_resources
+  end
+  resources :users
+  resources :groups
+  root 'home#index'
 
-  resources :people
 end

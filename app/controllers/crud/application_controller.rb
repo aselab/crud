@@ -1,19 +1,31 @@
-class Crud::ApplicationController < ApplicationController
-  helper Crud::BootstrapHelper
-  helper_method :model, :model_name, :model_key, :resources, :resource, :columns,
-    :stored_params, :column_key?, :association_key?, :sort_key?, :nested?,
-    :sort_key, :sort_order, :index_actions
+module Crud
+ class ApplicationController < ::ApplicationController
+  [
+    Crud::ModelMethods,
+    Crud::Authorization,
+    Crud::Serialization,
+  ].each do |mod|
+    include mod
+    protected *mod.instance_methods
+  end
 
-  before_filter :set_defaults, :only => [:index, :show, :new, :edit, :create, :update]
-  before_filter :before_index, :only => :index
-  before_filter :before_show, :only => :show
-  before_filter :before_new, :only => :new
-  before_filter :before_edit, :only => :edit
-  before_filter :before_create, :only => :create
-  before_filter :before_update, :only => :update
-  before_filter :before_destroy, :only => :destroy
+  helper BootstrapHelper
+  helper_method :model, :model_name, :model_key, :resources, :resource, :columns,
+    :stored_params, :column_key?, :association_key?, :sort_key?, :has_nested?,
+    :sort_key, :sort_order, :index_actions, :column_type, :can?, :cannot?
+
+  before_action :set_defaults, :only => [:index, :show, :new, :edit, :create, :update]
+  before_action :before_index, :only => :index
+  before_action :before_show, :only => :show
+  before_action :before_new, :only => :new
+  before_action :before_edit, :only => :edit
+  before_action :before_create, :only => :create
+  before_action :before_update, :only => :update
+  before_action :before_destroy, :only => :destroy
+  before_action :authorize_action
 
   def index
+    do_index
     respond_to do |format|
       format.html # index.html.erb
       format.json { render_json resources }
@@ -21,37 +33,40 @@ class Crud::ApplicationController < ApplicationController
   end
 
   def show
+    do_action
     respond_to do |format|
       format.html { render_show }
-      format.json { render json: resource }
+      format.json { render_json resource }
     end
   end
 
   def new
+    do_action
     respond_to do |format|
       format.html { render_edit }
-      format.json { render json: resource }
+      format.json { render_json resource }
     end
   end
 
   def edit
+    do_action
     render_edit
   end
 
   def create
     result = do_create
     if result && request.xhr?
-      render json: resource, status: :created, location: resource
+      render_json resource, status: :created
       return
     end
 
     respond_to do |format|
       if result
         format.html { redirect_after_success notice: message(:successfully_created, :name => model_name) }
-        format.json { render json: resource, status: :created, location: resource }
+        format.json { render_json resource, status: :created }
       else
         format.html { render_edit :unprocessable_entity }
-        format.json { render json: resource.errors, status: :unprocessable_entity }
+        format.json { render_json_errors resource }
       end
     end
   end
@@ -59,22 +74,23 @@ class Crud::ApplicationController < ApplicationController
   def update
     result = do_update
     if result && request.xhr?
-      render json: resource
+      render_json resource
       return
     end
 
     respond_to do |format|
       if result
         format.html { redirect_after_success notice: message(:successfully_updated, :name => model_name) }
-        format.json { render json: resource }
+        format.json { render_json resource }
       else
         format.html { render_edit :unprocessable_entity }
-        format.json { render json: resource.errors, status: :unprocessable_entity }
+        format.json { render_json_errors resource }
       end
     end
   end
 
   def destroy
+    do_action
     respond_to do |format|
       format.html { redirect_after_success notice: message(:successfully_deleted, :name => model_name) }
       format.json { head :no_content }
@@ -82,7 +98,26 @@ class Crud::ApplicationController < ApplicationController
   end
 
   protected
-  attr_accessor :resources, :resource, :columns, :index_actions
+  attr_accessor :columns, :index_actions
+  attr_writer :resources, :resource
+
+  #
+  #=== CRUD対象のモデルクラス
+  #
+  # デフォルトではコントローラクラス名から対応するモデルを自動選択する．
+  # 名前が一致しない場合はオーバーライドしてモデルの参照を返すように実装する．
+  #
+  def model
+    @model ||= self.class.name.sub(/Controller$/, "").singularize.constantize
+  end
+
+  def resources
+    @resources ||= model.all
+  end
+
+  def resource
+    @resource ||= find_resource
+  end
 
   #
   #=== デフォルトのソートキー
@@ -112,47 +147,6 @@ class Crud::ApplicationController < ApplicationController
     value ? @default_sort_order = value : @default_sort_order
   end
 
-  #
-  #=== CRUD対象のモデルクラス
-  #
-  # デフォルトではコントローラクラス名から対応するモデルを自動選択する．
-  # 名前が一致しない場合はオーバーライドしてモデルの参照を返すように実装する．
-  #
-  def model
-    @model ||= self.class.name.sub(/Controller$/, "").singularize.constantize
-  end
-
-  #
-  #=== モデル名
-  #
-  # viewでの表示に利用される．デフォルトではmodel_name.humanが用いられる．
-  #
-  def model_name
-    @model_name ||= model.model_name.human
-  end
-
-  #
-  #=== モデルのキー
-  #
-  # paramsからデータを取得する時に用いるキー．デフォルトはscaffoldと同様．
-  # 
-  def model_key
-    @model_key ||= model.model_name.param_key.to_sym
-  end
-
-  #
-  #=== 表示/更新対象のカラムリスト
-  #
-  # デフォルト値はaccessible_attributes全て．
-  # 変更したい場合はオーバーライドして対象カラム名の配列を返すように実装する．
-  # アクションごとに対象カラムを変更したい場合はcolumns_for_:action という
-  # 名前のメソッドを定義するとそちらが優先される．
-  #
-  def model_columns
-    @model_columns ||=
-      model.accessible_attributes.to_a.reject(&:blank?).map(&:to_sym)
-  end
-
   def search_terms
     tokenize(params[:term])
   end
@@ -163,42 +157,21 @@ class Crud::ApplicationController < ApplicationController
     }
   end
 
-  def column_key?(key)
-    model.columns_hash.has_key?(key.to_s)
-  end
-
-  def association_key?(key)
-    model.reflections.has_key?(key.to_sym)
-  end
-
   def sort_key?(key)
-    respond_to?("sort_by_#{key}", true) || column_key?(key) || association_key?(key)
-  end
-
-  def nested?
-    columns_for(crud_action).any? {|c|
-      model.nested_attributes_options.has_key?(c)
-    }
+    respond_to?("sort_by_#{key}", true) || column_key?(key) ||
+      (activerecord? && association_key?(key))
   end
 
   #
   #=== 権限チェック
   #
-  # デフォルトでは authorize! :action, resource でチェックする。
-  # authorize_:actionという名前のメソッドを定義すると、
-  # アクションごとの権限チェック処理をオーバーライドできる。
+  # Authorizationクラスにaction名と同じメソッドを定義すると、
+  # 各アクションの権限処理をオーバーライドできる。
+  # その場合は権限がないときCrud::NotAuthorizedErrorを投げるように実装する。
+  # デフォルトでは can? メソッドを呼び出して権限がない場合例外を投げるようになっている。
   #
   def authorize_action
-    method = "authorize_" + crud_action.to_s
-    if respond_to?(method, true)
-      send(method)
-    else
-      authorize! crud_action, resource
-    end
-  end
-
-  def authorize_index
-    authorize! :index, model
+    authorize_for(crud_action, resource)
   end
 
   #
@@ -213,55 +186,83 @@ class Crud::ApplicationController < ApplicationController
   end
 
   #
+  # indexアクションで呼び出される内部メソッド。
+  # 権限によって検索対象を絞り込みたい場合などは、
+  # これをオーバーライドして実装する。
+  #
+  def do_filter
+    if ids = params[:except_ids]
+      if activerecord?
+        resources.where.not("#{model.table_name}.id" => ids)
+      elsif mongoid?
+        resources.not_in(id: ids)
+      end
+    end
+  end
+
+  #
   # indexアクションで呼び出される内部メソッド.
-  # オーバーライドしてself.resourcesに表示対象を格納するように実装する．
+  # オーバーライドして検索結果を返却するように実装する．
   #
   def do_search
     format = (params[:format] || :html).to_sym
     columns = format == :html ? columns_for(:index) : columns_for(format)
-    associations = columns.select {|c| association_key?(c)}
-    self.resources = resources.includes(associations) unless associations.empty?
+    association_columns = columns.select {|c| association_key?(c)}
 
-    search_by_sql
-  end
-
-  def do_filter
-    self.resources = resources.accessible_by(current_ability, :read)
-    if ids = params[:except_ids]
-      self.resources = resources.where(["#{model.table_name}.id not in (?)", ids])
-    end
-  end
-
-  def search_by_sql
     terms = search_terms
-
     model_columns = []
-    columns_for_search.each {|c|
+    conditions = []
+    columns_for_search.each do |c|
+      param = params[c] if params.has_key?(c)
+      cond = [c, param, model] if param
       if search_method_defined?(c)
         model_columns.push([model, c])
-      elsif reflection = model.reflections[c.to_sym]
-        self.resources = resources.includes(c.to_sym)
-        association = reflection.class_name.constantize
+      elsif association = association_class(c)
+        association_columns.push(c)
         fields = association.respond_to?(:search_field, true) ?
           association.send(:search_field) :
-          [:name, :title].find {|c| association.columns_hash.has_key?(c.to_s)}
-        Array(fields).each {|f| model_columns.push([association, f])}
+          [:name, :title].find {|c| column_key?(c, association)}
+        Array(fields).each do |f|
+          model_columns.push([association, f])
+          cond = [f, param, association] if param
+        end
       else
         model_columns.push([model, c])
       end
-    }
-    self.resources = resources.where(build_query(model_columns, terms))
+      conditions.push(search_condition_for_column(*cond)) if cond
+    end
+
+    include_association(*association_columns)
+    r = terms.inject(resources) do |scope, term|
+      conds = model_columns.map do |model, column|
+        search_condition_for_column(column, term, model)
+      end
+      cond = if conds.size > 1
+        if activerecord?
+          "(#{conds.join(" OR ")})"
+        elsif mongoid?
+          {"$and" => [{"$or" => conds}]}
+        end
+      else
+        conds.first
+      end
+      scope.where(cond)
+    end
+    conditions.inject(r) do |scope, cond|
+      scope.where(cond)
+    end
   end
 
-  def build_query(model_columns, terms)
-    return nil if model_columns.empty? || terms.empty?
-
-    terms.map {|term|
-      conds = model_columns.map {|model, column|
-        search_sql_for_column(model, column, term)
-      }.compact
-      conds.size > 1 ? "(#{conds.join(" OR ")})" : conds.first
-    }.compact.join(" AND ")
+  def include_association(*associations)
+    return if associations.empty?
+    if activerecord?
+      self.resources = resources.includes(associations).references(associations)
+    elsif mongoid?
+      associations.select! do |a|
+        !model.reflect_on_association(a).relation.embedded?
+      end
+      self.resources = resources.includes(associations)
+    end
   end
 
   def sort_key
@@ -280,23 +281,43 @@ class Crud::ApplicationController < ApplicationController
   #
   # search_by_:column_name という名前のメソッドを定義すると、
   # カラム毎の検索条件をカスタマイズできる。
+  # whereに渡す条件式を返すように実装する。
   #
   #  def search_by_name(term)
   #    ["users.lastname like ? and users.firstname ?", "%#{term}%", "%#{term}%"]
   #  end
   #
-  def search_sql_for_column(model, column, term)
+  def search_condition_for_column(column, term, model = nil)
+    model ||= self.model
     method = "search_by_#{column}"
-    if respond_to?(method, true)
-      model.send(:sanitize_sql_for_conditions, send(method, term), model.table_name)
-    else
-      c = model.columns_hash[column.to_s]
-      column_name = "#{model.table_name}.#{c.name}"
-      case c.type
-      when :string, :text
-        model.send(:sanitize_sql_array, ["#{column_name} like ?", "%#{term}%"])
-      when :integer
-        model.send(:sanitize_sql_hash, column_name => Integer(term)) rescue "0 = 1"
+    if activerecord?
+      cond = if respond_to?(method, true)
+        model.where(send(method, term)).where_values.first
+      else
+        c = column_metadata(column, model)
+        t = model.arel_table
+        case c.type
+        when :string, :text
+          t[c.name].matches("%#{term}%")
+        when :integer
+          t[c.name].eq(Integer(term)) rescue "0 = 1"
+        else
+          t[c.name].eq(term)
+        end
+      end
+      cond.respond_to?(:to_sql) ? cond.to_sql : cond
+    elsif mongoid?
+      if respond_to?(method, true)
+        send(method, term)
+      else
+        c = column_metadata(column, model)
+        if c.type == String
+          { c.name => Regexp.new(Regexp.escape(term)) }
+        elsif c.type == Integer
+          { c.name => Integer(term) } rescue { id: 0 }
+        else
+          { c.name => term }
+        end
       end
     end
   end
@@ -309,45 +330,50 @@ class Crud::ApplicationController < ApplicationController
   #    "users.last_name #{order}, users.first_name #{order}"
   #  end
   #
-  def sort_sql_for_column(name)
+  def sort_condition_for_column(name)
     method = "sort_by_#{name}"
     if respond_to?(method, true)
       send(method, sort_order)
-    else
-      column = if reflection = model.reflections[name]
-        self.resources = resources.includes(name)
-        association = reflection.class_name.constantize
+    elsif activerecord?
+      column = if association = association_class(name)
+        include_association(name)
         f = association.respond_to?(:sort_field, true) ?
           association.send(:sort_field) :
-          [:name, :title, :id].find {|c| association.columns_hash.has_key?(c.to_s)}
+          [:name, :title, :id].find {|c| column_key?(c, association)}
         "#{association.table_name}.#{f.to_s}" if f
       else
-        c = model.columns_hash[name.to_s]
+        c = column_metadata(name)
         "#{model.table_name}.#{c.name}" if c
       end
       "#{column} #{sort_order}" if column
+    elsif mongoid?
+      { name => sort_order }
     end
   end
 
   def do_sort
     return unless key = sort_key
-    sql = sort_sql_for_column(key)
-    self.resources = resources.order(sql) if sql
+    if cond = sort_condition_for_column(key)
+      if activerecord?
+        resources.order(cond) 
+      elsif mongoid?
+        resources.order_by(cond) 
+      end
+    end
   end
 
   def do_page
-    self.resources = resources.page(params[:page]).per(params[:per])
+    resources.page(params[:page]).per(params[:per]) unless params[:page] == "false"
   end
 
   #
   # indexメソッドで呼び出される内部メソッド.
   #
   def do_index
-    self.resources = model.scoped
-    do_filter
-    do_search
-    do_sort
-    do_page
+    self.resources = do_filter || resources
+    self.resources = do_search || resources
+    self.resources = do_sort || resources
+    self.resources = do_page || resources
   end
 
   #
@@ -376,39 +402,20 @@ class Crud::ApplicationController < ApplicationController
     resource.destroy
   end
 
-  #
-  # Mass-Assignmentスコープ.
-  # 必要であればオーバーライドしてスコープシンボルを返すように実装する．
-  #
-  #  例:
-  #  # model
-  #  attr_accessible :name
-  #  attr_accessible :name, :is_admin, :as => :admin
-  #  
-  #  # controller
-  #  def assignment_scope
-  #    current_user.admin? ? :admin : nil
-  #  end
-  #
-  def assignment_scope
-    nil
-  end
-
   def new_resource
-    self.resource = model.new
+    model.new
   end
 
   def assign_params
-    resource.assign_attributes(params[model_key], :as => assignment_scope)
+    resource.assign_attributes(permit_params)
   end
 
   def find_resource
-    self.resource = model.find(params[:id])
+    find_resource! if params[:id]
   end
 
-  def columns_for(action)
-    column_method = "columns_for_" + action.to_s
-    self.respond_to?(column_method, true) ?  self.send(column_method) : model_columns
+  def find_resource!
+    model.find(params[:id])
   end
 
   #
@@ -425,15 +432,20 @@ class Crud::ApplicationController < ApplicationController
 
   def search_column?(model, column_name)
     return true if search_method_defined?(column_name)
-    column = model.columns_hash[column_name.to_s]
-    column && [:string, :text, :integer].include?(column.type) || association_key?(column_name)
+    type = column_type(column_name)
+    (type && [:string, :text, :integer].include?(type)) ||
+      (activerecord? && association_key?(column_name))
   end
 
+  #
   # JSON出力に利用するカラムリスト.
-  # デフォルトではindexで表示する項目と同じ
   #
   def columns_for_json
-    columns_for(:index)
+    if params[:action] == "new"
+      columns_for(crud_action)
+    else
+      [:id] + columns_for(crud_action)
+    end
   end
 
   #
@@ -453,7 +465,7 @@ class Crud::ApplicationController < ApplicationController
   def stored_params(*args)
     overwrites = args.extract_options!
     keys = args.blank? ? stored_params_keys : args
-    params.dup.extract!(*keys).merge(overwrites)
+    params.to_hash.extract!(*keys).merge(overwrites)
   end
 
   def crud_action
@@ -487,16 +499,26 @@ class Crud::ApplicationController < ApplicationController
     @message || t("crud.message." + key.to_s, options)
   end
 
-  def render_json(resources)
-    if resources.is_a?(Kaminari::PageScopeMethods)
-      render json: {
-        :data => resources,
-        :total_pages => resources.total_pages,
-        :current_page => resources.current_page
-      }.to_json(:methods => :label)
-    else
-      render json: resources
-    end
+  def serializer
+    @serializer ||=
+      ("#{model.name}Serializer".constantize rescue nil) || super
+  end
+
+  def serialization_scope
+    {
+      action: params[:action],
+      current_user: current_user,
+      authorization: authorization,
+      columns: columns_for_json
+    }
+  end
+
+  def render_json(items, options = nil)
+    render json_options(items, options)
+  end
+
+  def render_json_errors(item)
+    render json_errors_options(item)
   end
 
   def render_show
@@ -517,51 +539,30 @@ class Crud::ApplicationController < ApplicationController
     end
   end
 
-  unless method_defined?(:current_user)
-    define_method(:current_user) {}
-  end
-
   def before_index
-    authorize_action
-    new_resource
-    do_action
   end
 
   def before_show
-    find_resource
-    do_action
-    authorize_action
   end
 
   def before_new
-    new_resource
-    assign_params
-    do_action
-    authorize_action
+    self.resource = new_resource
+    assign_params if params[model_key].present?
   end
 
   def before_edit
-    find_resource
-    assign_params
-    do_action
-    authorize_action
   end
 
   def before_create
-    new_resource
-    authorize_action
+    self.resource = new_resource
     assign_params
   end
 
   def before_update
-    find_resource
-    authorize_action
     assign_params
   end
 
   def before_destroy
-    find_resource
-    authorize_action
-    do_action
   end
+ end
 end
