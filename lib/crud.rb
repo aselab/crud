@@ -1,6 +1,6 @@
 require 'jquery-rails'
 require 'bootstrap-sass'
-require 'font-awesome-sass-rails'
+require 'font-awesome-sass'
 require 'kaminari'
 require 'simple_form'
 require 'select2-rails'

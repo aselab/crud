@@ -18,7 +18,7 @@ Gem::Specification.new do |s|
   s.add_dependency "rails", ">= 4.1.0"
   s.add_dependency "jquery-rails"
   s.add_dependency "bootstrap-sass"
-  s.add_dependency "font-awesome-sass-rails"
+  s.add_dependency "font-awesome-sass"
 
   s.add_dependency "kaminari"
   s.add_dependency "simple_form", "~> 3.1.0"

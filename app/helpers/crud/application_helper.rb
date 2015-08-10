@@ -6,11 +6,11 @@ module Crud
         focus = sort_key == key.to_sym
         current = sort_order
         order = focus && current == :asc ? :desc : :asc
-        icon = order == :asc ? "icon-sort-up" : "icon-sort-down"
+        icon = current == :asc ? "fa-sort-asc" : "fa-sort-desc"
         p = params.dup.update(:sort_key => key.to_s, :sort_order => order.to_s)
         link = link_to(label, p)
         if focus
-          link + content_tag(:i, nil, :class => icon)
+          link + content_tag(:i, nil, :class => "fa " + icon)
         else
           link
         end
