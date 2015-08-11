@@ -34,7 +34,7 @@ describe Crud::ApplicationHelper do
         expect(helper).to receive(:link_to).with("human name of sort_key", 
           @params.dup.update(:sort_key => "sort_key", :sort_order => "desc"),
           ).and_return("xxx")
-        expect(helper.link_to_sort(:sort_key)).to eq 'xxx<i class="icon-sort-down"></i>'
+        expect(helper.link_to_sort(:sort_key)).to eq 'xxx<i class="fa fa-sort-asc"></i>'
       end
     end
 
