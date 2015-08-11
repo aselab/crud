@@ -59,7 +59,8 @@ class Select2Input < SimpleForm::Inputs::CollectionInput
 
   def select2_options(options)
     label = options.delete(:label_method) || "name"
-    options[:placeholder] ||= "#{I18n.t("simple_form.select2.placeholder", :name => object.class.human_attribute_name(attribute_name))}"
+    name = reflection.try(:name) || attribute_name
+    options[:placeholder] ||= "#{I18n.t("simple_form.select2.placeholder", :name => object.class.human_attribute_name(name))}"
 
     ids = object.send(attribute_name)
     append_options = []
