@@ -124,8 +124,7 @@ module Crud
         :url => resource.new_record? ?
           stored_params(:action => action) :
           stored_params(:action => action, :id => resource),
-        :html => { :class => "col-sm-9" },
-        :defaults => { :input_html => { :class => "form-control" } }
+        :html => { :class => "col-sm-9" }
       }.merge(options)
 
       send(method, resource, options, &block)
@@ -139,7 +138,7 @@ module Crud
       default = {}
       case column_type(column, f.object.class)
       when :boolean
-        default = {:label => false, :inline_label => true, :input_html => {:class => ""}}
+        default = { wrapper: :vertical_boolean }
       when :datetime, :timestamp
         default[:as] = :bootstrap_datetimepicker
       when :date
