@@ -98,7 +98,7 @@ module Crud
   end
 
   protected
-  attr_accessor :columns, :index_actions
+  attr_accessor :columns
   attr_writer :resources, :resource
 
   #
@@ -483,7 +483,6 @@ module Crud
   def set_defaults
     @title = t("crud.action_title." + crud_action.to_s, :name => model_name)
     self.columns = columns_for(crud_action)
-    self.index_actions = index_actions
   end
 
   def set_redirect_to(url)
