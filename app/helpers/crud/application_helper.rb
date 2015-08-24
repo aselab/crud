@@ -118,7 +118,6 @@ module Crud
 
     def crud_form(resource, options = {}, &block)
       action = resource.new_record? ? :create : :update
-      method = has_nested?(action) ? :simple_nested_form_for : :simple_form_for
       options = {
         :as => model_key,
         :url => resource.new_record? ?
@@ -127,7 +126,7 @@ module Crud
         :html => { :class => "col-sm-9" }
       }.merge(options)
 
-      send(method, resource, options, &block)
+      send(:simple_form_for, resource, options, &block)
     end
 
     def simple_form_input(f, column, options = nil)
