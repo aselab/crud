@@ -4,7 +4,7 @@ class Select2Input < SimpleForm::Inputs::CollectionInput
   include ActionView::Helpers::JavaScriptHelper
   include Rails.application.routes.url_helpers
 
-  def input
+  def input(wrapper_options)
     id = input_id
     def multiple_js
       <<-SCRIPT

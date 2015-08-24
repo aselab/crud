@@ -158,7 +158,7 @@ class BootstrapDatetimepickerInput < SimpleForm::Inputs::Base
     end
   end
 
-  def input
+  def input(wrapper_options)
     hidden_input + inline_elements(date_picker, time_picker, reset_button) + datetimepicker_js
   end
 end
