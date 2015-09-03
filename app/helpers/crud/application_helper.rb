@@ -30,11 +30,13 @@ module Crud
             t("crud.action_title.new", :name => model_name) :
             t("crud.action." + action.to_s)
 
-          options = {:class => "btn btn-default"}
+          options = {}
           if action == :destroy
             options[:method] = :delete
             options[:data] = { :confirm => t("crud.message.are_you_sure") }
-            options[:class] += " btn-danger"
+            options[:class] = "btn btn-danger"
+          else
+            options[:class] = "btn btn-default"
           end
 
           link_to(label, url_params, options)
