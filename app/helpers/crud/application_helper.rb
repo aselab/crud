@@ -19,17 +19,13 @@ module Crud
       end
     end
 
-    def link_to_action(action, resource = nil, params = {})
+    def link_to_action(action, resource = nil, params = {}, &block)
       url_params = stored_params(:action => action, :id => resource).merge(params)
       method = find_method("link_to_#{action}")
       return send(method, url_params) if method
 
       begin
         if can?(action, resource)
-          label = action == :new ?
-            t("crud.action_title.new", :name => model_name) :
-            t("crud.action." + action.to_s)
-
           options = {}
           if action == :destroy
             options[:method] = :delete
@@ -39,7 +35,14 @@ module Crud
             options[:class] = "btn btn-default"
           end
 
-          link_to(label, url_params, options)
+          if block
+            link_to(url_params, options, &block)
+          else
+            label = action == :new ?
+              t("crud.action_title.new", :name => model_name) :
+              t("crud.action." + action.to_s)
+            link_to(label, url_params, options)
+          end
         end
       rescue ActionController::RoutingError, ActionController::UrlGenerationError
       end
