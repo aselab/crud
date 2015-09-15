@@ -27,7 +27,7 @@ class BootstrapDatetimepickerInput < SimpleForm::Inputs::Base
 
   def date_picker
     s = <<-EOT
-      <div class="input-group date" style="width: 224px;">
+      <div class="input-group date" style="max-width: 224px;">
         <span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span></span>
         <input type="text" class="form-control" name="#{attribute_name.to_s + "_date_input"}" value="#{date}"/>
       </div>
@@ -37,7 +37,7 @@ class BootstrapDatetimepickerInput < SimpleForm::Inputs::Base
 
   def time_picker
     s = <<-EOT
-      <div class="input-group" style="width: 224px;">
+      <div class="input-group" style="max-width: 224px;">
         <span class="input-group-addon"><span class="glyphicon glyphicon-time"></span></span>
         <input type="text" class="form-control" name="#{attribute_name.to_s + "_datetime_input"}" value="#{time}"/>
       </div>
@@ -48,7 +48,7 @@ class BootstrapDatetimepickerInput < SimpleForm::Inputs::Base
   def reset_button
     unless @required
       s = <<-EOT
-        <i class="glyphicon glyphicon-remove" id="clear-#{input_id}" style="cursor: pointer"></i>
+        <i class="glyphicon glyphicon-remove" id="clear-#{input_id}" style="cursor: pointer; margin-left: 4px;"></i>
       EOT
       s.html_safe
     end
@@ -151,9 +151,9 @@ class BootstrapDatetimepickerInput < SimpleForm::Inputs::Base
   end
 
   def inline_elements(*elements)
-    content_tag(:div, :class => "form-inline") do
+    content_tag(:div, :class => "form-inline crud-form-inline") do
       elements.compact.map do |elem|
-        content_tag(:div, elem, :class => "form-group")
+        content_tag(:div, elem, :class => "form-group crud-form-group", :style => "margin: 0px;")
       end.reduce(:+)
     end
   end

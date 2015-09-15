@@ -5,3 +5,8 @@
  *= require bootstrap-timepicker
  */
 
+ .crud-form-inline .crud-form-group {
+   display: inline-block;
+   margin-bottom: 0px;
+   vertical-align: middle;
+ }
