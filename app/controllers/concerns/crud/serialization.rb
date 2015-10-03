@@ -43,6 +43,28 @@ module Crud
       { json: json_errors(item), status: :unprocessable_entity }
     end
 
+    def generate_csv(columns, items, options)
+      CSV.generate do |csv|
+        csv << columns.map {|c| model.human_attribute_name(c)}
+        items.each do |item|
+          csv << columns.map {|c| csv_column(item, c)}
+        end
+      end
+    end
+
+    #
+    # csv_column_:column_name という名前のメソッドを定義すると、
+    # カラムのcsv出力結果をカスタマイズできる。
+    #
+    #  def csv_column_value(item)
+    #    format("%04d", item.value)
+    #  end
+    #
+    def csv_column(item, column)
+      method = "csv_column_#{column}"
+      respond_to?(method, true) ? send(method, item) : item.send(column)
+    end
+
     private
     def json_errors(item)
       errors = {}

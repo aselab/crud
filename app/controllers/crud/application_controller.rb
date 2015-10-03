@@ -29,6 +29,7 @@ module Crud
     respond_to do |format|
       format.html # index.html.erb
       format.json { render_json resources }
+      format.csv { render csv: generate_csv(columns, resources, params) }
     end
   end
 
@@ -205,8 +206,8 @@ module Crud
   # オーバーライドして検索結果を返却するように実装する．
   #
   def do_search
-    format = (params[:format] || :html).to_sym
-    columns = format == :html ? columns_for(:index) : columns_for(format)
+    format = params[:format]
+    self.columns = columns_for(format) if format && format != "html"
     association_columns = columns.select {|c| association_key?(c)}
 
     terms = search_terms
@@ -446,6 +447,13 @@ module Crud
     else
       [:id] + columns_for(crud_action)
     end
+  end
+
+  #
+  # CSV出力に利用するカラムリスト.
+  #
+  def columns_for_csv
+    columns_for(:index)
   end
 
   #

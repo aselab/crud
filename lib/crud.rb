@@ -1,3 +1,4 @@
+require 'csv'
 require 'jquery-rails'
 require 'bootstrap-sass'
 require 'font-awesome-sass'
