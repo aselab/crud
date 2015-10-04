@@ -44,11 +44,23 @@ module Crud
     end
 
     def generate_csv(columns, items, options)
-      CSV.generate do |csv|
-        csv << columns.map {|c| model.human_attribute_name(c)}
+      options ||= {}
+      header = options[:header].to_s != "false"
+      encoding = options[:encoding]
+      encoding = Encoding.find(encoding) rescue nil if encoding
+
+      data = CSV.generate do |csv|
+        csv << columns.map {|c| model.human_attribute_name(c)} if header
         items.each do |item|
           csv << columns.map {|c| csv_column(item, c)}
         end
+      end
+
+      if encoding
+        data.encode(encoding)
+      else
+        # Excelでの文字化け回避のためUTF-8 BOMを付加する
+        "\xEF\xBB\xBF" + data
       end
     end
 

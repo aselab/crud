@@ -52,7 +52,20 @@ describe Crud::Serialization do
 
     describe "ヘッダ" do
       subject { lines.first }
-      it { should eq columns.map{|c| CsvItem.human_attribute_name(c)}.join(",") }
+
+      context "encoding指定なし" do
+        it { should eq "\xEF\xBB\xBF" + columns.map{|c| CsvItem.human_attribute_name(c)}.join(",") }
+      end
+
+      context "encoding sjis指定" do
+        let(:options) { {encoding: "sjis"} }
+        its(:encoding) { should eq Encoding::SJIS }
+      end
+
+      context "header=false" do
+        let(:options) { {header: false} }
+        it("ヘッダが出力されないこと") { expect(lines.size).to eq 10 }
+      end
     end
 
     describe "データ" do

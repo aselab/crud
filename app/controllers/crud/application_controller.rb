@@ -29,7 +29,7 @@ module Crud
     respond_to do |format|
       format.html # index.html.erb
       format.json { render_json resources }
-      format.csv { render csv: generate_csv(columns, resources, params) }
+      format.csv { send_data generate_csv(columns, resources, params), type: "text/csv", filename: params[:filename] }
     end
   end
 
