@@ -57,6 +57,11 @@ describe Crud::Serialization do
         let(:options) { {line_break: "crlf"} }
         it { should include "\r\n" }
       end
+      context "cr" do
+        let(:options) { {line_break: "cr"} }
+        it { should include "\r" }
+        it { should_not include "\n" }
+      end
       context "lf" do
         let(:options) { {line_break: "lf"} }
         it { should include "\n" }
