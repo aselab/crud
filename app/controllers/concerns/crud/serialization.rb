@@ -48,8 +48,10 @@ module Crud
       header = options[:header].to_s != "false"
       encoding = options[:encoding]
       encoding = Encoding.find(encoding) rescue nil if encoding
+      col_sep = {crlf: "\r\n", cr: "\r", lf: "\n"}[options[:line_break].try(:to_sym)]
+      generate_options = col_sep ? {col_sep: col_sep} : {}
 
-      data = CSV.generate do |csv|
+      data = CSV.generate(generate_options) do |csv|
         csv << columns.map {|c| model.human_attribute_name(c)} if header
         items.each do |item|
           csv << columns.map {|c| csv_column(item, c)}

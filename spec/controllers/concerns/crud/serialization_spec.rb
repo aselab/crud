@@ -44,11 +44,25 @@ describe Crud::Serialization do
   end
 
   describe "#generate_csv" do
-    let(:lines) { controller.generate_csv(columns, items, options).split("\n") }
+    let(:csv) { controller.generate_csv(columns, items, options) }
+    let(:lines) { csv.split("\n") }
     let(:columns) { [:string, :integer, :boolean, :date, :datetime] }
     let(:items) { build_list(:csv_item, 10) }
     let(:options) { }
     before { allow(controller).to receive(:model).and_return(CsvItem) }
+
+    describe "line_break指定" do
+      subject { csv }
+      context "crlf" do
+        let(:options) { {line_break: "crlf"} }
+        it { should include "\r\n" }
+      end
+      context "lf" do
+        let(:options) { {line_break: "lf"} }
+        it { should include "\n" }
+        it { should_not include "\r" }
+      end
+    end
 
     describe "ヘッダ" do
       subject { lines.first }
