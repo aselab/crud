@@ -11,7 +11,7 @@ module Crud
 
   helper BootstrapHelper
   helper_method :model, :model_name, :model_key, :resources, :resource, :columns,
-    :stored_params, :column_key?, :association_key?, :sort_key?, :has_nested?,
+    :stored_params, :cancel_path, :column_key?, :association_key?, :sort_key?, :has_nested?,
     :sort_key, :sort_order, :index_actions, :column_type, :can?, :cannot?
 
   before_action :set_defaults, :only => [:index, :show, :new, :edit, :create, :update]
@@ -473,7 +473,7 @@ module Crud
   def stored_params(*args)
     overwrites = args.extract_options!
     keys = args.blank? ? stored_params_keys : args
-    params.to_hash.extract!(*keys).merge(overwrites)
+    params.symbolize_keys.extract!(*keys).merge(overwrites)
   end
 
   def crud_action
@@ -493,13 +493,17 @@ module Crud
     self.columns = columns_for(crud_action)
   end
 
+  def cancel_path
+    url_for(stored_params(action: :index))
+  end
+
   def set_redirect_to(url)
     @redirect_to_url = url
   end
 
   # 作成，更新，削除成功後のリダイレクト先
   def redirect_after_success(options)
-    redirect_to(@redirect_to_url || stored_params(:action => :index), options)
+    redirect_to(@redirect_to_url || cancel_path, options)
   end
 
   def message(key, options = nil)

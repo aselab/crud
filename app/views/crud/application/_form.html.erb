@@ -8,7 +8,7 @@
   <% unless @skip_form_actions %>
     <div class="form-group">
       <%= f.button :submit, @submit_label, :class => "btn-primary" %>
-      <%= link_to t("crud.action.cancel"), stored_params(:action => :index), :class => "btn btn-default btn-cancel" %>
+      <%= link_to t("crud.action.cancel"), cancel_path, :class => "btn btn-default btn-cancel" %>
     </div>
   <% end %>
 <% end %>
