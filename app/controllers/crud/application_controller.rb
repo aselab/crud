@@ -27,7 +27,8 @@ module Crud
   def index
     do_index
     respond_to do |format|
-      format.html # index.html.erb
+      format.html {}
+      format.js {}
       format.json { render_json resources }
       format.csv { send_data generate_csv(columns, resources, params), type: "text/csv", filename: params[:filename] }
     end
@@ -36,7 +37,8 @@ module Crud
   def show
     do_action
     respond_to do |format|
-      format.html { render_show }
+      format.html {}
+      format.js {}
       format.json { render_json resource }
     end
   end
@@ -45,28 +47,30 @@ module Crud
     do_action
     respond_to do |format|
       format.html { render_edit }
+      format.js { render_edit }
       format.json { render_json resource }
     end
   end
 
   def edit
     do_action
-    render_edit
+    respond_to do |format|
+      format.html {}
+      format.js {}
+      format.json { render_json resource }
+    end
   end
 
   def create
     result = do_create
-    if result && request.xhr?
-      render_json resource, status: :created
-      return
-    end
-
     respond_to do |format|
       if result
         format.html { redirect_after_success notice: message(:successfully_created, :name => model_name) }
+        format.js {}
         format.json { render_json resource, status: :created }
       else
         format.html { render_edit :unprocessable_entity }
+        format.js { render_edit :unprocessable_entity }
         format.json { render_json_errors resource }
       end
     end
@@ -74,17 +78,14 @@ module Crud
 
   def update
     result = do_update
-    if result && request.xhr?
-      render_json resource
-      return
-    end
-
     respond_to do |format|
       if result
         format.html { redirect_after_success notice: message(:successfully_updated, :name => model_name) }
+        format.js {}
         format.json { render_json resource }
       else
         format.html { render_edit :unprocessable_entity }
+        format.js { render_edit :unprocessable_entity }
         format.json { render_json_errors resource }
       end
     end
@@ -94,6 +95,7 @@ module Crud
     do_action
     respond_to do |format|
       format.html { redirect_after_success notice: message(:successfully_deleted, :name => model_name) }
+      format.js {}
       format.json { head :no_content }
     end
   end
@@ -206,8 +208,7 @@ module Crud
   # オーバーライドして検索結果を返却するように実装する．
   #
   def do_search
-    format = params[:format]
-    self.columns = columns_for(format) if format && format != "html"
+    self.columns = columns_for(request.format.symbol) unless request.format.html?
     association_columns = columns.select {|c| association_key?(c)}
 
     terms = search_terms
@@ -460,7 +461,7 @@ module Crud
   # CRUDの画面遷移で保持するパラメータのkey
   #
   def stored_params_keys
-    [:controller, :action, :term, :sort_key, :sort_order, :page, :per]
+    [:controller, :action, :term, :sort_key, :sort_order, :page, :per, :container]
   end
 
   #
@@ -490,6 +491,7 @@ module Crud
 
   def set_defaults
     @title = t("crud.action_title." + crud_action.to_s, :name => model_name)
+    @remote = request.format.js?
     self.columns = columns_for(crud_action)
   end
 
@@ -532,22 +534,8 @@ module Crud
     render json_errors_options(item)
   end
 
-  def render_show
-    if request.xhr?
-      render action: "ajax_show", layout: false
-    else
-      render action: "show"
-    end
-  end
-
-
   def render_edit(status = :ok)
-    if request.xhr?
-      @skip_form_actions = true
-      render action: "ajax_edit", layout: false, status: status
-    else
-      render action: "edit", status: status
-    end
+    render action: "edit", status: status
   end
 
   def before_index

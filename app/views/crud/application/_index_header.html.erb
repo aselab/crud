@@ -3,7 +3,7 @@
     <%= link_to_action :new, resource %>
   </div>
 
-  <form class="navbar-form form-search navbar-right" method="GET">
+  <%= form_tag stored_params(:container, :sort_key, :sort_order, :per), class: "navbar-form form-search navbar-right", method: "GET", remote: @remote do %>
     <div class="input-group">
       <%= text_field_tag :term, params[:term], :class => "search-query form-control",
         :placeholder => t("crud.message.enter_search_term") %>
@@ -13,5 +13,5 @@
         </button>
       </div>
     </div>
-  </form>
+  <% end %>
 </div>

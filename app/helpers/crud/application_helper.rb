@@ -8,7 +8,7 @@ module Crud
         order = focus && current == :asc ? :desc : :asc
         icon = current == :asc ? "fa-sort-asc" : "fa-sort-desc"
         p = params.dup.update(:sort_key => key.to_s, :sort_order => order.to_s)
-        link = link_to(label, p)
+        link = link_to(label, p, remote: @remote)
         if focus
           link + content_tag(:i, nil, :class => "fa " + icon)
         else
@@ -26,7 +26,7 @@ module Crud
 
       begin
         if can?(action, resource)
-          options = {}
+          options = {remote: @remote}
           if action == :destroy
             options[:method] = :delete
             options[:data] = { :confirm => t("crud.message.are_you_sure") }
@@ -46,47 +46,6 @@ module Crud
         end
       rescue ActionController::RoutingError, ActionController::UrlGenerationError
       end
-    end
-
-    #
-    # Ajaxによる作成/更新リンク作成用メソッド。
-    # フォームをモーダル表示して作成/更新に成功したら、
-    # 引数またはブロックで指定したJavaScriptコールバック関数を実行する。
-    # コールバック関数の第2引数には、作成/更新したレコードデータが入っている。
-    # 
-    #  <%= link_to_modal("ラベル", new_item_path) do %>
-    #    function(event, data) { console.log(data); }
-    #  <% end %>
-    #  
-    #  <%= link_to_modal("ラベル", new_item_path, "function(event, data) { console.log(data); }") %>
-    #
-    def link_to_modal(label, path, callback_or_html_options = nil, html_options = nil, &block)
-      callback = callback_or_html_options
-      if block && html_options.nil?
-        callback = capture(&block).html_safe
-        html_options = callback_or_html_options
-      end
-      html_options ||= {}
-      id = html_options[:id] ||= "modal-form-link-#{rand(100000000)}"
-      data = html_options[:data] ||= {}
-      data[:toggle] = "modal-form"
-      link_to(label, path, html_options) + javascript_tag(<<-EOT).html_safe
-        $(function() {
-          $("##{id}").on("click", function() {
-            var a = $(this);
-            $.ajax({
-              method: "GET",
-              url: a.attr("href"),
-              success: function(data) {
-                var e = $(data);
-                $(document.body).append(e);
-                a.attr("data-action", e.find("form").attr("action"));
-              }
-            });
-            return false;
-          })#{%Q[.on("crud:success", #{callback})] if callback};
-        });
-      EOT
     end
 
     #
@@ -121,15 +80,16 @@ module Crud
       value.to_s
     end
 
-    def crud_form(resource, options = {}, &block)
+    def crud_form(resource, options = nil, &block)
       action = resource.new_record? ? :create : :update
       options = {
-        :as => model_key,
-        :url => resource.new_record? ?
-          stored_params(:action => action) :
-          stored_params(:action => action, :id => resource),
-        :html => { :class => "col-sm-9" }
-      }.merge(options)
+        remote: @remote,
+        as: model_key,
+        url: resource.new_record? ?
+          stored_params(action: action) :
+          stored_params(action: action, id: resource),
+        html: { class: "col-sm-9" }
+      }.merge(options || {})
 
       send(:simple_form_for, resource, options, &block)
     end

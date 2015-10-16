@@ -1,2 +1,23 @@
-<h1>Home#index</h1>
-<p>Find me in app/views/home/index.html.erb</p>
+<div class="row">
+  <div class="col-md-6">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title">Users</h3>
+      </div>
+      <div id="users" class="panel-body">
+        <%= link_to "Load Users", users_path(per: 2, container: "users"), remote: true %>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title">Groups</h3>
+      </div>
+      <div id="groups" class="panel-body">
+        <%= link_to "Load Groups", groups_path(container: "groups"), remote: true %>
+      </div>
+    </div>
+  </div>
+</div>

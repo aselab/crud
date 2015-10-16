@@ -1,0 +1,7 @@
+<% content_for(:modal_footer) do %>
+  <button class="btn btn-primary" data-dismiss="modal"><%= t("crud.action.ok") %></button>
+<% end %>
+
+$("<%= escape_javascript render(partial: "show", layout: "modal") %>")
+  .appendTo(document.body).modal()
+  .on("hidden.bs.modal", function() { $(this).remove(); });
