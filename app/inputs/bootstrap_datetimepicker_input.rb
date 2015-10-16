@@ -69,9 +69,12 @@ class BootstrapDatetimepickerInput < SimpleForm::Inputs::Base
           var time = hour + ':' + minute + (timepicker.showSeconds ? ':' + second : '');
           hiddenInput.val(dateInput.val() + "T" + time);
         }
+        function zindex(selector, index) {
+          return function() { $(selector).css("z-index", index); };
+        }
 
-        dateDiv.datepicker(#{datepicker_options.to_json}).change(datetimeSync);
-        timeInput.timepicker(#{timepicker_options.to_json}).change(datetimeSync);
+        dateDiv.datepicker(#{datepicker_options.to_json}).on("change", datetimeSync).on("show", zindex(".datepicker-dropdown", 1100));
+        timeInput.timepicker(#{timepicker_options.to_json}).on("change", datetimeSync).on("show.timepicker", zindex(".bootstrap-timepicker-widget", 1100));
 
         $("#clear-#{input_id}").click(function(){
           hiddenInput.val("");
