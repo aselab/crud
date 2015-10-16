@@ -5,7 +5,7 @@ describe Crud::ApplicationController do
   let(:model) { }
   before { allow(controller).to receive(:model).and_return(model) }
 
-  describe "#stored_params", focus: true do
+  describe "#stored_params" do
     before { allow(controller).to receive(:params).and_return("a" => 3, "b" => 4, "c" => 5, "d" => 6) }
     context "キー指定なし" do
       before { expect(controller).to receive(:stored_params_keys).and_return([:a, :c]) }
