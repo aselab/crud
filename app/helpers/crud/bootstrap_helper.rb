@@ -1,5 +1,20 @@
 module Crud
   module BootstrapHelper
+    BOOTSTRAP_ALERT_CLASS = {
+      error: "danger",
+      alert: "warning",
+      notice: "success"
+    }
+
+    def flash_messages(mapping = nil)
+      mapping ||= BOOTSTRAP_ALERT_CLASS
+      flash.map do |type, message|
+        c = mapping.fetch(type.to_sym, type.to_s)
+        content = %Q[<button class="close" data-dismiss="alert">&times;</button>#{message}].html_safe
+        content_tag :div, content, class: "alert alert-#{c} alert-dismissable"
+      end.reduce(&:+)
+    end
+
     def nav(type, &block)
       content_tag :ul, :class => "nav #{type}" do
         block.call(Context::Nav.new(self))
