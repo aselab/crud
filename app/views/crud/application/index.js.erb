@@ -1,1 +1,1 @@
-$("#<%= params[:container] %>").html("<%= escape_javascript render("index") %>");
+$("#<%= params[:container] %>").html("<%= escape_javascript render("index") %>").prepend("<%= escape_javascript bootstrap_flash_messages %>");

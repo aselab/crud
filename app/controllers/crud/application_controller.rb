@@ -27,8 +27,7 @@ module Crud
   def index
     do_index
     respond_to do |format|
-      format.html {}
-      format.js {}
+      format.any(:html, :js) {}
       format.json { render_json resources }
       format.csv { send_data generate_csv(columns, resources, params), type: "text/csv", filename: params[:filename] }
     end
@@ -37,8 +36,7 @@ module Crud
   def show
     do_action
     respond_to do |format|
-      format.html {}
-      format.js {}
+      format.any(:html, :js) {}
       format.json { render_json resource }
     end
   end
@@ -46,8 +44,7 @@ module Crud
   def new
     do_action
     respond_to do |format|
-      format.html { render_edit }
-      format.js { render_edit }
+      format.any(:html, :js) { render_edit }
       format.json { render_json resource }
     end
   end
@@ -55,8 +52,7 @@ module Crud
   def edit
     do_action
     respond_to do |format|
-      format.html {}
-      format.js {}
+      format.any(:html, :js) {}
       format.json { render_json resource }
     end
   end
@@ -65,12 +61,10 @@ module Crud
     result = do_create
     respond_to do |format|
       if result
-        format.html { redirect_after_success notice: message(:successfully_created, :name => model_name) }
-        format.js {}
+        format.any(:html, :js) { redirect_after_success notice: message(:successfully_created, :name => model_name) }
         format.json { render_json resource, status: :created }
       else
-        format.html { render_edit :unprocessable_entity }
-        format.js { render_edit :unprocessable_entity }
+        format.any(:html, :js) { render_edit :unprocessable_entity }
         format.json { render_json_errors resource }
       end
     end
@@ -80,12 +74,10 @@ module Crud
     result = do_update
     respond_to do |format|
       if result
-        format.html { redirect_after_success notice: message(:successfully_updated, :name => model_name) }
-        format.js {}
+        format.any(:html, :js) { redirect_after_success notice: message(:successfully_updated, :name => model_name) }
         format.json { render_json resource }
       else
-        format.html { render_edit :unprocessable_entity }
-        format.js { render_edit :unprocessable_entity }
+        format.any(:html, :js) { render_edit :unprocessable_entity }
         format.json { render_json_errors resource }
       end
     end
@@ -94,8 +86,7 @@ module Crud
   def destroy
     do_action
     respond_to do |format|
-      format.html { redirect_after_success notice: message(:successfully_deleted, :name => model_name) }
-      format.js {}
+      format.any(:html, :js) { redirect_after_success notice: message(:successfully_deleted, :name => model_name), status: 303 }
       format.json { head :no_content }
     end
   end
