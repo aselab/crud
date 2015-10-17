@@ -2,6 +2,28 @@
 require 'spec_helper'
 
 describe Crud::BootstrapHelper do
+  describe "#bootstrap_flash_messages" do
+    subject { helper.bootstrap_flash_messages }
+
+    context "flash error" do
+      before { flash[:error] = "error message" }
+      it { should include "alert-danger" }
+      it { should include "error message" }
+    end
+
+    context "flash alert" do
+      before { flash[:alert] = "alert message" }
+      it { should include "alert-warning" }
+      it { should include "alert message" }
+    end
+
+    context "flash notice" do
+      before { flash[:notice] = "notice message" }
+      it { should include "alert-success" }
+      it { should include "notice message" }
+    end
+  end
+
   context "#active?" do
     let(:nav) { Crud::BootstrapHelper::Context::Nav.new(helper) }
 

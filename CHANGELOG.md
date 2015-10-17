@@ -10,6 +10,7 @@
 ### その他の変更点
 
 * インスタンス変数 @remote を true にすると一覧画面がAjax対応に(デフォルトではformatがjsのときのみ)
+* bootstrap_flash_messagesヘルパーメソッド追加
 
 ## 0.2.2
 

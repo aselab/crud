@@ -6,8 +6,8 @@ module Crud
       notice: "success"
     }
 
-    def flash_messages(mapping = nil)
-      mapping ||= BOOTSTRAP_ALERT_CLASS
+    def bootstrap_flash_messages(mapping = nil)
+      mapping = BOOTSTRAP_ALERT_CLASS.merge(mapping || {})
       flash.map do |type, message|
         c = mapping.fetch(type.to_sym, type.to_s)
         content = %Q[<button class="close" data-dismiss="alert">&times;</button>#{message}].html_safe
