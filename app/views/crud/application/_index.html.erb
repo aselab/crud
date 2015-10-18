@@ -1,29 +1,31 @@
-<%= render "index_header" %>
+<div class="index">
+  <%= render "index_header" %>
 
-<table class="table table-striped table-bordered table-vcenter">
-  <thead>
-    <tr>
-      <% columns.each do |column| %>
-        <th><%= link_to_sort column %></th>
-      <% end %>
-      <th></th>
-    </tr>
-  </thead>
-
-  <tbody>
-    <% resources.each do |resource| %>
+  <table class="table table-striped table-bordered table-vcenter">
+    <thead>
       <tr>
         <% columns.each do |column| %>
-          <td><%= column_html resource, column %></td>
+          <th><%= link_to_sort column %></th>
         <% end %>
-        <td>
-          <% index_actions.each do |action| %>
-            <%= link_to_action action, resource %>
-          <% end %>
-        </td>
+        <th></th>
       </tr>
-    <% end %>
-  </tbody>
-</table>
+    </thead>
 
-<%= render "index_footer" %>
+    <tbody>
+      <% resources.each do |resource| %>
+        <tr>
+          <% columns.each do |column| %>
+            <td><%= column_html resource, column %></td>
+          <% end %>
+          <td>
+            <% index_actions.each do |action| %>
+              <%= link_to_action action, resource %>
+            <% end %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+
+  <%= render "index_footer" %>
+</div>
