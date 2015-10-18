@@ -24,43 +24,48 @@ module Crud
   before_action :before_destroy, :only => :destroy
   before_action :authorize_action
 
-  def index
+  def index(&format_block)
     do_index
     respond_to do |format|
+      format_block.try(:call, format)
       format.any(:html, :js) {}
       format.json { render_json resources }
       format.csv { send_data generate_csv(columns, resources, params), type: "text/csv", filename: params[:filename] }
     end
   end
 
-  def show
+  def show(&format_block)
     do_action
     respond_to do |format|
+      format_block.try(:call, format)
       format.any(:html, :js) {}
       format.json { render_json resource }
     end
   end
 
-  def new
+  def new(&format_block)
     do_action
     respond_to do |format|
+      format_block.try(:call, format)
       format.any(:html, :js) { render_edit }
       format.json { render_json resource }
     end
   end
 
-  def edit
+  def edit(&format_block)
     do_action
     respond_to do |format|
+      format_block.try(:call, format)
       format.any(:html, :js) {}
       format.json { render_json resource }
     end
   end
 
-  def create
+  def create(&format_block)
     result = do_create
     respond_to do |format|
       if result
+        format_block.try(:call, format)
         format.any(:html, :js) { redirect_after_success notice: message(:successfully_created, :name => model_name) }
         format.json { render_json resource, status: :created }
       else
@@ -70,10 +75,11 @@ module Crud
     end
   end
 
-  def update
+  def update(&format_block)
     result = do_update
     respond_to do |format|
       if result
+        format_block.try(:call, format)
         format.any(:html, :js) { redirect_after_success notice: message(:successfully_updated, :name => model_name) }
         format.json { render_json resource }
       else
@@ -83,9 +89,10 @@ module Crud
     end
   end
 
-  def destroy
+  def destroy(&format_block)
     do_action
     respond_to do |format|
+      format_block.try(:call, format)
       format.any(:html, :js) { redirect_after_success notice: message(:successfully_deleted, :name => model_name), status: 303 }
       format.json { head :no_content }
     end
