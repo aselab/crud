@@ -206,7 +206,7 @@ module Crud
   # オーバーライドして検索結果を返却するように実装する．
   #
   def do_search
-    self.columns = columns_for(request.format.symbol) unless request.format.html?
+    self.columns = columns_for(request.format.symbol) unless request.format.html? || request.format.js?
     association_columns = columns.select {|c| association_key?(c)}
 
     terms = search_terms
