@@ -1,16 +1,19 @@
 module Crud
   module ApplicationHelper
-    def link_to_sort(key)
-      label = model.human_attribute_name(key)
+    def link_to_sort(key, options = nil)
+      options ||= {}
+      label = options.delete(:label) || model.human_attribute_name(key)
+      options[:remote] = @remote unless options.has_key?(:remote)
       if sort_key?(key)
         focus = sort_key == key.to_sym
         current = sort_order
         order = focus && current == :asc ? :desc : :asc
         icon = current == :asc ? "fa-sort-asc" : "fa-sort-desc"
-        p = params.dup.update(:sort_key => key.to_s, :sort_order => order.to_s)
-        link = link_to(label, p, remote: @remote)
+        p = options.delete(:params) || params
+        p = p.merge(sort_key: key.to_s, sort_order: order.to_s)
+        link = link_to(label, p, options)
         if focus
-          link + content_tag(:i, nil, :class => "fa " + icon)
+          link + content_tag(:i, nil, class: "fa " + icon)
         else
           link
         end
@@ -19,29 +22,31 @@ module Crud
       end
     end
 
-    def link_to_action(action, resource = nil, params = {}, &block)
-      url_params = stored_params(:action => action, :id => resource).merge(params)
-      method = find_method("link_to_#{action}")
-      return send(method, url_params) if method
+    def link_to_action(action, resource = nil, options = nil, &block)
+      options ||= {}
+      params = stored_params(action: action, id: resource).merge(options.delete(:params) || {})
+      method = find_method(params[:controller], "link_to_#{action}")
+      return send(method, params) if method
 
       begin
         if can?(action, resource)
-          options = {remote: @remote}
           if action == :destroy
-            options[:method] = :delete
-            options[:data] = { :confirm => t("crud.message.are_you_sure") }
-            options[:class] = "btn btn-danger"
+            options[:method] ||= :delete
+            options[:data] = { confirm: t("crud.message.are_you_sure") }.merge(options[:data] || {})
+            options[:class] ||= "btn btn-danger"
           else
-            options[:class] = "btn btn-default"
+            options[:class] ||= "btn btn-default"
           end
+          options[:remote] = @remote unless options.has_key?(:remote)
 
           if block
-            link_to(url_params, options, &block)
+            link_to(params, options, &block)
           else
-            label = action == :new ?
-              t("crud.action_title.new", :name => model_name) :
+            label = options.delete(:label)
+            label ||= action == :new ?
+              t("crud.action_title.new", name: model_name) :
               t("crud.action." + action.to_s)
-            link_to(label, url_params, options)
+            link_to(label, params, options)
           end
         end
       rescue ActionController::RoutingError, ActionController::UrlGenerationError
@@ -55,10 +60,11 @@ module Crud
     # 2. #{column_name}_html という名前のhelperメソッド
     # 3. #{column_name}_label という名前のmodelメソッド
     #
-    def column_html(resource, column)
+    def column_html(resource, column, controller = nil)
       return nil unless resource && column
+      controller ||= params[:controller]
       value = resource.send(column)
-      if html = call_method_for_column(:html, column, resource, value)
+      if html = call_method_for_column(controller, column, :html, resource, value)
         return html
       end
 
@@ -80,6 +86,41 @@ module Crud
       value.to_s
     end
 
+    def crud_table(columns, resources, actions, options = nil)
+      options ||= {}
+      options[:class] ||= "table table-striped table-bordered table-vcenter"
+      if options[:model]
+        m = options[:model]
+        params = options[:params] ||= {}
+        params[:controller] ||= m.model_name.plural
+      end
+      remote = options.has_key?(:remote) ? options[:remote] : @remote
+      content_tag(:table, class: options[:class]) do
+        content_tag(:thead) do
+          content_tag(:tr) do
+            columns.each do |column|
+              label = m.human_attribute_name(column)
+              concat content_tag(:th, link_to_sort(column, label: label, remote: remote, params: params))
+            end
+            concat content_tag(:th, nil)
+          end
+        end + content_tag(:tbody) do
+          resources.each do |resource|
+            concat(content_tag(:tr) do
+              columns.each do |column|
+                concat content_tag(:td, column_html(resource, column))
+              end
+              concat(content_tag(:td) do
+                actions.each do |action|
+                  concat link_to_action(action, resource, remote: remote, params: params)
+                end
+              end)
+            end)
+          end
+        end
+      end
+    end
+
     def crud_form(resource, options = nil, &block)
       action = resource.new_record? ? :create : :update
       options = {
@@ -95,7 +136,7 @@ module Crud
     end
 
     def simple_form_input(f, column, options = nil)
-      if html = call_method_for_column(:input, column, f)
+      if html = call_method_for_column(params[:controller], column, :input, f)
         return html
       end
 
@@ -125,12 +166,13 @@ module Crud
     # def users_name_input_options または name_input_options
     # を定義して指定する規約にしている．
     #
-    def input_options(column)
-      call_method_for_column(:input_options, column)
+    def input_options(column, controller = nil)
+      controller ||= params[:controller]
+      call_method_for_column(controller, column, :input_options)
     end
 
     def password_input_options
-      {:input_html => {:autocomplete => :off}}
+      {input_html: {autocomplete: :off}}
     end
 
     def password_confirmation_input_options
@@ -138,13 +180,13 @@ module Crud
     end
 
     private
-    def call_method_for_column(suffix, column, *args)
-      method = find_method(column.to_s + "_" + suffix.to_s)
+    def call_method_for_column(controller, column, suffix, *args)
+      method = find_method(controller, "#{column}_#{suffix}")
       send(method, *args) if method
     end
 
-    def find_method(short_method)
-      method = params[:controller].gsub("/", "_") + "_" + short_method
+    def find_method(controller, short_method)
+      method = controller.gsub("/", "_") + "_" + short_method
       return method if respond_to?(method)
       return short_method if respond_to?(short_method)
       nil
