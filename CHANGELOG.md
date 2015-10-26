@@ -7,6 +7,7 @@
 * link_to_actionの第3引数をurlパラメータからlink_toのオプションに変更
 ** urlパラメータを渡したい場合はparamsオプションで渡すことができる
 ** その他のオプションはlink_toにそのまま引き渡される
+* set_defaultsをbefore_#{action}メソッドの後に呼ぶように変更
 
 ### その他の変更点
 

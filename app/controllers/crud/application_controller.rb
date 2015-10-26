@@ -14,7 +14,6 @@ module Crud
     :stored_params, :cancel_path, :column_key?, :association_key?, :sort_key?, :has_nested?,
     :sort_key, :sort_order, :index_actions, :column_type, :can?, :cannot?
 
-  before_action :set_defaults, :only => [:index, :show, :new, :edit, :create, :update]
   before_action :before_index, :only => :index
   before_action :before_show, :only => :show
   before_action :before_new, :only => :new
@@ -22,6 +21,7 @@ module Crud
   before_action :before_create, :only => :create
   before_action :before_update, :only => :update
   before_action :before_destroy, :only => :destroy
+  before_action :set_defaults, :only => [:index, :show, :new, :edit, :create, :update]
   before_action :authorize_action
 
   def index(&format_block)
