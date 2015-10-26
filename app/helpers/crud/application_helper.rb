@@ -89,6 +89,7 @@ module Crud
     def crud_table(columns, resources, actions, options = nil)
       options ||= {}
       options[:class] ||= "table table-striped table-bordered table-vcenter"
+      m = model
       if options[:model]
         m = options[:model]
         params = options[:params] ||= {}

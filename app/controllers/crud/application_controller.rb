@@ -548,6 +548,7 @@ module Crud
   end
 
   def before_edit
+    assign_params if params[model_key].present?
   end
 
   def before_create
