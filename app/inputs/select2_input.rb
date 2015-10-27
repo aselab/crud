@@ -59,6 +59,7 @@ class Select2Input < SimpleForm::Inputs::CollectionInput
   end
 
   def select2_options(options)
+    search_key = options.delete(:search_key) || "term"
     label = options.delete(:label_method) || "name"
     name = reflection.try(:name) || attribute_name
     options[:placeholder] ||= "#{I18n.t("simple_form.select2.placeholder", :name => object.class.human_attribute_name(name))}"
@@ -85,7 +86,7 @@ class Select2Input < SimpleForm::Inputs::CollectionInput
         quietMillis: 300,
         cache: true,
         data: function(term, page) {
-          return {term: term, page: page};
+          return {#{search_key}: term, page: page};
         },
         results: function(d, page) {
           $(d.items).each(function() { this.text = this.#{label}; });
