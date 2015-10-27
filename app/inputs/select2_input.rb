@@ -22,6 +22,7 @@ class Select2Input < SimpleForm::Inputs::CollectionInput
       $(function() {
         var select = $("##{id}");
         select.select2(#{select2_options(input_options)}).select2("val", #{(object.send(attribute_name) || []).inspect});
+        #{'select.data("select2").container.css("width", "100%");' unless input_options.has_key?(:width)}
         #{multiple_js if multiple?}
       });
       SCRIPT
@@ -81,14 +82,14 @@ class Select2Input < SimpleForm::Inputs::CollectionInput
       ,ajax: {
         url: "#{url}",
         dataType: "json",
-        quietMillis: 200,
+        quietMillis: 300,
         cache: true,
         data: function(term, page) {
           return {term: term, page: page};
         },
         results: function(d, page) {
           $(d.items).each(function() { this.text = this.#{label}; });
-          return {results: d.items, more: page < d.meta.current_page};
+          return {results: d.items, more: page < d.meta.total_pages};
         }
       }
     STRING
