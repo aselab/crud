@@ -192,11 +192,13 @@ module Crud
   # これをオーバーライドして実装する。
   #
   def do_filter
-    if ids = params[:except_ids]
+    if ids = params[:ids] || params[:except_ids]
+      ids = ids.split(",")
       if activerecord?
-        resources.where.not("#{model.table_name}.id" => ids)
+        cond = {"#{model.table_name}.id" => ids}
+        params[:ids] ? resources.where(cond) : resources.where.not(cond)
       elsif mongoid?
-        resources.not_in(id: ids)
+        params[:ids] ? resources.in(id: ids) : resources.not_in(id: ids)
       end
     end
   end
