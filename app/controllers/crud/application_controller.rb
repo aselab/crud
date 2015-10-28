@@ -384,7 +384,7 @@ module Crud
   # 結果をBooleanで返すように実装する．
   #
   def do_create
-    resource.save
+    resource.update_attributes(permit_params)
   end
 
   #
@@ -393,7 +393,7 @@ module Crud
   # 結果をBooleanで返すように実装する．
   #
   def do_update
-    resource.save
+    resource.update_attributes(permit_params)
   end
 
   #
@@ -409,7 +409,7 @@ module Crud
   end
 
   def assign_params
-    resource.assign_attributes(permit_params)
+    resource.assign_attributes(permit_params) if params[model_key].present?
   end
 
   def find_resource
@@ -546,20 +546,18 @@ module Crud
 
   def before_new
     self.resource = new_resource
-    assign_params if params[model_key].present?
+    assign_params
   end
 
   def before_edit
-    assign_params if params[model_key].present?
+    assign_params
   end
 
   def before_create
     self.resource = new_resource
-    assign_params
   end
 
   def before_update
-    assign_params
   end
 
   def before_destroy
