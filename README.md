@@ -152,10 +152,10 @@ end
 編集画面で表示されるカラムの内容は、デフォルトは[simple_form](https://github.com/plataformatec/simple_form#available-input-types-and-defaults-for-each-column-type)と同じだが、日付型はピッカーで表示される。
 以下の優先順でhelperメソッドを定義して入力フォームをカスタマイズすることができる。
 
-1. #{controller_name}_#{column_name}_input という名前のメソッドを実装
-2. #{column_name}_input という名前のメソッドを実装
-3. #{controller_name}_#{column_name}_input_options という名前のメソッドを実装
-4. #{column_name}_input_options という名前のメソッドを実装
+1. \#{controller_name}_#{column_name}_input という名前のメソッドを実装
+2. \#{column_name}_input という名前のメソッドを実装
+3. \#{controller_name}_#{column_name}_input_options という名前のメソッドを実装
+4. \#{column_name}_input_options という名前のメソッドを実装
 
 #### select2で選択肢も制御する例
 
