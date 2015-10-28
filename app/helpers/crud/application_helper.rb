@@ -93,29 +93,33 @@ module Crud
       if options[:model]
         m = options[:model]
         params = options[:params] ||= {}
-        params[:controller] ||= m.model_name.plural
+        controller = params[:controller] ||= m.model_name.plural
       end
+      sort = options[:sort] != false
       remote = options.has_key?(:remote) ? options[:remote] : @remote
       content_tag(:table, class: options[:class]) do
         content_tag(:thead) do
           content_tag(:tr) do
             columns.each do |column|
               label = m.human_attribute_name(column)
-              concat content_tag(:th, link_to_sort(column, label: label, remote: remote, params: params))
+              label = link_to_sort(column, label: label, remote: remote, params: params) if sort
+              concat content_tag(:th, label)
             end
-            concat content_tag(:th, nil)
+            concat content_tag(:th, nil) unless actions.empty?
           end
         end + content_tag(:tbody) do
           resources.each do |resource|
             concat(content_tag(:tr) do
               columns.each do |column|
-                concat content_tag(:td, column_html(resource, column))
+                concat content_tag(:td, column_html(resource, column, controller))
               end
-              concat(content_tag(:td) do
-                actions.each do |action|
-                  concat link_to_action(action, resource, remote: remote, params: params)
-                end
-              end)
+              unless actions.empty?
+                concat(content_tag(:td) do
+                  actions.each do |action|
+                    concat link_to_action(action, resource, remote: remote, params: params)
+                  end
+                end)
+              end
             end)
           end
         end
