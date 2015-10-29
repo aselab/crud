@@ -14,6 +14,7 @@ module Crud
     :stored_params, :cancel_path, :column_key?, :association_key?, :sort_key?, :has_nested?,
     :sort_key, :sort_order, :index_actions, :column_type, :can?, :cannot?
 
+  before_action :set_defaults, :only => [:index, :show, :new, :edit, :create, :update]
   before_action :before_index, :only => :index
   before_action :before_show, :only => :show
   before_action :before_new, :only => :new
@@ -21,11 +22,10 @@ module Crud
   before_action :before_create, :only => :create
   before_action :before_update, :only => :update
   before_action :before_destroy, :only => :destroy
-  before_action :set_defaults, :only => [:index, :show, :new, :edit, :create, :update]
   before_action :authorize_action
 
   def index(&format_block)
-    do_index
+    do_action
     respond_to do |format|
       format_block.try(:call, format)
       format.any(:html, :js) {}
@@ -62,7 +62,7 @@ module Crud
   end
 
   def create(&format_block)
-    result = do_create
+    result = do_action
     respond_to do |format|
       if result
         format_block.try(:call, format)
@@ -76,7 +76,7 @@ module Crud
   end
 
   def update(&format_block)
-    result = do_update
+    result = do_action
     respond_to do |format|
       if result
         format_block.try(:call, format)
@@ -99,8 +99,7 @@ module Crud
   end
 
   protected
-  attr_accessor :columns
-  attr_writer :resources, :resource
+  attr_writer :resources, :resource, :columns
 
   #
   #=== CRUD対象のモデルクラス
@@ -118,6 +117,10 @@ module Crud
 
   def resource
     @resource ||= find_resource
+  end
+
+  def columns
+    @columns ||= columns_for(crud_action)
   end
 
   #
@@ -492,7 +495,6 @@ module Crud
   def set_defaults
     @title = t("crud.action_title." + crud_action.to_s, :name => model_name)
     @remote = request.format.js?
-    self.columns = columns_for(crud_action)
   end
 
   def cancel_path
