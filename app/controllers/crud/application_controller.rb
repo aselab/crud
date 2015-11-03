@@ -297,7 +297,7 @@ module Crud
     method = "search_by_#{column}"
     if activerecord?
       cond = if respond_to?(method, true)
-        model.where(send(method, term)).where_values.first
+        model.send(:sanitize_sql_for_conditions, send(method, term))
       else
         c = column_metadata(column, model)
         t = model.arel_table
