@@ -218,7 +218,7 @@ module Crud
     model_columns = []
     conditions = []
     columns_for_search.each do |c|
-      param = params[c] if params.has_key?(c)
+      param = params[c] if params[c].present?
       cond = [c, param, model] if param
       if search_method_defined?(c)
         model_columns.push([model, c])
