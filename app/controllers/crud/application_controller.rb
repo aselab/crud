@@ -301,13 +301,17 @@ module Crud
       else
         c = column_metadata(column, model)
         t = model.arel_table
-        case c.type
-        when :string, :text
-          t[c.name].matches("%#{term}%")
-        when :integer
-          t[c.name].eq(Integer(term)) rescue "0 = 1"
+        if enum_values = enum_values_for(model, column)
+          t[c.name].eq(enum_values[term] || term)
         else
-          t[c.name].eq(term)
+          case c.type
+          when :string, :text
+            t[c.name].matches("%#{term}%")
+          when :integer
+            t[c.name].eq(Integer(term)) rescue "0 = 1"
+          else
+            t[c.name].eq(term)
+          end
         end
       end
       cond.respond_to?(:to_sql) ? cond.to_sql : cond
@@ -316,15 +320,25 @@ module Crud
         send(method, term)
       else
         c = column_metadata(column, model)
-        if c.type == String
-          { c.name => Regexp.new(Regexp.escape(term)) }
-        elsif c.type == Integer
-          { c.name => Integer(term) } rescue { id: 0 }
+        if enum_values = enum_values_for(model, column)
+          { c.name => enum_values[term] || term }
         else
-          { c.name => term }
+          if c.type == String
+            { c.name => Regexp.new(Regexp.escape(term)) }
+          elsif c.type == Integer
+            { c.name => Integer(term) } rescue { id: 0 }
+          else
+            { c.name => term }
+          end
         end
       end
     end
+  end
+
+  # enumerize
+  def enum_values_for(model, column)
+    enum = model.try(:enumerized_attributes).try(:[], column)
+    enum && Hash[enum.options]
   end
 
   #
