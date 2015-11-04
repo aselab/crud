@@ -555,6 +555,7 @@ module Crud
   end
 
   def before_index
+    self.resource = new_resource
   end
 
   def before_show
