@@ -425,8 +425,18 @@ module Crud
     model.new
   end
 
-  def assign_params
-    resource.assign_attributes(permit_params) if params[model_key].present?
+  def assign_params(options = nil)
+    return unless params[model_key]
+    options ||= {}
+    p = permit_params
+    # 編集時などは関連が即時saveされるので除外できるように
+    if options[:except_nested_attributes]
+      hash_keys = permit_keys.select {|key| key.is_a?(Hash)}
+      hash_keys.each do |hash|
+        hash.keys.each {|key| p.delete(key)}
+      end
+    end
+    resource.assign_attributes(p)
   end
 
   def find_resource
@@ -567,14 +577,16 @@ module Crud
   end
 
   def before_edit
-    assign_params
+    assign_params(except_nested_attributes: activerecord?)
   end
 
   def before_create
     self.resource = new_resource
+    assign_params
   end
 
   def before_update
+    assign_params(except_nested_attributes: activerecord?)
   end
 
   def before_destroy

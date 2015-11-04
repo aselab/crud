@@ -64,13 +64,7 @@ module Crud
     end
 
     def permit_params
-      keys = permit_keys
-      # 編集時のパラメータ渡しで関連がsaveされるのを抑制
-      if activerecord? && params[:action] == "edit"
-        hash_keys, keys = keys.partition {|key| key.is_a?(Hash)}
-        keys -= hash_keys.flat_map(&:keys)
-      end
-      params.require(model_key).permit(keys)
+      params.require(model_key).permit(permit_keys)
     end
 
     def column_metadata(name, model = nil)
