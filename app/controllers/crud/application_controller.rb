@@ -203,6 +203,8 @@ module Crud
       elsif mongoid?
         params[:ids] ? resources.in(id: ids) : resources.not_in(id: ids)
       end
+    else
+      resources
     end
   end
 
