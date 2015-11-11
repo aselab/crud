@@ -20,6 +20,7 @@
 * select2のajaxによる検索時のキーを指定できるように
 * do_filterのデフォルト実装を変更し、idsで指定IDの絞り込み検索をできるように
 * enumerizeされたカラムは翻訳値または値による完全一致検索をするように
+* simple_formのbootstrap_filestyle inputを追加
 
 ## 0.3.0
 
