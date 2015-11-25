@@ -6,6 +6,7 @@ class Select2Input < SimpleForm::Inputs::CollectionInput
 
   def input(wrapper_options)
     id = input_id
+    options[:collection] = [] if ajax?
     def multiple_js
       <<-SCRIPT
       select.closest('form').on("#{submit_event}", function () {
