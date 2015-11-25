@@ -21,6 +21,7 @@
 * do_filterのデフォルト実装を変更し、idsで指定IDの絞り込み検索をできるように
 * enumerizeされたカラムは翻訳値または値による完全一致検索をするように
 * simple_formのbootstrap_filestyle inputを追加
+* multiple select2で空に設定できないバグを修正
 
 ## 0.3.0
 

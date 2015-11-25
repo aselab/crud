@@ -10,8 +10,10 @@ class Select2Input < SimpleForm::Inputs::CollectionInput
       <<-SCRIPT
       select.closest('form').on("#{submit_event}", function () {
         var form = $(this);
+        var input = $("<input/>").attr({type: "hidden", name: "#{object_name}[#{attribute_name}][]"});
+        form.append(input);
         $.each(select.select2("val"), function() {
-          if (this != "[]") form.append($("<input/>").attr({"type": "hidden", "name": "#{object_name}[#{attribute_name}][]"}).val(this));
+          form.append(input.clone().val(this));
         });
         select.remove();
       });
