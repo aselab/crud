@@ -61,6 +61,10 @@ class Select2Input < SimpleForm::Inputs::CollectionInput
     input_html_options[:id] ||= object_name.to_s.gsub(/\[|\]\[/, "_").gsub(/\]/, "") + "_" + attribute_name.to_s
   end
 
+  def init_data(label, ids)
+    reflection.klass.where(:id => ids).map {|m| {id: m.id, text: m.send(label)}}
+  end
+
   def select2_options(options)
     search_key = options.delete(:search_key) || "term"
     label = options.delete(:label_method) || "name"
@@ -70,7 +74,7 @@ class Select2Input < SimpleForm::Inputs::CollectionInput
     ids = object.send(attribute_name)
     append_options = []
     if ajax?
-      init_data = reflection.klass.where(:id => ids).map {|m| {id: m.id, text: m.send(label)}}
+      init_data = init_data(label, ids)
       init_data = init_data.first unless multiple?
       append_options << <<-STRING
         ,initSelection: function(element, callback) { callback(#{init_data.to_json}); }
