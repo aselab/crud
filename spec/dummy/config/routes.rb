@@ -1,4 +1,5 @@
 Rails.application.routes.draw do
+  resources :miscs
   resources :csv_items
   resources :mongo_users
   resources :mongo_groups do
