@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.2
+
+* namespaceモデルでinputのidが不正になるのを修正
+
 ## 0.3.1
 
 ### 非互換な変更点

@@ -10,7 +10,7 @@ class BootstrapFilestyleInput < SimpleForm::Inputs::FileInput
   end
 
   def input_id
-    input_html_options[:id] ||= object_name.to_s.gsub(/\[|\]\[/, "_").gsub(/\]/, "") + "_" + attribute_name.to_s
+    input_html_options[:id] ||= "#{object.model_name.param_key}_#{attribute_name}"
   end
 
   def script
