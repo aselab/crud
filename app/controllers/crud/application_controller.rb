@@ -90,11 +90,16 @@ module Crud
   end
 
   def destroy(&format_block)
-    do_action
+    result = do_action
     respond_to do |format|
-      format_block.try(:call, format)
-      format.any(:html, :js) { redirect_after_success notice: message(:successfully_deleted, :name => model_name), status: 303 }
-      format.json { head :no_content }
+      if result
+        format_block.try(:call, format)
+        format.any(:html, :js) { redirect_after_success notice: message(:successfully_deleted, :name => model_name), status: 303 }
+        format.json { head :no_content }
+      else
+        format.any(:html, :js) { redirect_to cancel_path, alert: resource.errors.full_messages.join(", ") }
+        format.json { render_json_errors resource }
+      end
     end
   end
 

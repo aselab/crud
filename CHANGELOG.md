@@ -3,6 +3,8 @@
 ## 0.3.2
 
 * namespaceモデルでinputのidが不正になるのを修正
+* 削除時のエラー表示対応
+    * before_destroyでerrors.addしてfalseを返せば表示される
 
 ## 0.3.1
 
