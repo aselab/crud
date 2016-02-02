@@ -97,7 +97,7 @@ module Crud
         format.any(:html, :js) { redirect_after_success notice: message(:successfully_deleted, :name => model_name), status: 303 }
         format.json { head :no_content }
       else
-        format.any(:html, :js) { redirect_to cancel_path, alert: resource.errors.full_messages.join(", ") }
+        format.any(:html, :js) { redirect_to request.referer, alert: resource.errors.full_messages.join(", ") }
         format.json { render_json_errors resource }
       end
     end
