@@ -129,7 +129,7 @@ class BootstrapDatetimepickerInput < SimpleForm::Inputs::Base
   end
 
   def input_id
-    input_html_options[:id] ||= "#{object.model_name.param_key}_#{attribute_name}"
+    input_html_options[:id] ||= "#{object_name.to_s.gsub(/\]\[|[^-a-zA-Z0-9:.]/, "_").sub(/_$/, "")}_#{attribute_name}"
   end
 
   def value
