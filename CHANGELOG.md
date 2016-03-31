@@ -5,6 +5,7 @@
 * namespaceモデルでinputのidが不正になるのを修正
 * 削除時のエラー表示対応
     * before_destroyでerrors.addしてfalseを返せば表示される
+* select2 inputでformのsubmitハンドラが残り続ける問題対策
 
 ## 0.3.1
 
