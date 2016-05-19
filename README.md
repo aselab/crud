@@ -184,12 +184,12 @@ end
 3. \#{controller_name}_#{column_name}_input_options という名前のメソッドを実装
 4. \#{column_name}_input_options という名前のメソッドを実装
 
-#### select2で選択肢も制御する例
+#### 性別を選択肢にする例
 
 ```ruby
 module UsersHelper
-  def users_group_input_options
-    { as: :select2, collection: [:a, :b, :c] }
+  def users_sex_input_options
+    { as: :select, collection: [:male, :female] }
   end
 end
 ```
@@ -208,17 +208,90 @@ module UsersHelper
 end
 ```
 
+#### カスタムインプット
+
+* :bootstrap_datepicker
+* :bootstrap_timepicker
+* :bootstrap_datetimepicker
+* :bootstrap_filestyle
+* :select2
+
 ### 検索条件の指定
 
-TODO
+一覧に表示されている文字列または数値のカラムが検索対象となる。
+検索対象のカラムを変更したい場合はコントローラにcolumns_for_searchメソッドを定義する。
+
+デフォルトでは文字列カラムはlike検索、数値カラムは完全一致で検索される。
+検索条件を変更したい場合や、DBに存在しない仮想カラムに検索条件を持たせる場合などには、
+search_by_#{column_name} というメソッドをコントローラに定義する。
+引数には検索キーワードが渡されるので、それを使って検索条件を返すように実装すればよい。
+
+```ruby
+class User < ActiveRecord::Base
+  def full_name
+    "#{last_name} #{first_name}"
+  end
+end
+
+class UsersController < Crud::ApplicationController
+  protected
+  def columns_for_search
+    [:full_name, :email]
+  end
+
+  def search_by_full_name(term)
+    ["last_name LIKE :term OR first_name LIKE :term", term: "%#{term}%"]
+  end
+end
+```
 
 ### ソート条件の指定
 
-TODO
+デフォルトのソート条件の指定することができる。
+
+```ruby
+class SampleController < Crud::ApplicationController
+  default_sort_key :name
+  default_sort_order :desc
+end
+```
+
+カラム毎にソート条件をカスタマイズしたい場合、sort_by_#{column_name} というメソッドをコントローラに定義する。
+引数には:ascまたは:descが渡されるので、それを使ってソート条件を返すように実装すればよい。
+
+```ruby
+class UsersController < Crud::ApplicationController
+  protected
+  def sort_by_full_name(order)
+    "last_name #{order}, first_name #{order}"
+  end
+end
+```
 
 ### 権限制御
 
-TODO
+権限制御をしたい場合はコントローラにAuthorizationという名前のインナークラスを定義する。
+各アクションの実行を許可するかどうかをメソッド定義してtrue/falseを返すように実装すればよい。
+
+特殊なアクションとして、manageを定義するとcreate, update, destroyの権限をまとめて制御できる。
+アクションに対応するメソッドを定義しない場合のデフォルト値はtrueである。
+
+```ruby
+class UsersController < Crud::ApplicationController
+  class Authorization < Crud::Authorization::Default
+    def create?(user)
+      false
+    end
+
+    def manage?(user)
+      user == current_user
+    end
+  end
+end
+```
+
+メソッドの引数にはアクションを実行しようとしている対象のレコードが渡される。
+また、コントローラのcurrent_userが渡されるため、ログインユーザによる制御も可能。
 
 ### 各アクションの表示結果のカスタマイズ
 
@@ -237,7 +310,8 @@ def create
 end
 ```
 
-編集画面のキャンセル、作成/更新/削除時のリダイレクト先を変更したい場合、cancel_pathをオーバーライドするとよい。デフォルトでは一覧画面に戻る。
+編集画面のキャンセル、作成/更新時のリダイレクト先を変更したい場合、cancel_pathをオーバーライドするとよい。デフォルトでは一覧画面に戻る。
+削除時はrequest.refererに戻る。
 
 ### ジェネレータ
 
