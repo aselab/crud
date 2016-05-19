@@ -6,6 +6,7 @@
 * 削除時のエラー表示対応
     * before_destroyでerrors.addしてfalseを返せば表示される
 * select2 inputでformのsubmitハンドラが残り続ける問題対策
+* 削除時はリファラを元にリダイレクトするように
 
 ## 0.3.1
 

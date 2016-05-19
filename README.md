@@ -3,6 +3,33 @@
 RailsのDBの[CRUD](https://ja.wikipedia.org/wiki/CRUD)操作を簡単に実装するためのライブラリ。
 一覧の検索、ソート、ページネーションや各アクションの認可機能も備える。
 
+## インストール
+
+以下をGemfileに追加してbundle install
+
+```
+gem 'crud', git: 'git@bitbucket.org:aselab/crud.git'
+```
+
+application.css を application.sassにリネームして以下を追加
+
+```
+/*
+ *= require crud
+*/
+@import "bootstrap-sprockets";
+@import "font-awesome-sprockets";
+@import "bootstrap";
+@import "font-awesome";
+```
+
+application.js に以下を追加
+
+```
+//= require bootstrap-sprockets
+//= require crud
+```
+
 ## Crud::ApplicationController
 
 モデルのCRUD機能を提供するコントローラの基底クラス。
