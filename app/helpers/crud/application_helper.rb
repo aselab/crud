@@ -159,7 +159,7 @@ module Crud
       options ||= input_options(column) || {}
       options = default.merge(options)
       options[:collection] = [] if options[:as] == :select2 && (options[:ajax] || options[:url].present?)
-      return f.association column, options if association_key?(column)
+      return f.association column, options if association_key?(column, f.object.class)
 
       f.input column, options
     end

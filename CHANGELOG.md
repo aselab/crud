@@ -7,6 +7,7 @@
     * before_destroyでerrors.addしてfalseを返せば表示される
 * select2 inputでformのsubmitハンドラが残り続ける問題対策
 * 削除時はリファラを元にリダイレクトするように
+* STIの関連の扱いを改善
 
 ## 0.3.1
 
