@@ -224,9 +224,13 @@ module Crud
     terms = search_terms
     model_columns = []
     conditions = []
+    rejects = []
     columns_for_search.each do |c|
+      _c = (c.to_s+"!").to_sym
       param = params[c] if params[c].present?
+      _param = params[_c] if params[_c].present?
       cond = [c, param, model] if param
+      reject = [c, _param, model] if _param
       if search_method_defined?(c)
         model_columns.push([model, c])
       elsif association = association_class(c)
@@ -237,11 +241,13 @@ module Crud
         Array(fields).each do |f|
           model_columns.push([association, f])
           cond = [f, param, association] if param
+          reject = [f, _param, association] if _param
         end
       else
         model_columns.push([model, c])
       end
       conditions.push(search_condition_for_column(*cond)) if cond
+      rejects.push(search_condition_for_column(*reject)) if reject
     end
 
     include_association(*association_columns)
@@ -260,8 +266,12 @@ module Crud
       end
       scope.where(cond)
     end
-    conditions.inject(r) do |scope, cond|
+
+    r=conditions.inject(r) do |scope, cond|
       scope.where(cond)
+    end
+    rejects.inject(r) do |scope, reject|
+      scope.where.not(reject)
     end
   end
 
