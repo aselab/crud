@@ -89,6 +89,7 @@ module Crud
     def crud_table(columns, resources, actions, options = nil)
       options ||= {}
       options[:class] ||= "table table-striped table-bordered table-vcenter"
+      header_options = options[:header] || {}
       m = model
       if options[:model]
         m = options[:model]
@@ -103,7 +104,7 @@ module Crud
             columns.each do |column|
               label = m.human_attribute_name(column)
               label = link_to_sort(column, label: label, remote: remote, params: params) if sort
-              concat content_tag(:th, label)
+              concat content_tag(:th, label, header_options[column])
             end
             concat content_tag(:th, nil) unless actions.empty?
           end
