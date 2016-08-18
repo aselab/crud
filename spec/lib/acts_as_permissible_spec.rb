@@ -55,7 +55,7 @@ describe "acts_as_permissible" do
 
       describe "#add" do
         it "定義されていない権限を指定した時エラーになること" do
-          expect { @group.permissions.add(@user, :foo) }.to raise_error
+          expect { @group.permissions.add(@user, :foo) }.to raise_error(ArgumentError, "permission foo is not defined (must be manage, read)")
         end
 
         it "権限を指定しない場合はデフォルト権限で追加されること" do
@@ -89,7 +89,7 @@ describe "acts_as_permissible" do
 
       describe "#mod" do
         it "定義されていない権限を指定した時エラーになること" do
-          expect { @group.permissions.mod(@user, :foo) }.to raise_error
+          expect { @group.permissions.mod(@user, :foo) }.to raise_error(ArgumentError, "permission foo is not defined (must be manage, read)")
         end
 
         it "権限をシンボルで変更できること" do
@@ -241,7 +241,7 @@ describe "acts_as_permissible" do
 
       describe "#add" do
         it "定義されていない権限を指定した時エラーになること" do
-          expect { @group.mongo_permissions.add(@user, :foo) }.to raise_error
+          expect { @group.mongo_permissions.add(@user, :foo) }.to raise_error(ArgumentError, "permission foo is not defined (must be manage, read)")
         end
 
         it "権限を指定しない場合はデフォルト権限で追加されること" do
@@ -272,7 +272,7 @@ describe "acts_as_permissible" do
 
       describe "#mod" do
         it "定義されていない権限を指定した時エラーになること" do
-          expect { @group.mongo_permissions.mod(@user, :foo) }.to raise_error
+          expect { @group.mongo_permissions.mod(@user, :foo) }.to raise_error(ArgumentError, "permission foo is not defined (must be manage, read)")
         end
 
         it "権限をシンボルで変更できること" do
