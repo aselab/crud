@@ -314,7 +314,20 @@ module Crud
     method = "search_by_#{column}"
     if activerecord?
       cond = if respond_to?(method, true)
-        model.send(:sanitize_sql_for_conditions, send(method, term))
+        c = send(method, term)
+        case c
+        when Array
+          model.send(:sanitize_sql_for_conditions, c)
+        when Hash
+          # https://github.com/rails/rails/blob/4-2-stable/activerecord/lib/active_record/sanitization.rb#L89-L100
+          attrs = model.send(:table_metadata).resolve_column_aliases(c)
+          attrs = model.send(:expand_hash_conditions_for_aggregates, attrs)
+          model.predicate_builder.build_from_hash(attrs.stringify_keys).map { |b|
+            model.connection.visitor.compile b
+          }.join(' AND ')
+        else
+          c
+        end
       else
         c = column_metadata(column, model)
         t = model.arel_table
@@ -516,7 +529,7 @@ module Crud
   def stored_params(*args)
     overwrites = args.extract_options!
     keys = args.blank? ? stored_params_keys : args
-    params.symbolize_keys.extract!(*keys).merge(overwrites)
+    params.to_h.symbolize_keys.extract!(*keys).merge(overwrites)
   end
 
   def crud_action

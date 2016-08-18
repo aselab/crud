@@ -9,7 +9,7 @@ module Crud
         current = sort_order
         order = focus && current == :asc ? :desc : :asc
         icon = current == :asc ? "fa-sort-asc" : "fa-sort-desc"
-        p = options.delete(:params) || params
+        p = options.delete(:params) || params.permit!
         p = p.merge(sort_key: key.to_s, sort_order: order.to_s)
         link = link_to(label, p, options)
         if focus
