@@ -29,6 +29,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency "sass-rails", "~> 5.0.5"
   s.add_development_dependency "sqlite3"
   s.add_development_dependency "mongoid", '~> 6.0.0.rc0'
+  s.add_development_dependency "kaminari-mongoid"
   s.add_development_dependency "rspec-rails"
   s.add_development_dependency "rspec-its"
   s.add_development_dependency "factory_girl_rails"

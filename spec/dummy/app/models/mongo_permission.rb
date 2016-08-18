@@ -1,7 +1,7 @@
 class MongoPermission
   include Mongoid::Document
 
-  belongs_to :mongo_user
+  belongs_to :mongo_user, optional: true
   embedded_in :mongo_permissible, polymorphic: true
   field :flags, type: Array
 

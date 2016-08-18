@@ -1,7 +1,7 @@
 class MongoUser
   include Mongoid::Document
 
-  belongs_to :mongo_group
+  belongs_to :mongo_group, optional: true
 
   field :name, type: String
   field :birth_date, type: Date
