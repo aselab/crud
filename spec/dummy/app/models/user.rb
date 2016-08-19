@@ -1,5 +1,6 @@
 class User < ActiveRecord::Base
   has_many :permissions, dependent: :destroy
+  belongs_to :company, optional: true
 
   validates :name, :presence => true
 

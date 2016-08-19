@@ -1,5 +1,21 @@
 class UsersController < Crud::ApplicationController
-  permit_keys :name, :birth_date
+  permit_keys :name, :birth_date, :company_id
+
+  def columns_for_index
+    [:name, :birth_date, :company]
+  end
+
+  def columns_for_show
+    columns_for_index
+  end
+
+  def columns_for_create
+    columns_for_index
+  end
+
+  def columns_for_update
+    columns_for_index
+  end
 
   def create
     super do |format|
