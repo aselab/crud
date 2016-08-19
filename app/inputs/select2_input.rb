@@ -8,7 +8,6 @@ class Select2Input < SimpleForm::Inputs::CollectionSelectInput
     if ajax? && options[:collection].empty?
       options[:collection] = init_data(object.send(attribute_name))
     end
-    wrapper_options.merge!(multiple: multiple?)
 
     js = javascript_tag(<<-SCRIPT
       $(function() {
@@ -20,7 +19,7 @@ class Select2Input < SimpleForm::Inputs::CollectionSelectInput
       SCRIPT
     )
 
-    super + js
+    super(wrapper_options.merge(multiple: multiple?)) + js
   end
 
   def multiple?
