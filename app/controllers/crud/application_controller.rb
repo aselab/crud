@@ -529,7 +529,7 @@ module Crud
   def stored_params(*args)
     overwrites = args.extract_options!
     keys = args.blank? ? stored_params_keys : args
-    params.to_h.symbolize_keys.extract!(*keys).merge(overwrites)
+    params.dup.permit!.symbolize_keys.extract!(*keys).merge(overwrites)
   end
 
   def crud_action
