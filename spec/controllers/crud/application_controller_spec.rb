@@ -6,7 +6,10 @@ describe Crud::ApplicationController do
   before { allow(controller).to receive(:model).and_return(model) }
 
   describe "#stored_params" do
-    before { allow(controller).to receive(:params).and_return("a" => 3, "b" => 4, "c" => 5, "d" => 6) }
+    before {
+      params = ActionController::Parameters.new(a: 3, b: 4, c: 5, d: 6)
+      allow(controller).to receive(:params).and_return(params)
+    }
     context "キー指定なし" do
       before { expect(controller).to receive(:stored_params_keys).and_return([:a, :c]) }
       it "stored_params_keysのパラメータが保持されること" do
