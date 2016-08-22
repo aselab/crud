@@ -23,7 +23,7 @@ Gem::Specification.new do |s|
   s.add_dependency "kaminari"
   s.add_dependency "simple_form", "~> 3.2.1"
   s.add_dependency "select2-rails", "~> 4.0.3"
-  s.add_dependency "active_model_serializers", "~> 0.9.0"
+  s.add_dependency "active_model_serializers", "~> 0.10.2"
   s.add_dependency "memoist"
 
   s.add_development_dependency "sass-rails", "~> 5.0.5"
