@@ -185,6 +185,25 @@ module Crud
       password_input_options
     end
 
+    def advanced_search_selector(column, query)
+      options = options_for_select(query.operators_selector(column), query.operator(column))
+      select_tag("op[#{column}]", options, class: "operator")
+    end
+
+    def advanced_search_input(f, column, query, suffix = "first")
+      values = query.value(column)
+      options = input_options(column) || {}
+      options = options.merge(
+        input_html: {
+          id: "query_#{column}_#{suffix}",
+          name: "v[#{column}][]",
+          value: suffix == "first" ? values.first : values.last
+        },
+        wrapper_html: {class: "values values-#{suffix}"}
+      )
+      simple_form_input(f, column, options)
+    end
+
     private
     def call_method_for_column(controller, column, suffix, *args)
       method = find_method(controller, "#{column}_#{suffix}")

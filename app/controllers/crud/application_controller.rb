@@ -12,7 +12,8 @@ module Crud
   helper BootstrapHelper
   helper_method :model, :model_name, :model_key, :resources, :resource, :columns,
     :stored_params, :cancel_path, :column_key?, :association_key?, :sort_key?, :has_nested?,
-    :sort_key, :sort_order, :index_actions, :column_type, :can?, :cannot?, :crud_action
+    :sort_key, :sort_order, :index_actions, :column_type, :can?, :cannot?, :crud_action,
+    :enable_advanced_search?
 
   before_action :set_defaults, :only => [:index, :show, :new, :edit, :create, :update]
   before_action :before_index, :only => :index
@@ -171,6 +172,24 @@ module Crud
       (activerecord? && association_key?(key))
   end
 
+  def query_params
+    @query_params ||=
+      if params[:op].blank?
+        {}
+      else
+        h = {}
+        op = params[:op].select{|k,v| (v == "!*") || query_value_present?(k) }.permit!.to_h
+        op.each do |k,v|
+          h[k] = {op: v, v: params[:v][k]}
+        end
+        h
+      end
+  end
+
+  def query_value_present?(key)
+    params[:v] && params[:v][key].is_a?(Array) && params[:v][key].any?(&:present?)
+  end
+
   #
   #=== 権限チェック
   #
@@ -273,6 +292,15 @@ module Crud
     rejects.inject(r) do |scope, reject|
       scope.where.not(reject)
     end
+  end
+
+  def advanced_search_query
+    @advanced_search_query ||= AdvancedSearchQuery
+  end
+
+  def do_advanced_search
+    @query = advanced_search_query.build(self, model, columns_for_advanced_search, query_params)
+    @query.apply(resources)
   end
 
   def include_association(*associations)
@@ -420,7 +448,12 @@ module Crud
   #
   def do_index
     self.resources = do_filter || resources
-    self.resources = do_search || resources
+    if enable_advanced_search?
+      @query ||= advanced_search_query.build(self, model, columns_for_advanced_search)
+      self.resources = do_advanced_search || resources if query_params.present?
+    else
+      self.resources = do_search || resources
+    end
     self.resources = do_sort || resources
     self.resources = do_page || resources
   end
@@ -481,6 +514,21 @@ module Crud
   #
   def columns_for_search
     columns_for(:index).select {|c| search_column?(model, c)}
+  end
+
+  #
+  # 詳細検索に利用するカラムリスト.
+  #
+  def columns_for_advanced_search
+    columns_for(:index)
+  end
+
+  #
+  # 詳細検索を使用するかどうか.
+  # 今のところActiveRecordモデルのみ
+  #
+  def enable_advanced_search?
+    activerecord?
   end
 
   def search_method_defined?(column_name)

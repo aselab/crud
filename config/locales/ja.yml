@@ -26,6 +26,7 @@ ja:
       successfully_deleted: "%{name}を削除しました"
       are_you_sure: "よろしいですか？"
       enter_search_term: "検索キーワードを入力..."
+      advanced_search: "詳細検索"
 
   views:
     pagination:
@@ -48,6 +49,16 @@ ja:
           other: "%{count}件の結果を表示しています"
       more_pages:
         display_entries: "%{total}件中 %{first} - %{last}件目 の結果を表示しています"
+
+    query:
+      equals: 等しい
+      not_equals: 等しくない
+      greater_or_equal: 以上
+      less_or_equal: 以下
+      contains: 含む
+      not_contains: 含まない
+      between: 次の範囲内
+      none: なし
 
   simple_form:
     "yes": 'はい'

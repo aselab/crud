@@ -1,0 +1,46 @@
+<%= javascript_tag do %>
+  $(function() {
+    var argsLength = <%= query.operator_args.to_json.html_safe %>;
+    var queryPanel = $("#<%= query.dom_id %>");
+    queryPanel.find(".advanced-search-fields .operator").change(function() {
+      var self = $(this);
+      switch (argsLength[self.val()]) {
+        case 0:
+          self.parent().find(".values").hide();
+          break;
+        case 1:
+          self.parent().find(".values-last").hide();
+          self.parent().find(".values-first").show();
+          break;
+        default:
+          self.parent().find(".values").show();
+          break;
+      }
+    }).change();
+
+    queryPanel.parent().find(".toggle-advanced-search").click(function() {
+      var toggle = $(this);
+      queryPanel.toggle({
+        done: function() {
+          var dropdown = toggle.closest(".input-group-btn").find(".dropdown-toggle");
+          if ($(this).is(":visible")) {
+            dropdown.addClass("active");
+          } else {
+            dropdown.removeClass("active");
+          }
+        }
+      });
+    });
+  });
+<% end %>
+
+<% query.columns.each do |column| %>
+  <div class="form-group advanced-search-fields">
+    <%= f.label column, required: false %>
+    <div class="inline-block">
+      <%= advanced_search_selector(column, query) %>
+      <%= advanced_search_input(f, column, query, "first") %>
+      <%= advanced_search_input(f, column, query, "last") %>
+    </div>
+  </div>
+<% end %>

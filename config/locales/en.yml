@@ -26,6 +26,18 @@ en:
       successfully_deleted: "%{name} was successfully deleted."
       are_you_sure: "Are you sure?"
       enter_search_term: "Enter search term..."
+      advanced_search: "Advanced Search"
+
+  helpers:
+    query:
+      equals: is
+      not_equals: is not
+      greater_or_equal: '>='
+      less_or_equal: '<='
+      contains: contains
+      not_contains: doesn't contain
+      between: between
+      none: none
 
   simple_form:
     "yes": 'Yes'

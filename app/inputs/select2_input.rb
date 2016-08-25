@@ -5,8 +5,8 @@ class Select2Input < SimpleForm::Inputs::CollectionSelectInput
   include Rails.application.routes.url_helpers
 
   def input(wrapper_options)
-    if ajax? && options[:collection].empty?
-      options[:collection] = init_data(object.send(attribute_name))
+    if ajax? && options[:collection].blank? && object.respond_to?(attribute_name)
+      options[:collection] = init_data(value)
     end
 
     js = javascript_tag(<<-SCRIPT
@@ -14,12 +14,17 @@ class Select2Input < SimpleForm::Inputs::CollectionSelectInput
         var select = $("##{input_id}");
         select.select2(#{select2_options(input_options)});
         #{'select.data("select2").$container.css("width", "100%");' unless input_options.has_key?(:width)}
-        select.val(#{(object.send(attribute_name) || []).inspect}).trigger("change");
+        select.val(#{value.inspect}).trigger("change");
       });
       SCRIPT
     )
 
     super(wrapper_options.merge(multiple: multiple?)) + js
+  end
+
+  def value
+    @value ||= input_options[:value] || input_options[:input_html].try("[]", :value) ||
+      (object.respond_to?(attribute_name) && object.send(attribute_name)) || []
   end
 
   def multiple?
@@ -38,7 +43,7 @@ class Select2Input < SimpleForm::Inputs::CollectionSelectInput
   end
 
   def url
-    @url ||= input_options.delete(:url) || polymorphic_path(reflection.klass)
+    @url ||= input_options.delete(:url) || reflection && polymorphic_path(reflection.klass)
   end
 
   def ajax?
@@ -50,7 +55,7 @@ class Select2Input < SimpleForm::Inputs::CollectionSelectInput
   end
 
   def init_data(ids)
-    reflection.klass.where(:id => ids)
+    reflection.try(:klass).try(:where, :id => ids)
   end
 
   def select2_options(options)

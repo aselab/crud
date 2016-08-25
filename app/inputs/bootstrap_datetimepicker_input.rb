@@ -29,7 +29,7 @@ class BootstrapDatetimepickerInput < SimpleForm::Inputs::Base
     s = <<-EOT
       <div class="input-group date" style="max-width: 224px;">
         <span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span></span>
-        <input type="text" class="form-control" name="#{attribute_name.to_s + "_date_input"}" value="#{date}"/>
+        <input type="text" class="form-control" value="#{date}"/>
       </div>
     EOT
     s.html_safe
@@ -39,7 +39,7 @@ class BootstrapDatetimepickerInput < SimpleForm::Inputs::Base
     s = <<-EOT
       <div class="input-group" style="max-width: 224px;">
         <span class="input-group-addon"><span class="glyphicon glyphicon-time"></span></span>
-        <input type="text" class="form-control" name="#{attribute_name.to_s + "_datetime_input"}" value="#{time}"/>
+        <input type="text" class="form-control" value="#{time}"/>
       </div>
     EOT
     s.html_safe
@@ -133,7 +133,7 @@ class BootstrapDatetimepickerInput < SimpleForm::Inputs::Base
   end
 
   def value
-    v = @builder.object.send(attribute_name)
+    v = input_options[:value] || input_options[:input_html].try("[]", :value) || @builder.object.send(attribute_name)
     v.respond_to?(:in_time_zone) ? v.in_time_zone(timezone) : v
   end
 
