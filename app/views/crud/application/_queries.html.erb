@@ -37,7 +37,7 @@
 <% query.columns.each do |column| %>
   <div class="form-group advanced-search-fields">
     <%= f.label column, required: false %>
-    <div class="inline-block">
+    <div class="form-inline">
       <%= advanced_search_selector(column, query) %>
       <%= advanced_search_input(f, column, query, "first") %>
       <%= advanced_search_input(f, column, query, "last") %>

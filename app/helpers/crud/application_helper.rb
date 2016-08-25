@@ -187,7 +187,7 @@ module Crud
 
     def advanced_search_selector(column, query)
       options = options_for_select(query.operators_selector(column), query.operator(column))
-      select_tag("op[#{column}]", options, class: "operator")
+      select_tag("op[#{column}]", options, class: "operator form-control")
     end
 
     def advanced_search_input(f, column, query, suffix = "first")
@@ -199,7 +199,8 @@ module Crud
           name: "v[#{column}][]",
           value: suffix == "first" ? values.first : values.last
         },
-        wrapper_html: {class: "values values-#{suffix}"}
+        wrapper_html: {class: "values values-#{suffix}"},
+        label: false
       )
       simple_form_input(f, column, options)
     end
