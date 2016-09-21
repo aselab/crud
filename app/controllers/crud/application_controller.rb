@@ -9,6 +9,8 @@ module Crud
     protected *mod.instance_methods
   end
 
+  class_attribute :_default_sort_key, :_default_sort_order
+
   helper BootstrapHelper
   helper_method :model, :model_name, :model_key, :resources, :resource, :columns,
     :stored_params, :cancel_path, :column_key?, :association_key?, :sort_key?, :has_nested?,
@@ -140,7 +142,7 @@ module Crud
   #  end
   #
   def self.default_sort_key(value = nil)
-    value ? @default_sort_key = value : @default_sort_key
+    value ? self._default_sort_key = value : _default_sort_key
   end
 
   #
@@ -154,7 +156,7 @@ module Crud
   #  end
   #
   def self.default_sort_order(value = nil)
-    value ? @default_sort_order = value : @default_sort_order
+    value ? self._default_sort_order = value : _default_sort_order
   end
 
   def search_terms

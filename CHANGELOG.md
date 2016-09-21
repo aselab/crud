@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.4.0
+
+* Rails 5対応
+* 詳細検索対応
+* select2 4.0に更新
+* active_model_serializersを0.10に更新
+* デフォルトのソートキーと順序が継承されない問題を修正
+
 ## 0.3.2
 
 * namespaceモデルでinputのidが不正になるのを修正
