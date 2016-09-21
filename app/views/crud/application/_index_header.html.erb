@@ -11,7 +11,7 @@
 <% if enable_advanced_search? %>
   <%= content_tag(:div, id: @query.dom_id, class: "panel panel-default #{@query.empty? ? "collapse" : "collapse in"}") do %>
     <div class="panel-body">
-      <%= simple_form_for model.new, {url: stored_params(:container, :sort_key, :sort_order, :per), method: "GET", remote: @remote} do |f| %>
+      <%= simple_form_for resource, {url: stored_params(:container, :sort_key, :sort_order, :per), method: "GET", remote: @remote} do |f| %>
         <%= render partial: "queries", locals: {query: @query, f: f} %>
         <button id="search-button" type="submit" class="btn btn-primary">
           <i class="glyphicon glyphicon-search"></i> <%= t("crud.message.advanced_search") %>
