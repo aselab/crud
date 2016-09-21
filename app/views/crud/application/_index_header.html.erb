@@ -9,7 +9,7 @@
 </div>
 
 <% if enable_advanced_search? %>
-  <%= content_tag(:div, id: @query.dom_id, class: "panel panel-default", style: @query.empty? ? "display:none" : "") do %>
+  <%= content_tag(:div, id: @query.dom_id, class: "panel panel-default #{@query.empty? ? "collapse" : "collapse in"}") do %>
     <div class="panel-body">
       <%= simple_form_for model.new, {url: stored_params(:container, :sort_key, :sort_order, :per), method: "GET", remote: @remote} do |f| %>
         <%= render partial: "queries", locals: {query: @query, f: f} %>

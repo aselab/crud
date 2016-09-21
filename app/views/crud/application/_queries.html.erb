@@ -17,20 +17,6 @@
           break;
       }
     }).change();
-
-    queryPanel.parent().find(".toggle-advanced-search").click(function() {
-      var toggle = $(this);
-      queryPanel.toggle({
-        done: function() {
-          var dropdown = toggle.closest(".input-group-btn").find(".dropdown-toggle");
-          if ($(this).is(":visible")) {
-            dropdown.addClass("active");
-          } else {
-            dropdown.removeClass("active");
-          }
-        }
-      });
-    });
   });
 <% end %>
 
