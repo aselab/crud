@@ -21,12 +21,18 @@
 <% end %>
 
 <% query.columns.each do |column| %>
-  <div class="form-group advanced-search-fields">
-    <%= f.label column, required: false %>
-    <div class="form-inline">
-      <%= advanced_search_selector(column, query) %>
-      <%= advanced_search_input(f, column, query, "first") %>
-      <%= advanced_search_input(f, column, query, "last") %>
-    </div>
-  </div>
+  <%= content_tag :div, class: "form-group" do %>
+    <%= f.label column, required: false, class: "col-sm-2 control-label" %>
+    <%= content_tag :div, advanced_search_selector(column, query), class: "col-sm-2" %>
+    <%= content_tag :div, advanced_search_input(f, column, query, "first"), class: "col-sm-4" %>
+    <%= content_tag :div, advanced_search_input(f, column, query, "last"), class: "col-sm-4" %>
+  <% end %>
 <% end %>
+
+<div class="form-group">
+  <div class="col-sm-offset-2 col-sm-10">
+    <button id="advanced-search-button" type="submit" class="btn btn-primary">
+      <i class="glyphicon glyphicon-search"></i> <%= t("crud.message.advanced_search") %>
+    </button>
+  </div>
+</div>

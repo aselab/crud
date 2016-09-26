@@ -25,20 +25,22 @@ class BootstrapDatetimepickerInput < SimpleForm::Inputs::Base
     time_options
   end
 
-  def date_picker
+  def date_picker(style = nil)
     s = <<-EOT
-      <div class="input-group date" style="max-width: 224px;">
+      <div class="input-group date" style="#{style};">
         <span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span></span>
+        #{reset_button}
         <input type="text" class="form-control" value="#{date}"/>
       </div>
     EOT
     s.html_safe
   end
 
-  def time_picker
+  def time_picker(style = nil)
     s = <<-EOT
-      <div class="input-group" style="max-width: 224px;">
+      <div class="input-group time" style="#{style};">
         <span class="input-group-addon"><span class="glyphicon glyphicon-time"></span></span>
+        #{reset_button}
         <input type="text" class="form-control" value="#{time}"/>
       </div>
     EOT
@@ -46,21 +48,17 @@ class BootstrapDatetimepickerInput < SimpleForm::Inputs::Base
   end
 
   def reset_button
-    unless @required
-      s = <<-EOT
-        <i class="glyphicon glyphicon-remove" id="clear-#{input_id}" style="cursor: pointer; margin-left: 4px;"></i>
-      EOT
-      s.html_safe
-    end
+    content_tag(:i, nil, class: "glyphicon glyphicon-remove date-clear") unless @required
   end
 
   def datetimepicker_js
     javascript_tag <<-SCRIPT
       $(document).ready(function() {
         var hiddenInput = $("##{input_id}");
-        var dateDiv = hiddenInput.next().find(".date");
+        var container = hiddenInput.parent();
+        var dateDiv = container.find(".date");
         var dateInput = dateDiv.find("input");
-        var timeInput = dateDiv.parent().next(".form-group").find("input");
+        var timeInput = container.find(".time").find("input");
         function datetimeSync() {
           var timepicker = timeInput.data("timepicker");
           var hour = timepicker.hour < 10 ? '0' + timepicker.hour : timepicker.hour;
@@ -76,7 +74,7 @@ class BootstrapDatetimepickerInput < SimpleForm::Inputs::Base
         dateDiv.datepicker(#{datepicker_options.to_json}).on("change", datetimeSync);
         timeInput.timepicker(#{timepicker_options.to_json}).on("change", datetimeSync);
 
-        $("#clear-#{input_id}").click(function(){
+        container.on("click", ".date-clear", function(){
           hiddenInput.val("");
           dateInput.val("");
           timeInput.val("");
@@ -90,7 +88,8 @@ class BootstrapDatetimepickerInput < SimpleForm::Inputs::Base
     javascript_tag <<-SCRIPT
       $(document).ready(function() {
         var hiddenInput = $("##{input_id}");
-        var dateDiv = hiddenInput.next().find(".date");
+        var container = hiddenInput.parent();
+        var dateDiv = container.find(".date");
         var dateInput = dateDiv.find("input");
 
         function datetimeSync() {
@@ -99,7 +98,7 @@ class BootstrapDatetimepickerInput < SimpleForm::Inputs::Base
 
         dateDiv.datepicker(#{datepicker_options.to_json}).change(datetimeSync);
 
-        $("#clear-#{input_id}").click(function(){
+        container.on("click", ".date-clear", function(){
           hiddenInput.val("");
           dateInput.val("");
           return false;
@@ -112,14 +111,15 @@ class BootstrapDatetimepickerInput < SimpleForm::Inputs::Base
     javascript_tag <<-SCRIPT
       $(document).ready(function() {
         var hiddenInput = $("##{input_id}");
-        var timeInput = hiddenInput.next().find("input");
+        var container = hiddenInput.parent();
+        var timeInput = container.find(".time").find("input");
         function datetimeSync() {
           hiddenInput.val(timeInput.val());
         }
 
         timeInput.timepicker(#{timepicker_options.to_json}).change(datetimeSync);
 
-        $("#clear-#{input_id}").click(function(){
+        container.on("click", ".date-clear", function(){
           hiddenInput.val("");
           timeInput.val("");
           return false;
@@ -154,14 +154,10 @@ class BootstrapDatetimepickerInput < SimpleForm::Inputs::Base
   end
 
   def inline_elements(*elements)
-    content_tag(:div, :class => "form-inline crud-form-inline") do
-      elements.compact.map do |elem|
-        content_tag(:div, elem, :class => "form-group crud-form-group", :style => "margin: 0px;")
-      end.reduce(:+)
-    end
+    content_tag(:span, elements.map(&:strip).join("").html_safe, :class => "crud-form-inline")
   end
 
   def input(wrapper_options)
-    hidden_input + inline_elements(date_picker, time_picker, reset_button) + datetimepicker_js
+    hidden_input + inline_elements(date_picker("width: 50%"), time_picker("width: 50%")) + datetimepicker_js
   end
 end

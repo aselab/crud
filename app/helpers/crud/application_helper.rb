@@ -146,23 +146,9 @@ module Crud
         return html
       end
 
-      default = {}
-      case column_type(column, f.object.class)
-      when :boolean
-        default = { wrapper: :vertical_boolean }
-      when :datetime, :timestamp
-        default[:as] = :bootstrap_datetimepicker
-      when :date
-        default[:as] = :bootstrap_datepicker
-      when :time
-        default[:as] = :bootstrap_timepicker
-      end
       options ||= input_options(column) || {}
-      options = default.merge(options)
-      options[:collection] = [] if options[:as] == :select2 && (options[:ajax] || options[:url].present?)
-      return f.association column, options if association_key?(column, f.object.class)
-
-      f.input column, options
+      method = association_key?(column, f.object.class) ? :association : :input
+      f.send(method, column, options)
     end
 
     #
@@ -173,8 +159,22 @@ module Crud
     # を定義して指定する規約にしている．
     #
     def input_options(column, controller = nil)
+      default = {}
+      case column_type(column, resource.class)
+      when :boolean
+        default[:wrapper] = :vertical_boolean
+      when :datetime, :timestamp
+        default[:as] = :bootstrap_datetimepicker
+      when :date
+        default[:as] = :bootstrap_datepicker
+      when :time
+        default[:as] = :bootstrap_timepicker
+      end
       controller ||= params[:controller]
-      call_method_for_column(controller, column, :input_options)
+      options = call_method_for_column(controller, column, :input_options) || {}
+      options = default.merge(options)
+      options[:collection] = [] if options[:as] == :select2 && (options[:ajax] || options[:url].present?)
+      options
     end
 
     def password_input_options
@@ -192,17 +192,9 @@ module Crud
 
     def advanced_search_input(f, column, query, suffix = "first")
       values = query.value(column)
-      options = input_options(column) || {}
-      options = options.merge(
-        input_html: {
-          id: "query_#{column}_#{suffix}",
-          name: "v[#{column}][]",
-          value: suffix == "first" ? values.first : values.last
-        },
-        wrapper_html: {class: "values values-#{suffix}"},
-        label: false
-      )
-      simple_form_input(f, column, options)
+      options = { id: "query_#{column}_#{suffix}", name: "v[#{column}][]", value: values.send(suffix), class: "form-control" }
+      options = options.merge(input_options(column) || {})
+      f.input_field column, options
     end
 
     private
