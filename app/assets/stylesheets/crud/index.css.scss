@@ -10,16 +10,23 @@
   vertical-align: middle;
 }
 
-.input-group .date-clear {
-  position: absolute;
-  right: 0px;
-  z-index: 10;
-  display: block;
-  width: 34px;
-  height: 34px;
-  line-height: 34px;
-  text-align: center;
-  cursor: pointer;
+.input-group.date, .input-group.time {
+  .date-clear {
+    position: absolute;
+    right: 0px;
+    z-index: 10;
+    display: block;
+    width: 34px;
+    height: 34px;
+    line-height: 34px;
+    text-align: center;
+    cursor: pointer;
+    font-size: 10px;
+  }
+
+  ::-ms-clear {
+    display: none;
+  }
 }
 
 .index .navbar {

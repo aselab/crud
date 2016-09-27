@@ -58,7 +58,15 @@ class BootstrapDatetimepickerInput < SimpleForm::Inputs::Base
         var container = hiddenInput.parent();
         var dateDiv = container.find(".date");
         var dateInput = dateDiv.find("input");
-        var timeInput = container.find(".time").find("input");
+        var dateClear = dateDiv.find(".date-clear");
+        var timeDiv = container.find(".time");
+        var timeInput = timeDiv.find("input");
+        var timeClear = timeDiv.find(".date-clear");
+        function updateClearButton() {
+          dateInput.val() ? dateClear.show() : dateClear.hide();
+          timeInput.val() ? timeClear.show() : timeClear.hide();
+        }
+
         function datetimeSync() {
           var timepicker = timeInput.data("timepicker");
           var hour = timepicker.hour < 10 ? '0' + timepicker.hour : timepicker.hour;
@@ -66,20 +74,22 @@ class BootstrapDatetimepickerInput < SimpleForm::Inputs::Base
           var second = timepicker.second < 10 ? '0' + timepicker.second : timepicker.second;
           var time = hour + ':' + minute + (timepicker.showSeconds ? ':' + second : '');
           hiddenInput.val(dateInput.val() + "T" + time);
+          updateClearButton();
         }
-        function zindex(selector, index) {
-          return function() { $(selector).css("z-index", index); };
+
+        function clear() {
+          hiddenInput.val("");
+          dateInput.val("");
+          timeInput.val("");
+          updateClearButton();
         }
 
         dateDiv.datepicker(#{datepicker_options.to_json}).on("change", datetimeSync);
         timeInput.timepicker(#{timepicker_options.to_json}).on("change", datetimeSync);
+        updateClearButton();
 
-        container.on("click", ".date-clear", function(){
-          hiddenInput.val("");
-          dateInput.val("");
-          timeInput.val("");
-          return false;
-        });
+        dateClear.on("click", clear);
+        timeClear.on("click", clear);
       });
     SCRIPT
   end
@@ -91,17 +101,23 @@ class BootstrapDatetimepickerInput < SimpleForm::Inputs::Base
         var container = hiddenInput.parent();
         var dateDiv = container.find(".date");
         var dateInput = dateDiv.find("input");
+        var dateClear = dateDiv.find(".date-clear");
+        function updateClearButton() {
+          dateInput.val() ? dateClear.show() : dateClear.hide();
+        }
 
         function datetimeSync() {
           hiddenInput.val(dateInput.val());
+          updateClearButton();
         }
 
         dateDiv.datepicker(#{datepicker_options.to_json}).change(datetimeSync);
+        updateClearButton();
 
-        container.on("click", ".date-clear", function(){
+        dateClear.on("click", function(){
           hiddenInput.val("");
           dateInput.val("");
-          return false;
+          updateClearButton();
         });
       });
     SCRIPT
@@ -112,17 +128,24 @@ class BootstrapDatetimepickerInput < SimpleForm::Inputs::Base
       $(document).ready(function() {
         var hiddenInput = $("##{input_id}");
         var container = hiddenInput.parent();
-        var timeInput = container.find(".time").find("input");
+        var timeDiv = container.find(".time");
+        var timeInput = timeDiv.find("input");
+        var timeClear = timeDiv.find(".date-clear");
+        function updateClearButton() {
+          timeInput.val() ? timeClear.show() : timeClear.hide();
+        }
         function datetimeSync() {
           hiddenInput.val(timeInput.val());
+          updateClearButton();
         }
 
         timeInput.timepicker(#{timepicker_options.to_json}).change(datetimeSync);
+        updateClearButton();
 
         container.on("click", ".date-clear", function(){
           hiddenInput.val("");
           timeInput.val("");
-          return false;
+          updateClearButton();
         });
       });
     SCRIPT
