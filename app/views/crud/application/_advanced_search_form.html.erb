@@ -1,0 +1,45 @@
+<%= javascript_tag do %>
+  $(function() {
+    var argsLength = <%= @query.operator_args.to_json.html_safe %>;
+    var queryPanel = $("#<%= @query.dom_id %>");
+    queryPanel.find(".operator").change(function() {
+      var operator = $(this);
+      var group = operator.closest(".form-group");
+      switch (argsLength[operator.val()]) {
+        case 0:
+          group.find(".values-first,.values-last").hide();
+          break;
+        case 1:
+          group.find(".values-first").show();
+          group.find(".values-last").hide();
+          break;
+        default:
+          group.find(".values-first,.values-last").show();
+          break;
+      }
+    }).change();
+  });
+<% end %>
+
+<%= content_tag(:div, id: @query.dom_id, class: "panel panel-default #{@query.empty? ? "collapse" : "collapse in"}") do %>
+  <div class="panel-body">
+    <%= simple_form_for resource, wrapper: :horizontal_form, html: { class: "form-horizontal" }, url: stored_params(:container, :sort_key, :sort_order, :per), method: "GET", remote: @remote do |f| %>
+      <% @query.columns.each do |column| %>
+        <%= content_tag :div, class: "form-group" do %>
+          <%= f.label column, required: false, class: "col-sm-2 control-label" %>
+          <%= content_tag :div, advanced_search_selector(column, @query), class: "col-sm-2" %>
+          <%= content_tag :div, advanced_search_input(f, column, @query, "first"), class: "col-sm-4 values-first" %>
+          <%= content_tag :div, advanced_search_input(f, column, @query, "last"), class: "col-sm-4 values-last" %>
+        <% end %>
+      <% end %>
+
+      <div class="form-group">
+        <div class="col-sm-offset-2 col-sm-10">
+          <button id="advanced-search-button" type="submit" class="btn btn-primary">
+            <i class="glyphicon glyphicon-search"></i> <%= t("crud.message.advanced_search") %>
+          </button>
+        </div>
+      </div>
+    <% end %>
+  </div>
+<% end %>
