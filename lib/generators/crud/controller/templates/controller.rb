@@ -1,4 +1,9 @@
-class <%= controller_name.camelize %>Controller < Crud::ApplicationController
+<% if namespaced? -%>
+require_dependency "<%= namespaced_path %>/application_controller"
+
+<% end -%>
+<% module_namespacing do -%>
+class <%= class_name %>Controller < Crud::ApplicationController
   # Strong Parametersのパラメータ名リスト
   # permit_keys :name, :age
 
@@ -40,3 +45,4 @@ class <%= controller_name.camelize %>Controller < Crud::ApplicationController
   #   model_columns
   # end
 end
+<% end -%>
