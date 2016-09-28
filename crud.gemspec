@@ -13,7 +13,7 @@ Gem::Specification.new do |s|
   s.summary     = "CRUD controller for Rails"
   s.description = "This plugin provides base controller that supports authorization and search, sort, pagination."
 
-  s.files = Dir["{app,config,db,lib}/**/*", "MIT-LICENSE", "Rakefile", "README.rdoc"]
+  s.files = Dir["{app,config,db,lib}/**/*", "MIT-LICENSE", "Rakefile", "README.md"]
 
   s.add_dependency "rails", ">= 5.0.0"
   s.add_dependency "jquery-rails"
