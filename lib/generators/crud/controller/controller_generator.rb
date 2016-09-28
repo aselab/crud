@@ -19,9 +19,9 @@ module Crud
         invoke "resource_route"
       end
 
-      #def copy_views
-      #  invoke "crud:views", [controller_name] if options[:copy_views]
-      #end
+      def copy_views
+        invoke "crud:views", [name] if options[:copy_views]
+      end
     end
   end
 end
