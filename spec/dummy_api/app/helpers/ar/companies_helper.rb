@@ -1,0 +1,2 @@
+module Ar::CompaniesHelper
+end
