@@ -9,6 +9,8 @@ RailsのDBの[CRUD](https://ja.wikipedia.org/wiki/CRUD)操作を簡単に実装�
 
 ```
 gem 'crud', git: 'git@bitbucket.org:aselab/crud.git'
+# API modeの場合はこちら、以降の設定は不要
+gem 'crud_api', git: 'git@bitbucket.org:aselab/crud.git'
 ```
 
 application.css を application.sassにリネームして以下を追加

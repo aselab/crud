@@ -1,3 +1,4 @@
+if defined? SimpleForm
 # Use this setup block to configure all options available in SimpleForm.
 SimpleForm.setup do |config|
   config.error_notification_class = 'alert alert-danger'
@@ -103,4 +104,5 @@ SimpleForm.setup do |config|
   # to learn about the different styles for forms and inputs,
   # buttons and other elements.
   config.default_wrapper = :vertical_form
+end
 end

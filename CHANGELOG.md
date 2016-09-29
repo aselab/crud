@@ -3,6 +3,7 @@
 ## 0.4.0
 
 * Rails 5対応
+    * API modeの場合はgem 'crud_api'
 * 詳細検索対応
 * select2 4.0に更新
 * active_model_serializersを0.10に更新
