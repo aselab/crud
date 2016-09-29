@@ -315,4 +315,13 @@ end
 
 ### ジェネレータ
 
-TODO
+```
+# モデル + crudコントローラ生成
+rails generate crud:scaffold User group:references name age:integer
+# crudコントローラ生成
+rails generate crud:controller Users group_id name age
+# crudのviewをapp/views/crud/applicationにコピー
+rails generate crud:application_views
+# crudのviewをコントローラ単位でコピー
+rails generate crud:views users
+```

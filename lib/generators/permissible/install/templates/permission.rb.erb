@@ -1,4 +1,4 @@
-class <%= options[:permission] %> < ActiveRecord::Base
+class <%= options[:permission] %> < ApplicationRecord
   belongs_to :<%= principal_name %>
   belongs_to :<%= permissible_name %>, polymorphic: true
 end

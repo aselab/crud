@@ -4,45 +4,20 @@ require_dependency "<%= namespaced_path %>/application_controller"
 <% end -%>
 <% module_namespacing do -%>
 class <%= class_name %>Controller < Crud::ApplicationController
-  # Strong Parametersのパラメータ名リスト
-  # permit_keys :name, :age
-
-  # デフォルトのソートキー
-  # default_sort_key :name
-
-  # デフォルトのソート順
-  # default_sort_order :desc
+  permit_keys <%= permit_keys.map{|key| ":" + key}.join(", ") %>
 
   protected
-  # Strong Parametersをaction毎など細かく制御したい場合は
-  # permit_keysの設定ではなくこのメソッドをオーバーライドする
-  # def permit_params
-  #   params.require(model_key).permit(self.class.permit_keys)
-  # end
-
   # 表示/更新対象のカラムリスト
-  # def model_columns
-  #   self.class.permit_keys
-  # end
+  def model_columns
+    <%= model_columns.inspect %>
+  end
 
   # 一覧表示のカラムリスト
-  # def columns_for_index
-  #   model_columns
-  # end
+  def columns_for_index
+    model_columns
+  end
 
-  # 詳細表示のカラムリスト
-  # def columns_for_show
-  #   model_columns
-  # end
-
-  # 新規作成時のカラムリスト
-  # def columns_for_create
-  #   model_columns
-  # end
-
-  # 更新時のカラムリスト
-  # def columns_for_update
-  #   model_columns
-  # end
+  class Authorization < Crud::Authorization::Default
+  end
 end
 <% end -%>

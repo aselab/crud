@@ -13,7 +13,7 @@ module Permissible
       def create_models
         case orm
         when :active_record
-          inject_into_class("app/models/#{principal_name}.rb", User) do
+          inject_into_class("app/models/#{principal_name}.rb", options[:principal].constantize) do
             "  has_many :#{permission_name.pluralize}, dependent: :destroy\n"
           end
 

@@ -7,6 +7,7 @@
 * select2 4.0に更新
 * active_model_serializersを0.10に更新
 * デフォルトのソートキーと順序が継承されない問題を修正
+* crud:scaffoldジェネレータ追加
 
 ## 0.3.2
 
