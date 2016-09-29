@@ -1,9 +1,11 @@
 module Crud
   module Generators
     class ControllerGenerator < Rails::Generators::NamedBase
+      Rails.application.config.api_only
       source_root File.expand_path("../templates", __FILE__)
       class_option :skip_routes, type: :boolean, desc: "Don't add routes to config/routes.rb."
-      class_option :copy_views, desc: "copy views", type: :boolean
+      class_option :copy_views, type: :boolean, desc: "copy views"
+      class_option :api, type: :boolean, default: Rails.application.config.api_only, desc: "api mode"
       argument :permit_keys, type: :array, default: [], banner: "field1 field2"
 
       check_class_collision suffix: "Controller"

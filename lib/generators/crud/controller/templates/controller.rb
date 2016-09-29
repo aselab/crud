@@ -3,7 +3,7 @@ require_dependency "<%= namespaced_path %>/application_controller"
 
 <% end -%>
 <% module_namespacing do -%>
-class <%= class_name %>Controller < Crud::ApplicationController
+class <%= class_name %>Controller < Crud::<%= options[:api] ? "Api" : "Application" %>Controller
   permit_keys <%= permit_keys.map{|key| ":" + key}.join(", ") %>
 
   protected
