@@ -78,6 +78,10 @@ module Crud
 
     protected
 
+    def do_page
+      params.delete(:page) if params[:page] == "false" && (request.format.html? || request.format.js?)
+      super
+    end
     #
     # CRUDの画面遷移で保持するパラメータのkey
     #
