@@ -1,7 +1,5 @@
 require 'csv'
 require 'kaminari'
-require 'crud/engine'
-require 'acts_as_permissible'
 require 'active_model_serializers'
 require 'memoist'
 
@@ -21,3 +19,7 @@ module Crud
   class NotAuthorizedError < StandardError
   end
 end
+
+require 'acts_as_permissible'
+require 'crud/engine'
+require 'crud/model_reflection'
