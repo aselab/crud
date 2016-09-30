@@ -98,7 +98,7 @@ module Crud
       end
       sort = options[:sort] != false
       remote = options.has_key?(:remote) ? options[:remote] : @remote
-      content_tag(:table, class: options[:class]) do
+      table = content_tag(:table, class: options[:class]) do
         content_tag(:thead) do
           content_tag(:tr) do
             columns.each do |column|
@@ -125,6 +125,8 @@ module Crud
           end
         end
       end
+
+      content_tag(:div, table, class: "table-responsive")
     end
 
     def crud_form(resource, options = nil, &block)
