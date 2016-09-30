@@ -10,6 +10,7 @@
 * STIの関連の扱いを改善
 * key!=valueのようなHTTPクエリパラメータで除外検索ができるように
 * crud_tableでheaderオプションを渡せるように
+* crud_tableのresponsive対応
 
 ## 0.3.1
 
