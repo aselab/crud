@@ -7,8 +7,8 @@ module Crud
     else
       helper BootstrapHelper
       helper_method :model, :model_name, :model_key, :resources, :resource, :columns,
-        :stored_params, :cancel_path, :column_key?, :association_key?, :sort_key?, :has_nested?,
-        :sort_key, :sort_order, :index_actions, :column_type, :can?, :cannot?, :crud_action,
+        :stored_params, :cancel_path, :sort_key?,
+        :sort_key, :sort_order, :index_actions, :can?, :cannot?, :crud_action,
         :enable_advanced_search?
     end
 

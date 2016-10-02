@@ -2,11 +2,19 @@
 
 ## 0.4.0
 
+### 非互換を含む変更点
+
 * Rails 5対応
     * API modeの場合はgem 'crud_api'
-* 詳細検索対応
 * select2 4.0に更新
 * active_model_serializersを0.10に更新
+* コントローラとヘルパーからモデルのリフレクション関連のメソッド削除
+    * column_metadata, column_type, column_key?, association_key?, association_class, has_nested?
+    * 必要な場合はCrud::ModelReflectionを使う
+
+### その他の変更点
+
+* 詳細検索対応
 * デフォルトのソートキーと順序が継承されない問題を修正
 * crud:scaffoldジェネレータ追加
 

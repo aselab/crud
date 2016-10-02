@@ -155,8 +155,8 @@ module Crud
     end
 
     def sort_key?(key)
-      respond_to?("sort_by_#{key}", true) || column_key?(key) ||
-        (activerecord? && association_key?(key))
+      respond_to?("sort_by_#{key}", true) || reflection.column_key?(key) ||
+        (activerecord? && reflection.association_key?(key))
     end
 
     def query_params
@@ -225,7 +225,7 @@ module Crud
     #
     def do_search
       self.columns = columns_for(request.format.symbol) unless request.format.html? || request.format.js?
-      association_columns = columns.select {|c| association_key?(c)}
+      association_columns = columns.select {|c| reflection.association_key?(c)}
 
       terms = search_terms
       model_columns = []
@@ -239,11 +239,11 @@ module Crud
         reject = [c, _param, model] if _param
         if search_method_defined?(c)
           model_columns.push([model, c])
-        elsif association = association_class(c)
+        elsif association = reflection.association_class(c)
           association_columns.push(c)
           fields = association.respond_to?(:search_field, true) ?
             association.send(:search_field) :
-            [:name, :title].find {|c| column_key?(c, association)}
+            [:name, :title].find {|c| reflection(association).column_key?(c)}
           Array(fields).each do |f|
             model_columns.push([association, f])
             cond = [f, param, association] if param
@@ -286,7 +286,7 @@ module Crud
     end
 
     def do_advanced_search
-      @query = advanced_search_query.build(self, model, columns_for_advanced_search, query_params)
+      @query = advanced_search_query.build(model, columns_for_advanced_search, query_params)
       @query.apply(resources)
     end
 
@@ -326,6 +326,7 @@ module Crud
     #
     def search_condition_for_column(column, term, model = nil)
       model ||= self.model
+      ref = ModelReflection[model]
       method = "search_by_#{column}"
       if activerecord?
         cond = if respond_to?(method, true)
@@ -344,7 +345,7 @@ module Crud
             c
           end
         else
-          c = column_metadata(column, model)
+          c = ref.column_metadata(column)
           t = model.arel_table
           if enum_values = enum_values_for(model, column)
             t[c.name].eq(enum_values[term] || term)
@@ -364,7 +365,7 @@ module Crud
         if respond_to?(method, true)
           send(method, term)
         else
-          c = column_metadata(column, model)
+          c = ref.column_metadata(column)
           if enum_values = enum_values_for(model, column)
             { c.name => enum_values[term] || term }
           else
@@ -399,14 +400,14 @@ module Crud
       if respond_to?(method, true)
         send(method, sort_order)
       elsif activerecord?
-        column = if association = association_class(name)
+        column = if association = reflection.association_class(name)
           include_association(name)
           f = association.respond_to?(:sort_field, true) ?
             association.send(:sort_field) :
-            [:name, :title, :id].find {|c| column_key?(c, association)}
+            [:name, :title, :id].find {|c| relection(association).column_key?(c)}
           "#{association.table_name}.#{f.to_s}" if f
         else
-          c = column_metadata(name)
+          c = reflection.column_metadata(name)
           "#{model.table_name}.#{c.name}" if c
         end
         "#{column} #{sort_order}" if column
@@ -436,7 +437,7 @@ module Crud
     def do_index
       self.resources = do_filter || resources
       if enable_advanced_search?
-        @query ||= advanced_search_query.build(self, model, columns_for_advanced_search)
+        @query ||= advanced_search_query.build(model, columns_for_advanced_search)
         self.resources = do_advanced_search || resources if query_params.present?
       else
         self.resources = do_search || resources
@@ -524,9 +525,9 @@ module Crud
 
     def search_column?(model, column_name)
       return true if search_method_defined?(column_name)
-      type = column_type(column_name)
+      type = reflection(model).column_type(column_name)
       (type && [:string, :text, :integer].include?(type)) ||
-        (activerecord? && association_key?(column_name))
+        (activerecord? && reflection(model).association_key?(column_name))
     end
 
     #

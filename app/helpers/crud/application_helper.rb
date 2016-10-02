@@ -149,7 +149,7 @@ module Crud
       end
 
       options ||= input_options(column) || {}
-      method = association_key?(column, f.object.class) ? :association : :input
+      method = Crud::ModelReflection[f.object].association_key?(column) ? :association : :input
       f.send(method, column, options)
     end
 
@@ -162,7 +162,7 @@ module Crud
     #
     def input_options(column, controller = nil)
       default = {}
-      case column_type(column, resource.class)
+      case Crud::ModelReflection[resource].column_type(column)
       when :boolean
         default[:wrapper] = :vertical_boolean
       when :datetime, :timestamp

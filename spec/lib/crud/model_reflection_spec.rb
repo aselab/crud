@@ -1,22 +1,28 @@
 require 'spec_helper'
 
 describe Crud::ModelReflection do
-  subject { Crud::ModelReflection.new(model) }
+  subject { Crud::ModelReflection[model] }
   let(:model) {}
 
-  describe "モデル判定" do
-    context "ActiveRecord::Base" do
-      let(:model) { User }
+  context "ActiveRecord" do
+    let(:model) { User }
 
-      its(:activerecord?) { is_expected.to be true }
-      its(:mongoid?) { is_expected.to be false }
+    its(:activerecord?) { is_expected.to be true }
+    its(:mongoid?) { is_expected.to be false }
+    it "#association_key?" do
+      expect(subject.association_key?(:company)).to be true
+      expect(subject.association_key?(:zzz)).to be false
     end
+  end
 
-    context "Mongoid::Document" do
-      let(:model) { MongoUser }
+  context "Mongoid" do
+    let(:model) { MongoUser }
 
-      its(:activerecord?) { is_expected.to be false }
-      its(:mongoid?) { is_expected.to be true }
+    its(:activerecord?) { is_expected.to be false }
+    its(:mongoid?) { is_expected.to be true }
+    it "#association_key?" do
+      expect(subject.association_key?(:mongo_group)).to be true
+      expect(subject.association_key?(:zzz)).to be false
     end
   end
 

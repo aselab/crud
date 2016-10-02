@@ -1,9 +1,18 @@
 module Crud
   class ModelReflection
+    extend Memoist
+
+    private_class_method :new
     attr_reader :model
 
+    def self.[](model)
+      @cache ||= {}
+      model = model.is_a?(Class) ? model : model.class
+      @cache[model] ||= new(model)
+    end
+
     def initialize(model)
-      @model = model.is_a?(Class) ? model : model.class
+      @model = model
     end
 
     def activerecord?
@@ -40,5 +49,7 @@ module Crud
     def association_class(key)
       model.reflect_on_association(key.to_sym).try(:klass)
     end
+
+    memoize :activerecord?, :mongoid?
   end
 end

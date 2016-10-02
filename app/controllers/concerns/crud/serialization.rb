@@ -1,7 +1,6 @@
 module Crud
   module Serialization
     extend ActiveSupport::Concern
-    include Crud::ModelMethods
 
     def serializer
       Crud::DefaultSerializer
@@ -82,7 +81,8 @@ module Crud
     private
     def json_errors(item)
       errors = {}
-      if self.class.activerecord?(item)
+      ref = ModelReflection[item]
+      if ref.activerecord?
         item.errors.messages.each do |key, messages|
           key = key.to_s.split(".").first.to_sym
           next if errors.has_key?(key)
@@ -93,7 +93,7 @@ module Crud
             errors[key] = messages
           end
         end
-      elsif self.class.mongoid?(item)
+      elsif ref.mongoid?
         errors = item.errors.messages.dup
         item.associations.keys.each do |key|
           key = key.to_sym

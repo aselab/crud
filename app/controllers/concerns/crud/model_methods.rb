@@ -3,21 +3,13 @@ module Crud
     extend ActiveSupport::Concern
 
     included do
+      protected
       class_attribute :_permit_keys
+      delegate :activerecord?, :mongoid?, to: :reflection
     end
 
-    def activerecord?
-      if @is_activerecord.nil?
-        @is_activerecord = self.class.activerecord?(model)
-      end
-      @is_activerecord
-    end
-
-    def mongoid?
-      if @is_mongoid.nil?
-        @is_mongoid = self.class.mongoid?(model)
-      end
-      @is_mongoid
+    def reflection(model = nil)
+      ModelReflection[model || self.model]
     end
 
     def model
@@ -67,49 +59,6 @@ module Crud
       params.require(model_key).permit(permit_keys)
     end
 
-    def column_metadata(name, model = nil)
-      model ||= self.model
-      if activerecord?
-        model.columns_hash[name.to_s]
-      elsif mongoid?
-        model.fields[name.to_s]
-      end
-    end
-
-    def column_type(name, model = nil)
-      model ||= self.model
-      type = column_metadata(name, model).try(:type)
-      type.is_a?(Class) ? type.name.downcase.to_sym : type
-    end
-
-    def column_key?(key, model = nil)
-      model ||= self.model
-      !!column_metadata(key, model)
-    end
-
-    def association_key?(key, model = nil)
-      model ||= self.model
-      !!model.reflect_on_association(key.to_sym)
-    end
-
-    def association_class(key, model = nil)
-      model ||= self.model
-      model.reflect_on_association(key.to_sym).try(:klass)
-    end
-
-    def has_nested?(action, model = nil)
-      model ||= self.model
-      if activerecord?
-        columns_for(action).any? do |c|
-          model.nested_attributes_options.has_key?(c)
-        end
-      elsif mongoid?
-        columns_for(action).any? do |c|
-          model.nested_attributes.has_key?(c.to_s + "_attributes")
-        end
-      end
-    end
-
     module ClassMethods
       def permit_keys(*keys)
         self._permit_keys ||= []
@@ -118,18 +67,6 @@ module Crud
           self._permit_keys += key.keys if key.is_a?(Hash)
         end
         self._permit_keys
-      end
-
-      def activerecord?(item)
-        return false unless defined?(ActiveRecord::Base)
-        item = item.class unless item.is_a?(Class)
-        !!(item <= ActiveRecord::Base)
-      end
-
-      def mongoid?(item)
-        return false unless defined?(Mongoid::Document)
-        item = item.class unless item.is_a?(Class)
-        item.include?(Mongoid::Document)
       end
     end
   end

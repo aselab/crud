@@ -13,16 +13,16 @@ class AdvancedSearchQuery
     "!*" => {label: "none", args: 0}
   }.freeze
 
-  attr_accessor :crud, :columns, :conditions, :query_params
+  attr_reader :model, :columns, :conditions, :query_params
 
-  def initialize(crud, columns, conditions, query_params)
-    @crud = crud
+  def initialize(model, columns, conditions, query_params)
+    @model = model
     @columns = columns
     @conditions = conditions
     @query_params = query_params
   end
 
-  def self.build(crud, model, columns, query_params = {})
+  def self.build(model, columns, query_params = {})
     conditions = []
     columns.each do |column|
       r = model.reflections[column.to_s]
@@ -34,7 +34,7 @@ class AdvancedSearchQuery
       values = query_param[:v]
       conditions << build_condition(arel, operator, values)
     end
-    self.new(crud, columns, conditions, query_params)
+    self.new(model, columns, conditions, query_params)
   end
 
   def self.build_condition(arel, operator, values)
@@ -86,7 +86,7 @@ class AdvancedSearchQuery
   end
 
   def operators_by_column(column)
-    case crud.send(:column_type, column)
+    case Crud::ModelReflection[model].column_type(column)
     when :integer
       ["==", "!=", "<=", ">=","<>", "!*"]
     when :string, :text
