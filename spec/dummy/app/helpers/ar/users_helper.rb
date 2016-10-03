@@ -1,0 +1,2 @@
+module Ar::UsersHelper
+end

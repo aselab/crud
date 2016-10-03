@@ -1,8 +1,9 @@
-class User < ActiveRecord::Base
-  has_many :permissions, dependent: :destroy
-  belongs_to :company, optional: true
+class Ar::User < ApplicationRecord
+  validates :first_name, :last_name, presence: true
 
-  validates :name, :presence => true
+  def name
+    "#{last_name} #{first_name}"
+  end
 
   def age
     return nil unless birth_date

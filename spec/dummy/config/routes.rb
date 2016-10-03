@@ -1,13 +1,11 @@
 Rails.application.routes.draw do
-  resources :miscs
-  resources :csv_items
-  resources :mongo_users
-  resources :mongo_groups do
-    resources :mongo_resources
+  namespace :mongo do
+    resources :users
   end
-  resources :users
-  resources :groups
-  resources :companies
-  root 'home#index'
+  namespace :ar do
+    resources :users
+  end
 
+  post '/', to: "application#setting"
+  root 'home#index'
 end

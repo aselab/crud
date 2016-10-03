@@ -1,0 +1,2 @@
+module Mongo::UsersHelper
+end

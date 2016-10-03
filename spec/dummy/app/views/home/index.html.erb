@@ -1,23 +1,14 @@
 <div class="row">
-  <div class="col-md-6">
-    <div class="panel panel-default">
-      <div class="panel-heading">
-        <h3 class="panel-title">Users</h3>
-      </div>
-      <div id="users" class="panel-body">
-        <%= link_to "Load Users", users_path(per: 2, container: "users"), remote: true %>
-      </div>
-    </div>
-  </div>
-
-  <div class="col-md-6">
-    <div class="panel panel-default">
-      <div class="panel-heading">
-        <h3 class="panel-title">Groups</h3>
-      </div>
-      <div id="groups" class="panel-body">
-        <%= link_to "Load Groups", groups_path(container: "groups"), remote: true %>
+  <% orm_models.each do |model| %>
+    <div class="col-md-6">
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h3 class="panel-title"><%= model.model_name.human %></h3>
+        </div>
+        <div id="<%= model.model_name.plural %>" class="panel-body">
+          <%= link_to "Ajax load", polymorphic_path(model, container: model.model_name.plural), remote: true %>
+        </div>
       </div>
     </div>
-  </div>
+  <% end %>
 </div>

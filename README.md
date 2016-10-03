@@ -13,7 +13,7 @@ gem 'crud', git: 'git@bitbucket.org:aselab/crud.git'
 gem 'crud_api', git: 'git@bitbucket.org:aselab/crud.git'
 ```
 
-application.css を application.sassにリネームして以下を追加
+app/assets/stylesheets/application.css を application.scssにリネームして以下を追加
 
 ```
 /*
@@ -25,12 +25,16 @@ application.css を application.sassにリネームして以下を追加
 @import "font-awesome";
 ```
 
-application.js に以下を追加
+app/assets/javascripts/application.js に以下を追加
 
 ```
+//= require jquery
+//= require jquery_ujs
 //= require bootstrap-sprockets
 //= require crud
 ```
+
+layoutなどにbootstrap_flash_messagesを追加
 
 ## Crud::ApplicationController
 

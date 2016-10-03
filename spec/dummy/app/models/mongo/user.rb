@@ -1,13 +1,15 @@
-class MongoUser
+class Mongo::User
   include Mongoid::Document
-
-  belongs_to :mongo_group, optional: true
-
-  field :name, type: String
+  field :first_name, type: String
+  field :last_name, type: String
+  field :email, type: String
   field :birth_date, type: Date
 
-  field :array, type: Array
-  field :number, type: Integer
+  validates :first_name, :last_name, presence: true
+
+  def name
+    "#{last_name} #{first_name}"
+  end
 
   def age
     return nil unless birth_date

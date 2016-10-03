@@ -1,39 +1,37 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <title>Dummy</title>
-  <%= stylesheet_link_tag    'application', media: 'all', 'data-turbolinks-track' => true %>
-  <%= javascript_include_tag 'application', 'data-turbolinks-track' => true %>
-  <%= csrf_meta_tags %>
-</head>
-<body>
-  <div class="navbar navbar-default navbar-fixed-top">
-  <div class="container-fluid">
-    <div class="navbar-header">
-      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-      </button>
-      <%= link_to "Dummy", root_path, :class => "navbar-brand" %>
-    </div>
-    <div class="collapse navbar-collapse" id="cc">
-      <ul class="nav navbar-nav">
-        <li><%= link_to "User", users_path %></li>
-        <li><%= link_to "Group", groups_path %></li>
-        <li><%= link_to "Company", companies_path %></li>
-        <li><%= link_to "MongoUser", mongo_users_path %></li>
-        <li><%= link_to "MongoGroup", mongo_groups_path %></li>
-        <li><%= link_to "CsvItem", csv_items_path %></li>
-        <li><%= link_to "Misc", miscs_path %></li>
-      </ul>
-    </div>
-  </div>
-  </div>
+  <head>
+    <title>Dummy</title>
+    <%= csrf_meta_tags %>
 
-  <div class="container-fluid" style="margin-top: 50px;">
-    <%= bootstrap_flash_messages %>
-    <%= yield %>
-  </div>
-</body>
+    <%= stylesheet_link_tag    'application', media: 'all', 'data-turbolinks-track': 'reload' %>
+    <%= javascript_include_tag 'application', 'data-turbolinks-track': 'reload' %>
+  </head>
+
+  <body>
+    <div class="navbar navbar-default navbar-fixed-top">
+    <div class="container-fluid">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <%= link_to "Dummy", root_path, :class => "navbar-brand" %>
+      </div>
+      <div class="collapse navbar-collapse" id="cc">
+        <%= header_links %>
+        <form class="navbar-form navbar-right">
+          <%= orm_select %>
+          <%= locale_select %>
+        </form>
+      </div>
+    </div>
+    </div>
+
+    <div class="container-fluid" style="margin-top: 50px;">
+      <%= bootstrap_flash_messages %>
+      <%= yield %>
+    </div>
+  </body>
 </html>

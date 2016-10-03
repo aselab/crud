@@ -10,36 +10,15 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160819113032) do
+ActiveRecord::Schema.define(version: 20161003040904) do
 
-  create_table "companies", force: :cascade do |t|
-    t.string   "name"
-    t.datetime "created_at"
-    t.datetime "updated_at"
-  end
-
-  create_table "groups", force: :cascade do |t|
-    t.string   "name"
-    t.datetime "created_at"
-    t.datetime "updated_at"
-  end
-
-  create_table "permissions", force: :cascade do |t|
-    t.string  "permissible_type", null: false
-    t.integer "permissible_id",   null: false
-    t.integer "user_id",          null: false
-    t.integer "flags",            null: false
-    t.index ["permissible_id", "permissible_type"], name: "index_permissible_keys"
-    t.index ["user_id"], name: "index_permissions_on_user_id"
-  end
-
-  create_table "users", force: :cascade do |t|
-    t.string   "name"
+  create_table "ar_users", force: :cascade do |t|
+    t.string   "first_name"
+    t.string   "last_name"
+    t.string   "email"
     t.date     "birth_date"
-    t.datetime "created_at"
-    t.datetime "updated_at"
-    t.integer  "number"
-    t.integer  "company_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
 end

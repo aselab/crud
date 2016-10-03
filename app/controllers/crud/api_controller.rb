@@ -260,7 +260,7 @@ module Crud
       r = terms.inject(resources) do |scope, term|
         conds = model_columns.map do |model, column|
           search_condition_for_column(column, term, model)
-        end
+        end.compact
         cond = if conds.size > 1
           if activerecord?
             "(#{conds.join(" OR ")})"
