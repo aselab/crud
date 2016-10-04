@@ -1,4 +1,5 @@
 class Ar::User < ApplicationRecord
+  has_many :permissions, dependent: :destroy
   validates :first_name, :last_name, presence: true
 
   def name

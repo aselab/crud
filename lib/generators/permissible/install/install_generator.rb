@@ -13,13 +13,13 @@ module Permissible
       def create_models
         case orm
         when :active_record
-          inject_into_class("app/models/#{principal_name}.rb", options[:principal].constantize) do
-            "  has_many :#{permission_name.pluralize}, dependent: :destroy\n"
+          inject_into_class("app/models/#{principal.name.underscore}.rb", principal) do
+            "  has_many :#{permission_path.split("/").last.pluralize}, dependent: :destroy\n"
           end
 
-          template "permission.rb.erb", "app/models/#{permission_name}.rb"
+          template "permission.rb.erb", "app/models/#{permission_path}.rb"
         when :mongoid
-          template "mongoid_permission.rb.erb", "app/models/#{permission_name}.rb"
+          template "mongoid_permission.rb.erb", "app/models/#{permission_path}.rb"
         end
       end
 
@@ -27,7 +27,7 @@ module Permissible
         if orm == :active_record
           require 'rails/generators/active_record'
           self.class.send(:include, ActiveRecord::Generators::Migration)
-          migration_template "migration.rb.erb", "db/migrate/create_#{permission_name.pluralize}.rb"
+          migration_template "migration.rb.erb", "db/migrate/create_#{permission_table_name}.rb"
         end
       end
 
@@ -36,12 +36,20 @@ module Permissible
         options[:orm].to_sym
       end
 
-      def principal_name
-        options[:principal].underscore
+      def principal
+        options[:principal].constantize
       end
 
-      def permission_name
+      def principal_association
+        principal.name.demodulize.underscore
+      end
+
+      def permission_path
         options[:permission].underscore
+      end
+
+      def permission_table_name
+        permission_path.gsub("/", "_").pluralize
       end
 
       def permissible_name

@@ -1,6 +1,6 @@
 module ApplicationHelper
   def orm_models
-    %w[User].map {|name| orm_model(name)}
+    %w[User Group].map {|name| orm_model(name)}
   end
 
   def orm_model(name)

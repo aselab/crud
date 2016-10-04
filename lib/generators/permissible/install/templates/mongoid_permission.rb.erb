@@ -1,7 +1,7 @@
 class <%= options[:permission] %>
   include Mongoid::Document
 
-  belongs_to :<%= principal_name %>
+  belongs_to :<%= principal_association %>
   embedded_in :<%= permissible_name %>, polymorphic: true
   field :flags, type: Array
 

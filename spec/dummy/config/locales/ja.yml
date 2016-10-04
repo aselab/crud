@@ -201,7 +201,7 @@ ja:
       <<: *errors
     models:
       ar/user: ユーザー
-      mongo/user: ユーザー
+      ar/group: グループ
     attributes:
       ar/user: &user
         last_name: 姓
@@ -210,12 +210,26 @@ ja:
         email: メールアドレス
         birth_date: 誕生日
         age: 年齢
+      ar/group: &group
+        name: グループ名
+        permissions: メンバー
+      ar/permission: &permission
+        user: ユーザ
+        flags: 権限
   mongoid:
     models:
       mongo/user: ユーザー
+      mongo/group: グループ
     attributes:
       mongo/user: *user
+      mongo/group: *group
+      mongo/permission: *permission
 
+  permission:
+    ar/group: &group_permission
+      manage: 管理
+      read: 参照
+    mongo/group: *group_permission
   dummy:
     lang: 言語
     orm: ORM

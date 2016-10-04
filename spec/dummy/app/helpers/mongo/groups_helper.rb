@@ -1,0 +1,2 @@
+module Mongo::GroupsHelper
+end

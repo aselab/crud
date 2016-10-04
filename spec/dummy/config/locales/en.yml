@@ -26,3 +26,13 @@ en:
     locale:
       en: English
       ja: Japanese
+  activerecord:
+    attributes:
+      ar/group: &group
+        permissions: Members
+      ar/permission: &permission
+        flags: Permission
+  mongoid:
+    attributes:
+      mongo/group: *group
+      mongo/permission: *permission

@@ -1,11 +1,9 @@
-class Create<%= permission_name.camelize.pluralize %> < ActiveRecord::Migration
+class Create<%= permission_table_name.camelize %> < ActiveRecord::Migration
   def change
-    create_table :<%= permission_name.pluralize %> do |t|
-      t.references :<%= permissible_name %>, polymorphic: true, null: false
-      t.references :<%= principal_name %>, null: false
+    create_table :<%= permission_table_name %> do |t|
+      t.references :<%= permissible_name %>, polymorphic: true, index: true, null: false
+      t.references :<%= principal_association %>, index: true, null: false
       t.integer :flags, null: false
     end
-    add_index :<%= permission_name.pluralize %>, [:<%= permissible_name %>_id, :<%= permissible_name %>_type], name: "index_<%= permissible_name %>_keys"
-    add_index :<%= permission_name.pluralize %>, :<%= principal_name %>_id
   end
 end

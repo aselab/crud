@@ -14,4 +14,5 @@
 //= require jquery_ujs
 //= require bootstrap-sprockets
 //= require crud
+//= require cocoon
 //= require_tree .
