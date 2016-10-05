@@ -60,7 +60,7 @@ describe Crud::ApplicationController do
 
   describe "#search_condition_for_column" do
     context "ActiveRecord::Base" do
-      let(:model) { User }
+      let(:model) { Ar::Misc }
 
       it "search_by_xxx メソッドが定義されている場合それを呼び出すこと" do
         cond= ["test = ?", "name1"]
@@ -73,20 +73,20 @@ describe Crud::ApplicationController do
         e = 2.years.ago.to_date
         cond= {birth_date: s..e}
         expect(controller).to receive(:search_by_age).with("2").and_return(cond)
-        expect(controller.send(:search_condition_for_column, "age", "2")).to eq %Q["users"."birth_date" BETWEEN '#{s}' AND '#{e}']
+        expect(controller.send(:search_condition_for_column, "age", "2")).to eq %Q["ar_miscs"."birth_date" BETWEEN '#{s}' AND '#{e}']
       end
 
       it "文字列カラムの場合like検索" do
-        expect(controller.send(:search_condition_for_column, "name", "name1")).to eq %Q["users"."name" LIKE '%name1%']
+        expect(controller.send(:search_condition_for_column, "string", "value1")).to eq %Q["ar_miscs"."string" LIKE '%value1%']
       end
 
       it "数値カラムの場合一致検索" do
-        expect(controller.send(:search_condition_for_column, "number", "3")).to eq %Q["users"."number" = 3]
+        expect(controller.send(:search_condition_for_column, "integer", "3")).to eq %Q["ar_miscs"."integer" = 3]
       end
     end
 
     context "Mongoid::Document" do
-      let(:model) { MongoUser }
+      let(:model) { Mongo::Misc }
 
       it "仮想カラムを検索できること" do
         s = 3.years.ago.to_date.tomorrow
@@ -97,11 +97,11 @@ describe Crud::ApplicationController do
       end
 
       it "文字列カラムの場合regexp検索" do
-        expect(controller.send(:search_condition_for_column, "name", "aaa")).to eq("name" => /aaa/)
+        expect(controller.send(:search_condition_for_column, "string", "aaa")).to eq("string" => /aaa/)
       end
 
       it "数値カラムの場合一致検索" do
-        expect(controller.send(:search_condition_for_column, "number", "3")).to eq("number" => 3)
+        expect(controller.send(:search_condition_for_column, "integer", "3")).to eq("integer" => 3)
       end
 
       it "Array検索" do

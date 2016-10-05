@@ -10,12 +10,28 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20161004005309) do
+ActiveRecord::Schema.define(version: 20161005102104) do
 
   create_table "ar_groups", force: :cascade do |t|
     t.string   "name"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+  end
+
+  create_table "ar_misc_belongings", force: :cascade do |t|
+    t.integer "misc_id"
+    t.string  "name"
+    t.index ["misc_id"], name: "index_ar_misc_belongings_on_misc_id"
+  end
+
+  create_table "ar_miscs", force: :cascade do |t|
+    t.boolean  "boolean"
+    t.string   "string"
+    t.integer  "integer"
+    t.float    "float"
+    t.datetime "datetime"
+    t.date     "date"
+    t.time     "time"
   end
 
   create_table "ar_permissions", force: :cascade do |t|

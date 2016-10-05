@@ -5,44 +5,44 @@ describe Crud::ModelReflection do
   let(:model) {}
 
   context "ActiveRecord" do
-    let(:model) { User }
+    let(:model) { Ar::MiscBelonging }
 
     its(:activerecord?) { is_expected.to be true }
     its(:mongoid?) { is_expected.to be false }
     it "#association_key?" do
-      expect(subject.association_key?(:company)).to be true
+      expect(subject.association_key?(:misc)).to be true
       expect(subject.association_key?(:zzz)).to be false
     end
   end
 
   context "Mongoid" do
-    let(:model) { MongoUser }
+    let(:model) { Mongo::MiscBelonging }
 
     its(:activerecord?) { is_expected.to be false }
     its(:mongoid?) { is_expected.to be true }
     it "#association_key?" do
-      expect(subject.association_key?(:mongo_group)).to be true
+      expect(subject.association_key?(:misc)).to be true
       expect(subject.association_key?(:zzz)).to be false
     end
   end
 
-  [User, MongoUser].each do |m|
+  [Ar::Misc, Mongo::Misc].each do |m|
     context m.name do
       let(:model) { m }
 
       it "#column_metadata" do
-        expect(subject.column_metadata(:name)).not_to be nil
+        expect(subject.column_metadata(:string)).not_to be nil
         expect(subject.column_metadata(:zzz)).to be nil
       end
 
       it "#column_type" do
-        expect(subject.column_type(:name)).to be :string
-        expect(subject.column_type(:birth_date)).to be :date
+        expect(subject.column_type(:string)).to be :string
+        expect(subject.column_type(:date)).to be :date
         expect(subject.column_type(:zzz)).to be nil
       end
 
       it "#column_key?" do
-        expect(subject.column_key?(:name)).to be true
+        expect(subject.column_key?(:string)).to be true
         expect(subject.column_key?(:zzz)).to be false
       end
     end
