@@ -32,8 +32,9 @@ ActiveRecord::Schema.define(version: 20161004005309) do
     t.string   "last_name"
     t.string   "email"
     t.date     "birth_date"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.boolean  "is_admin",   default: false
+    t.datetime "created_at",                 null: false
+    t.datetime "updated_at",                 null: false
   end
 
 end

@@ -4,6 +4,7 @@ class Mongo::User
   field :last_name, type: String
   field :email, type: String
   field :birth_date, type: Date
+  field :is_admin, type: Boolean, default: false
 
   validates :first_name, :last_name, presence: true
 

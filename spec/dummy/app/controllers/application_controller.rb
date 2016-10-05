@@ -6,7 +6,16 @@ class ApplicationController < ActionController::Base
   def setting
     session[:model] = params[:orm]
     session[:locale] = I18n.locale_available?(params[:lang]) ? params[:lang] : :en
+    session[:user_id] = params[:login_user]
     head :ok
+  end
+
+  def current_user
+    if session[:model] == "Mongoid"
+      Mongo::User.where(id: session[:user_id]).first
+    else
+      Ar::User.where(id: session[:user_id]).first
+    end
   end
 
   protected

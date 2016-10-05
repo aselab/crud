@@ -233,6 +233,7 @@ ja:
   dummy:
     lang: 言語
     orm: ORM
+    login_user: ログインユーザ
     locale:
       en: 英語
       ja: 日本語

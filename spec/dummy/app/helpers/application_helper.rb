@@ -18,16 +18,20 @@ module ApplicationHelper
 
   def locale_select
     options = ["en", "ja"].map {|locale| [t("dummy.locale.#{locale}"), locale]}
-    select_setting("lang", options, I18n.locale)
+    select_setting("lang", options_for_select(options, I18n.locale))
   end
 
   def orm_select
-    select_setting("orm", ["ActiveRecord", "Mongoid"], session[:model])
+    select_setting("orm", options_for_select(["ActiveRecord", "Mongoid"], session[:model]))
   end
 
-  def select_setting(name, options, selected)
+  def login_user_select
+    select_setting("login_user", options_from_collection_for_select(orm_model("User").all, :id, :name, session[:user_id]), true)
+  end
+
+  def select_setting(name, options, include_blank = false)
     content_tag(:div, class: "form-group") do
-      label_tag(name, t("dummy.#{name}")) + select_tag(name, options_for_select(options, selected), class: "form-control") +
+      label_tag(name, t("dummy.#{name}")) + select_tag(name, options, class: "form-control", include_blank: include_blank) +
         javascript_tag(<<-EOT)
           $("##{name}").change(function() {
             $.post("/", $(this).closest("form").serialize()).then(function() { location.href = "/"; });
