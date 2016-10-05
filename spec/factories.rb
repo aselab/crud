@@ -1,23 +1,25 @@
 FactoryGirl.define do
-  factory :user do
-    sequence(:name) {|n| "user#{n}"}
+  factory :ar_user, class: "Ar::User" do
+    last_name "test"
+    sequence(:first_name) {|n| "user#{n}"}
   end
 
-  factory :group do
+  factory :ar_group, class: "Ar::Group" do
     sequence(:name) {|n| "group#{n}"}
   end
 
-  factory :permission do
-    flags 0b01
+  factory :ar_permission, class: "Ar::Permission"
+
+  factory :mongo_user, class: "Mongo::User" do
+    last_name "test"
+    sequence(:first_name) {|n| "user#{n}"}
   end
 
-  factory :mongo_user do
-    sequence(:name) {|n| "user#{n}"}
-  end
-
-  factory :mongo_group do
+  factory :mongo_group, class: "Mongo::Group" do
     sequence(:name) {|n| "group#{n}"}
   end
+
+  factory :mongo_permission, class: "Mongo::Permission"
 
   factory :csv_item do
     sequence(:string) {|n| "string#{n}"}

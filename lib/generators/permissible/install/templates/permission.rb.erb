@@ -1,4 +1,4 @@
 class <%= options[:permission] %> < ApplicationRecord
-  belongs_to :<%= principal_association %>
+  belongs_to :<%= principal_association %><%= ", class_name: \"#{principal.name}\"" unless principal_association.classify == principal.name %>
   belongs_to :<%= permissible_name %>, polymorphic: true
 end

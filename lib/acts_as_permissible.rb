@@ -15,13 +15,18 @@ module Acts
       def acts_as_permissible(permissions, options = nil)
         permissions.freeze
         options ||= {}
-        principal = options[:principal_name] || "User"
-        permission = options[:permission_name] || "Permission"
-        permissible = options[:permissible] || :permissible
+        principal_name = options[:principal_name] || "User"
+        permission_name = options[:permission_name] || "Permission"
+        permissible_name = options[:permissible_name] || :permissible
+        module_name = self.name.deconstantize
+        principal = "#{module_name}::#{principal_name}".safe_constantize || principal_name.constantize
+        permission = "#{module_name}::#{permission_name}".safe_constantize || permission_name.constantize
         self.define_singleton_method(:all_flags) {permissions}
-        self.define_singleton_method(:principal_name) {principal}
-        self.define_singleton_method(:permission_name) {permission}
-        self.define_singleton_method(:permissible_name) {permissible}
+        self.define_singleton_method(:principal_name) {principal_name.demodulize}
+        self.define_singleton_method(:permission_name) {permission_name.demodulize}
+        self.define_singleton_method(:permissible_name) {permissible_name}
+        self.define_singleton_method(:principal_class) {principal}
+        self.define_singleton_method(:permission_class) {permission}
 
         self.extend ClassMethods
         self.class_eval { class_eval_scope }
@@ -88,10 +93,10 @@ module Acts
         def class_eval_scope
           principals = principal_name.underscore.pluralize.to_sym
           permissions = permission_name.underscore.pluralize.to_sym
-          principal_key = "#{permissions}.#{principal_name.underscore}_id"
+          principal_key = "#{permission_class.table_name}.#{principal_name.foreign_key}"
 
           has_many permissions, as: permissible_name, dependent: :destroy,
-            after_add: :set_default_flag, extend: AssociationExtensions
+            before_add: :set_default_flag, extend: AssociationExtensions
 
           has_many principals, through: permissions
 
@@ -114,7 +119,7 @@ module Acts
               return false unless principal
               self.#{principals}.joins(:#{permissions}).
                 where(self.class.permission_condition(permission)).
-                exists?("#{principals}.id" => principal)
+                exists?("#{principal_class.table_name}.id" => principal)
             end
 
             private
@@ -127,7 +132,7 @@ module Acts
         def permission_condition(permission)
           return nil unless permission
           [
-            "#{permission_name.underscore.pluralize}.flags & :f = :f",
+            "#{permission_class.table_name}.flags & :f = :f",
             f: flags(permission)
           ]
         end
@@ -180,7 +185,7 @@ module Acts
           principal_key = "#{permissions}.#{principal_foreign_key}"
 
           embeds_many permissions, as: permissible_name,
-            after_add: :set_default_flag, extend: AssociationExtensions
+            before_add: :set_default_flag, extend: AssociationExtensions
 
           index({principal_key: 1, flags: 1})
 
@@ -198,7 +203,7 @@ module Acts
           class_eval <<-RUBY
             def #{principals}
               ids = #{permissions}.map(&:#{principal_foreign_key})
-              #{principal_name}.find(ids)
+              self.class.principal_class.find(ids)
             end
 
             def authorized_#{plural_principal_foreign_key}(permission)
@@ -208,7 +213,7 @@ module Acts
             end
 
             def authorized_#{principals}(permission)
-              #{principal_name}.find(authorized_#{plural_principal_foreign_key}(permission))
+              self.class.principal_class.find(authorized_#{plural_principal_foreign_key}(permission))
             end
 
             def authorized?(principal, permission = nil)
