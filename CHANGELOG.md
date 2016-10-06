@@ -11,6 +11,8 @@
 * コントローラとヘルパーからモデルのリフレクション関連のメソッド削除
     * column_metadata, column_type, column_key?, association_key?, association_class, has_nested?
     * 必要な場合はCrud::ModelReflectionを使う
+* Authorizationクラスはapp/authorizationsディレクトリに定義するように変更
+    * 互換性を保つため、今までと同様コントローラのインナークラスでも読み込まれる
 
 ### その他の変更点
 

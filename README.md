@@ -276,11 +276,29 @@ end
 
 ### 権限制御
 
-権限制御をしたい場合はコントローラにAuthorizationという名前のインナークラスを定義する。
+権限制御をしたい場合はapp/authorizationsにコントローラと同名のAuthorizationクラスを定義する。
 各アクションの実行を許可するかどうかをメソッド定義してtrue/falseを返すように実装すればよい。
 
 特殊なアクションとして、manageを定義するとcreate, update, destroyの権限をまとめて制御できる。
 アクションに対応するメソッドを定義しない場合のデフォルト値はtrueである。
+
+```ruby
+# 暗黙的にUsersControllerで用いられる
+class UsersAuthorization < Crud::Authorization::Default
+  def create?(user)
+    false
+  end
+
+  def manage?(user)
+    user == current_user
+  end
+end
+```
+
+メソッドの引数にはアクションを実行しようとしている対象のレコードが渡される。
+また、コントローラのcurrent_userが渡されるため、ログインユーザによる制御も可能。
+
+コントローラにAuthorizationという名前のインナークラスを定義してもよい。こちらが最優先で用いられる。
 
 ```ruby
 class UsersController < Crud::ApplicationController
@@ -295,9 +313,6 @@ class UsersController < Crud::ApplicationController
   end
 end
 ```
-
-メソッドの引数にはアクションを実行しようとしている対象のレコードが渡される。
-また、コントローラのcurrent_userが渡されるため、ログインユーザによる制御も可能。
 
 ### 各アクションの表示結果のカスタマイズ
 

@@ -16,8 +16,5 @@ class <%= class_name %>Controller < Crud::<%= options[:api] ? "Api" : "Applicati
   def columns_for_index
     model_columns
   end
-
-  class Authorization < Crud::Authorization::Default
-  end
 end
 <% end -%>

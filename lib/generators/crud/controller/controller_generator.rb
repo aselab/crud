@@ -14,6 +14,10 @@ module Crud
         template "controller.rb", File.join("app/controllers", class_path, "#{file_name}_controller.rb")
       end
 
+      def create_authorization_files
+        template "authorization.rb", File.join("app/authorizations", class_path, "#{file_name}_authorization.rb")
+      end
+
       def create_helper_files
         template "helper.rb", File.join("app/helpers", class_path, "#{file_name}_helper.rb")
       end

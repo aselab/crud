@@ -11,7 +11,4 @@ class Ar::MiscBelongingsController < Crud::ApplicationController
   def columns_for_index
     model_columns
   end
-
-  class Authorization < Crud::Authorization::Default
-  end
 end
