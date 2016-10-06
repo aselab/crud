@@ -43,7 +43,8 @@ module Crud
     end
 
     def association_key?(key)
-      !!model.reflect_on_association(key.to_sym)
+      return false unless ref = model.reflect_on_association(key.to_sym)
+      mongoid? ? !ref.relation.embedded? : true
     end
 
     def association_class(key)

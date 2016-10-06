@@ -23,3 +23,4 @@ end
 require 'acts_as_permissible'
 require 'crud/engine'
 require 'crud/model_reflection'
+require 'crud/search_query'

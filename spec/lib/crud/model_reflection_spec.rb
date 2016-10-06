@@ -5,23 +5,24 @@ describe Crud::ModelReflection do
   let(:model) {}
 
   context "ActiveRecord" do
-    let(:model) { Ar::MiscBelonging }
+    let(:model) { Ar::Misc }
 
     its(:activerecord?) { is_expected.to be true }
     its(:mongoid?) { is_expected.to be false }
     it "#association_key?" do
-      expect(subject.association_key?(:misc)).to be true
+      expect(subject.association_key?(:misc_belongings)).to be true
       expect(subject.association_key?(:zzz)).to be false
     end
   end
 
   context "Mongoid" do
-    let(:model) { Mongo::MiscBelonging }
+    let(:model) { Mongo::Misc }
 
     its(:activerecord?) { is_expected.to be false }
     its(:mongoid?) { is_expected.to be true }
     it "#association_key?" do
-      expect(subject.association_key?(:misc)).to be true
+      expect(subject.association_key?(:misc_belongings)).to be true
+      expect(subject.association_key?(:misc_embeds)).to be false
       expect(subject.association_key?(:zzz)).to be false
     end
   end
