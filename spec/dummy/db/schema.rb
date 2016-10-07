@@ -32,6 +32,7 @@ ActiveRecord::Schema.define(version: 20161005102104) do
     t.datetime "datetime"
     t.date     "date"
     t.time     "time"
+    t.string   "enumerized"
   end
 
   create_table "ar_permissions", force: :cascade do |t|

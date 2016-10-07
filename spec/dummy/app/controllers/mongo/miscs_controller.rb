@@ -1,10 +1,10 @@
 class Mongo::MiscsController < Crud::ApplicationController
-  permit_keys :boolean, :string, :integer, :float, :datetime, :date, :time
+  permit_keys :boolean, :string, :integer, :float, :datetime, :date, :time, :enumerized
 
   protected
   # 表示/更新対象のカラムリスト
   def model_columns
-    [:boolean, :string, :integer, :float, :datetime, :date, :time]
+    [:boolean, :string, :integer, :float, :datetime, :date, :time, :enumerized]
   end
 
   # 一覧表示のカラムリスト

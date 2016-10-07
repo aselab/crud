@@ -8,6 +8,7 @@ class CreateArMiscs < ActiveRecord::Migration[5.0]
       t.datetime :datetime
       t.date :date
       t.time :time
+      t.string :enumerized
     end
   end
 end
