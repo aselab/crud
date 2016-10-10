@@ -31,13 +31,14 @@ module Crud
       elsif mongoid?
         model.fields[name.to_s]
       end
-      meta && {name: meta.name, type: enum_values_for(name) ? :enum : meta.type}
+      type = enum_values_for(name) ? :enum : meta.try(:type) 
+      type = type.is_a?(Class) ? type.name.downcase.to_sym : type
+      meta && {name: meta.name.to_sym, type: type}
     end
 
     def column_type(name)
       meta = column_metadata(name) || {}
-      type = meta[:type]
-      type.is_a?(Class) ? type.name.downcase.to_sym : type
+      meta[:type]
     end
 
     def column_key?(key)
@@ -56,6 +57,14 @@ module Crud
     def enum_values_for(column)
       enum = model.try(:enumerized_attributes).try(:[], column)
       enum && Hash[enum.options]
+    end
+
+    def none_condition
+      if activerecord?
+        "0 = 1"
+      elsif mongoid?
+        { id: 0 }
+      end
     end
 
     def sanitize_sql(cond)

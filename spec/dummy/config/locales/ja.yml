@@ -224,6 +224,13 @@ ja:
       mongo/user: *user
       mongo/group: *group
       mongo/permission: *permission
+  enumerize:
+    ar/misc: &enums
+      enumerized:
+        A: Aラベル
+        B: Bラベル
+        C: Cラベル
+    mongo/misc: *enums
 
   permission:
     ar/group: &group_permission

@@ -48,8 +48,8 @@ describe Crud::ModelReflection do
       let(:model) { m }
 
       it "#column_metadata" do
-        expect(subject.column_metadata(:string)).not_to be nil
-        expect(subject.column_metadata(:enumerized)).to eq(name: "enumerized", type: :enum)
+        expect(subject.column_metadata(:string)).to eq(name: :string, type: :string)
+        expect(subject.column_metadata(:enumerized)).to eq(name: :enumerized, type: :enum)
         expect(subject.column_metadata(:zzz)).to be nil
       end
 

@@ -46,7 +46,7 @@ module Crud
     def condition_by_method(method, value, operator)
       cond = case method.arity
       when 1
-        operator.nil? ? method.call(value) : none
+        operator.nil? ? method.call(value) : reflection.none_condition
       when 2
         method.call(value, operator)
       else
@@ -54,29 +54,14 @@ module Crud
       end
     end
 
-    def where_clause(model, column, value, operator = nil)
+    def where_clause(model, column, operator, *values)
       ref = ModelReflection[model]
 
       condition = if method = search_method_for(column)
         cond = condition_by_method(method, value, operator)
         ref.activerecord? ? ref.sanitize_sql(cond) : cond
-      elsif ref.activerecord?
-        meta = ref.column_metadata(column)
-        return none unless meta
-        name = meta[:name]
-        t = model.arel_table
-        case meta[:type]
-        when :enum
-          enum_values = ref.enum_values_for(column)
-          t[name].eq(enum_values[value] || value)
-        when :string, :text
-          t[name].matches("%#{value}%")
-        when :integer
-          t[name].eq(Integer(value)) rescue none
-        else
-          t[name].eq(value)
-        end
-      elsif reflection.mongoid?
+      else
+        op = Operator[operator]
       end
       condition.respond_to?(:to_sql) ? condition.to_sql : condition
     end
@@ -85,13 +70,7 @@ module Crud
     def extension_method(name)
       extension.try(:respond_to?, name, true) ? extension.method(name) : nil
     end
-
-    def none
-      if reflection.activerecord?
-        "0 = 1"
-      elsif reflection.mongoid?
-        { id: 0 }
-      end
-    end
   end
 end
+
+require "crud/search_query/operator"

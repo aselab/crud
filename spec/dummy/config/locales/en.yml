@@ -36,3 +36,10 @@ en:
     attributes:
       mongo/group: *group
       mongo/permission: *permission
+  enumerize:
+    ar/misc: &enums
+      enumerized:
+        A: ALabel
+        B: BLabel
+        C: CLabel
+    mongo/misc: *enums
