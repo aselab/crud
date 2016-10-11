@@ -99,6 +99,31 @@ describe Crud::SearchQuery::Operator do
           end
         end
       end
+      context "association" do
+        let(:column) { :misc_belongings }
+        context "search_field定義なし" do
+          let(:args) { ["abc"] }
+          context Ar::Misc do
+            its(:to_sql) { should eq %q["ar_misc_belongings"."name" = 'abc'] }
+          end
+        end
+        context "search_field定義あり" do
+          let(:args) { [34] }
+          before { expect(Ar::MiscBelonging).to receive(:search_field).and_return("id") }
+          context Ar::Misc do
+            its(:to_sql) { should eq %q["ar_misc_belongings"."id" = 34] }
+          end
+        end
+        context "search_field複数項目指定" do
+          let(:args) { ["abc"] }
+          before { expect(Ar::MiscBelonging).to receive(:search_field).and_return([:id, :name]) }
+          context Ar::Misc do
+            pending do
+              it { should eq %q[0 = 1 OR "ar_misc_belongings"."name" = 'abc'] }
+            end
+          end
+        end
+      end
     end
 
     context "contains" do

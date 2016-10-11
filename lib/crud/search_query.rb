@@ -5,7 +5,7 @@ module Crud
     def initialize(scope, search_columns, extension = nil)
       @scope = scope
       @columns = search_columns
-      @model = scope.model
+      @model = scope.try(:model) || scope.try(:klass)
       @reflection = ModelReflection[@model]
       @extension = extension
     end
@@ -35,40 +35,46 @@ module Crud
       end
     end
 
-    def search_method_for(column)
-      extension_method("search_by_#{column}")
-    end
-
-    def sort_method_for(column)
-      extension_method("sort_by_#{column}")
-    end
-
-    def condition_by_method(method, value, operator)
-      cond = case method.arity
-      when 1
-        operator.nil? ? method.call(value) : reflection.none_condition
-      when 2
-        method.call(value, operator)
-      else
-        raise "#{method} has invalid arguments"
-      end
-    end
-
     def where_clause(model, column, operator, *values)
       ref = ModelReflection[model]
 
-      condition = if method = search_method_for(column)
-        cond = condition_by_method(method, value, operator)
-        ref.activerecord? ? ref.sanitize_sql(cond) : cond
-      else
-        op = Operator[operator]
+      if operator.blank?
+        if method = search_method_for(column)
+          return ref.sanitize_sql(method.call(values.first))
+        end
+        operator = case ref.column_type(column)
+        when :string, :text
+          "contains"
+        else
+          "equals"
+        end
       end
-      condition.respond_to?(:to_sql) ? condition.to_sql : condition
+
+      cond = if method = advanced_search_method_for(column)
+        method.call(Operator.canonical_name(operator), *values)
+      elsif op = Operator[operator]
+        op.new(model, column).apply(*values)
+      else
+        ref.none_condition
+      end
+      ref.sanitize_sql(cond)
     end
 
     private
     def extension_method(name)
       extension.try(:respond_to?, name, true) ? extension.method(name) : nil
+    end
+
+    def search_method_for(column)
+      extension_method("search_by_#{column}")
+    end
+
+    def advanced_search_method_for(column)
+      extension_method("advanced_search_by_#{column}")
+    end
+
+    def sort_method_for(column)
+      extension_method("sort_by_#{column}")
     end
   end
 end

@@ -8,10 +8,12 @@ module Crud
       delegate :activerecord?, :mongoid?, to: :reflection
 
       @@operators = {}
+      @@aliases = {}
       @@operators_for_type = {}
       def self.register(alias_name = nil)
-        @@operators[self.operator_name.to_s] = self
-        @@operators[alias_name.to_s] = self if alias_name
+        name = self.operator_name.to_s
+        @@operators[name] = self
+        @@aliases[alias_name.to_s] = name if alias_name
         self.supported_types.each do |type|
           (@@operators_for_type[type] ||= []).push(self)
         end
@@ -26,7 +28,11 @@ module Crud
       end
 
       def self.[](name)
-        @@operators[name.to_s]
+        @@operators[canonical_name(name)]
+      end
+
+      def self.canonical_name(name)
+        @@aliases[name.to_s] || name.to_s
       end
 
       def self.available_for(type)
@@ -42,13 +48,22 @@ module Crud
       end
 
       def initialize(model, column)
+        reflection = ModelReflection[model]
+        if reflection.activerecord? && association = reflection.association_class(column)
+          model = association
+          reflection = ModelReflection[association]
+          column = association.respond_to?(:search_field, true) ?
+            association.send(:search_field) :
+            [:name, :title].find {|c| reflection.column_key?(c)}
+        end
+
         @model = model
-        @reflection = ModelReflection[model]
-        meta = @reflection.column_metadata(column) || {}
+        @reflection = reflection
+        meta = reflection.column_metadata(column) || {}
         @name = meta[:name]
         @type = meta[:type]
         raise NotSupportedType, meta unless self.class.supported_types.include?(@type)
-        @enum_values = @reflection.enum_values_for(column) if @type == :enum
+        @enum_values = reflection.enum_values_for(column) if @type == :enum
       end
 
       def apply(*values)

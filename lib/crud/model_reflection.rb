@@ -26,6 +26,8 @@ module Crud
     end
 
     def column_metadata(name)
+      return {name: name, type: :association} if association_key?(name)
+
       meta = if activerecord?
         model.columns_hash[name.to_s]
       elsif mongoid?
@@ -80,7 +82,7 @@ module Crud
           model.connection.visitor.compile b
         }.join(' AND ')
       else
-        cond
+        cond.respond_to?(:to_sql) ? cond.to_sql : cond
       end
     end
 

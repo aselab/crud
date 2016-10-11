@@ -28,6 +28,16 @@ describe Crud::ModelReflection do
         let(:condition) { {string: "abc", integer: 3} }
         it { is_expected.to eq %q["ar_miscs"."string" = 'abc' AND "ar_miscs"."integer" = 3] }
       end
+
+      context "arel condition" do
+        let(:condition) { model.arel_table[:string].eq("abc") }
+        it { is_expected.to eq %q["ar_miscs"."string" = 'abc'] }
+      end
+
+      context "string condition" do
+        let(:condition) { "string = 'abc'" }
+        it { is_expected.to eq condition }
+      end
     end
   end
 
@@ -51,6 +61,7 @@ describe Crud::ModelReflection do
         expect(subject.column_metadata(:string)).to eq(name: :string, type: :string)
         expect(subject.column_metadata(:enumerized)).to eq(name: :enumerized, type: :enum)
         expect(subject.column_metadata(:zzz)).to be nil
+        expect(subject.column_metadata(:misc_belongings)).to eq(name: :misc_belongings, type: :association)
       end
 
       it "#column_type" do
@@ -58,6 +69,7 @@ describe Crud::ModelReflection do
         expect(subject.column_type(:date)).to be :date
         expect(subject.column_type(:enumerized)).to be :enum
         expect(subject.column_type(:zzz)).to be nil
+        expect(subject.column_type(:misc_belongings)).to be :association
       end
 
       it "#column_key?" do
