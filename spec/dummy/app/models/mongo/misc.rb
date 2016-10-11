@@ -2,8 +2,8 @@ class Mongo::Misc
   include Mongoid::Document
   extend Enumerize
 
-  has_many :misc_belongings
-  embeds_many :misc_embeds
+  has_many :misc_belongings, class_name: "Mongo::MiscBelonging"
+  embeds_many :misc_embeds, class_name: "Mongo::MiscEmbed"
 
   field :boolean, type: Mongoid::Boolean
   field :string, type: String

@@ -17,11 +17,13 @@ module Crud
     end
 
     def authorization
-      @authorization ||= (
-        "#{self.class}::Authorization".safe_constantize || # コントローラのインナークラス
-        self.class.name.sub(/Controller$/, "Authorization").safe_constantize || # コントローラと同名のAuthorizationクラス
-        Default
-      ).new(current_user)
+      @authorization ||= begin
+        name = self.class.name
+        auth = "#{name}::Authorization".safe_constantize # コントローラのインナークラス
+        auth ||= name.sub(/Controller$/, "Authorization").safe_constantize if name.ends_with?("Controller") # コントローラと同名のAuthorizationクラス
+        auth ||= Default
+        auth.new(current_user)
+      end
     end
 
     # 権限がある場合にtrueを返す。

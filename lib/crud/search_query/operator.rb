@@ -48,40 +48,41 @@ module Crud
       end
 
       def initialize(model, column)
-        reflection = ModelReflection[model]
-        if reflection.activerecord? && association = reflection.association_class(column)
-          model = association
-          reflection = ModelReflection[association]
-          column = association.respond_to?(:search_field, true) ?
-            association.send(:search_field) :
-            [:name, :title].find {|c| reflection.column_key?(c)}
-        end
-
         @model = model
-        @reflection = reflection
+        @reflection = ModelReflection[model]
         meta = reflection.column_metadata(column) || {}
         @name = meta[:name]
         @type = meta[:type]
-        raise NotSupportedType, meta unless self.class.supported_types.include?(@type)
+        raise NotSupportedType, meta unless @type == :association || self.class.supported_types.include?(@type)
         @enum_values = reflection.enum_values_for(column) if @type == :enum
       end
 
       def apply(*values)
-        values = values.map do |value|
-          case type
-          when :enum
-            enum_values[value] || value
-          when :boolean
-            !!value
-          when :integer
-            Integer(value)
-          when :float
-            Float(value)
-          else
-            value
+        if type == :association
+          raise if mongoid?
+          association = reflection.association_class(name)
+          ref = ModelReflection[association]
+          columns = association.respond_to?(:search_field, true) ?
+            association.send(:search_field) :
+            [:name, :title].find {|c| ref.column_key?(c)}
+          Array(columns).map {|c| self.class.new(association, c).apply(*values)}.join(" OR ")
+        else
+          values = values.map do |value|
+            case type
+            when :enum
+              enum_values[value] || value
+            when :boolean
+              !!value
+            when :integer
+              Integer(value)
+            when :float
+              Float(value)
+            else
+              value
+            end
           end
+          reflection.sanitize_sql condition(*values)
         end
-        condition(*values)
       rescue
         reflection.none_condition
       end

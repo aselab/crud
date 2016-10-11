@@ -71,7 +71,7 @@ module Crud
 
     def sanitize_sql(cond)
       return cond unless activerecord?
-      case cond
+      result = case cond
       when Array
         model.send(:sanitize_sql_for_conditions, cond)
       when Hash
@@ -82,8 +82,9 @@ module Crud
           model.connection.visitor.compile b
         }.join(' AND ')
       else
-        cond.respond_to?(:to_sql) ? cond.to_sql : cond
+        cond
       end
+      result.respond_to?(:to_sql) ? result.to_sql : result
     end
 
     memoize :activerecord?, :mongoid?

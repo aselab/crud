@@ -62,7 +62,7 @@ describe Crud::SearchQuery::Operator do
         let(:column) { :string }
         let(:args) { ["abc"] }
         context Ar::Misc do
-          its(:to_sql) { should eq %q["ar_miscs"."string" = 'abc'] }
+          it { should eq %q["ar_miscs"."string" = 'abc'] }
         end
         context Mongo::Misc do
           it { should eq(string: 'abc') }
@@ -72,7 +72,7 @@ describe Crud::SearchQuery::Operator do
         let(:column) { :float }
         let(:args) { [3.4] }
         context Ar::Misc do
-          its(:to_sql) { should eq %q["ar_miscs"."float" = 3.4] }
+          it { should eq %q["ar_miscs"."float" = 3.4] }
         end
         context Mongo::Misc do
           it { should eq(float: 3.4) }
@@ -83,7 +83,7 @@ describe Crud::SearchQuery::Operator do
         context "値検索" do
           let(:args) { "C" }
           context Ar::Misc do
-            its(:to_sql) { should eq %q["ar_miscs"."enumerized" = 'C'] }
+            it { should eq %q["ar_miscs"."enumerized" = 'C'] }
           end
           context Mongo::Misc do
             it { should eq(enumerized: 'C') }
@@ -92,7 +92,7 @@ describe Crud::SearchQuery::Operator do
         context "ラベル検索" do
           let(:args) { "BLabel" }
           context Ar::Misc do
-            its(:to_sql) { should eq %q["ar_miscs"."enumerized" = 'B'] }
+            it { should eq %q["ar_miscs"."enumerized" = 'B'] }
           end
           context Mongo::Misc do
             it { should eq(enumerized: 'B') }
@@ -104,23 +104,21 @@ describe Crud::SearchQuery::Operator do
         context "search_field定義なし" do
           let(:args) { ["abc"] }
           context Ar::Misc do
-            its(:to_sql) { should eq %q["ar_misc_belongings"."name" = 'abc'] }
+            it { should eq %q["ar_misc_belongings"."name" = 'abc'] }
           end
         end
         context "search_field定義あり" do
           let(:args) { [34] }
           before { expect(Ar::MiscBelonging).to receive(:search_field).and_return("id") }
           context Ar::Misc do
-            its(:to_sql) { should eq %q["ar_misc_belongings"."id" = 34] }
+            it { should eq %q["ar_misc_belongings"."id" = 34] }
           end
         end
         context "search_field複数項目指定" do
           let(:args) { ["abc"] }
           before { expect(Ar::MiscBelonging).to receive(:search_field).and_return([:id, :name]) }
           context Ar::Misc do
-            pending do
-              it { should eq %q[0 = 1 OR "ar_misc_belongings"."name" = 'abc'] }
-            end
+            it { should eq %q[0 = 1 OR "ar_misc_belongings"."name" = 'abc'] }
           end
         end
       end
@@ -132,7 +130,7 @@ describe Crud::SearchQuery::Operator do
         let(:column) { :string }
         let(:args) { ["abc"] }
         context Ar::Misc do
-          its(:to_sql) { should eq %q["ar_miscs"."string" LIKE '%abc%'] }
+          it { should eq %q["ar_miscs"."string" LIKE '%abc%'] }
         end
         context Mongo::Misc do
           it { should eq(string: /abc/) }
@@ -147,7 +145,7 @@ describe Crud::SearchQuery::Operator do
         context "with valid values" do
           let(:args) { [2, 5] }
           context Ar::Misc do
-            its(:to_sql) { should eq %q["ar_miscs"."integer" BETWEEN 2 AND 5] }
+            it { should eq %q["ar_miscs"."integer" BETWEEN 2 AND 5] }
           end
           context Mongo::Misc do
             it { should eq(integer: 2..5) }
@@ -170,7 +168,7 @@ describe Crud::SearchQuery::Operator do
       context "string" do
         let(:column) { :string }
         context Ar::Misc do
-          its(:to_sql) { should eq %q["ar_miscs"."string" IS NOT NULL] }
+          it { should eq %q["ar_miscs"."string" IS NOT NULL] }
         end
         context Mongo::Misc do
           it { should eq(:string.ne => nil) }

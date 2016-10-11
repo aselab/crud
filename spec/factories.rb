@@ -10,6 +10,8 @@ FactoryGirl.define do
 
   factory :ar_permission, class: "Ar::Permission"
 
+  factory :ar_misc, class: "Ar::Misc"
+
   factory :mongo_user, class: "Mongo::User" do
     last_name "test"
     sequence(:first_name) {|n| "user#{n}"}
@@ -20,6 +22,8 @@ FactoryGirl.define do
   end
 
   factory :mongo_permission, class: "Mongo::Permission"
+
+  factory :mongo_misc, class: "Mongo::Misc"
 
   factory :csv_item do
     sequence(:string) {|n| "string#{n}"}

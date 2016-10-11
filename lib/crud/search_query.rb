@@ -31,7 +31,20 @@ module Crud
       include_associations
 
       terms = self.class.tokenize(keyword)
-      columns.each do |c|
+      @scope = terms.inject(@scope) do |scope, term|
+        conds = columns.map do |column|
+          where_clause(model, column, nil, term)
+        end
+        cond = if conds.size > 1
+          if reflection.activerecord?
+            "(#{conds.join(" OR ")})"
+          elsif reflection.mongoid?
+            {"$and" => [{"$or" => conds}]}
+          end
+        else
+          conds.first
+        end
+        scope.where(cond)
       end
     end
 
@@ -50,14 +63,13 @@ module Crud
         end
       end
 
-      cond = if method = advanced_search_method_for(column)
-        method.call(Operator.canonical_name(operator), *values)
+      if method = advanced_search_method_for(column)
+        ref.sanitize_sql method.call(Operator.canonical_name(operator), *values)
       elsif op = Operator[operator]
         op.new(model, column).apply(*values)
       else
         ref.none_condition
       end
-      ref.sanitize_sql(cond)
     end
 
     private

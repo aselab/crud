@@ -160,4 +160,40 @@ describe Crud::SearchQuery do
       end
     end
   end
+
+  describe "#keyword_search" do
+    subject { query.keyword_search(keyword) }
+    let(:columns) { [:string, :integer] }
+    let(:factory) { model == Ar::Misc ? :ar_misc : :mongo_misc }
+    let!(:item1) { create(factory, string: "item1", integer: 1) }
+    let!(:item2) { create(factory, string: "item2", integer: 11) }
+    let!(:item3) { create(factory, string: "foo", integer: 22) }
+    
+    context "keyword: nil" do
+      let(:keyword) { nil }
+      [Ar::Misc, Mongo::Misc].each do |m|
+        context m do
+          it { should eq m.all }
+        end
+      end
+    end
+
+    context "keyword: item" do
+      let(:keyword) { "item" }
+      [Ar::Misc, Mongo::Misc].each do |m|
+        context m do
+          it { should eq [item1, item2] }
+        end
+      end
+    end
+
+    context "keyword: 1" do
+      let(:keyword) { "1" }
+      [Ar::Misc, Mongo::Misc].each do |m|
+        context m do
+          it { should eq [item1] }
+        end
+      end
+    end
+  end
 end

@@ -4,6 +4,7 @@ require File.expand_path("../dummy/config/environment", __FILE__)
 require 'rspec/rails'
 require 'rspec/its'
 require 'factory_girl'
+require 'database_cleaner'
 require 'pry-rails'
 require 'enumerize'
 
@@ -45,8 +46,13 @@ RSpec.configure do |config|
 
   config.infer_base_class_for_anonymous_controllers = false
 
+  DatabaseCleaner.strategy = :truncation
   config.before(:all) do
     FactoryGirl.reload
+  end
+  config.before(:each) do
+    DatabaseCleaner[:active_record].clean
+    DatabaseCleaner[:mongoid].clean
   end
 
   config.include FactoryGirl::Syntax::Methods
