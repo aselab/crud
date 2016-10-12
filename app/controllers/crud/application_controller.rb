@@ -8,8 +8,7 @@ module Crud
       helper BootstrapHelper
       helper_method :model, :model_name, :model_key, :resources, :resource, :columns,
         :stored_params, :cancel_path, :sort_key?,
-        :sort_key, :sort_order, :index_actions, :can?, :cannot?, :crud_action,
-        :enable_advanced_search?
+        :sort_key, :sort_order, :index_actions, :can?, :cannot?, :crud_action
     end
 
     def index(&format_block)
@@ -131,6 +130,10 @@ module Crud
 
     def render_edit(status = :ok)
       render action: "edit", status: status
+    end
+
+    def columns_for_index
+      request.format.html? || request.format.js? ? model_columns : super
     end
   end
 end

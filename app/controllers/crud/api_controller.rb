@@ -144,37 +144,9 @@ module Crud
       value ? self._default_sort_order = value : _default_sort_order
     end
 
-    def search_terms
-      tokenize(params[:term])
-    end
-
-    def tokenize(word)
-      word.to_s.strip.scan(/".*"|[^[[:space:]]]+/).map {|s|
-        s.starts_with?('"') && s.ends_with?('"') ? s[1..-2] : s
-      }
-    end
-
     def sort_key?(key)
       respond_to?("sort_by_#{key}", true) || reflection.column_key?(key) ||
         (activerecord? && reflection.association_key?(key))
-    end
-
-    def query_params
-      @query_params ||=
-        if params[:op].blank?
-          {}
-        else
-          h = {}
-          op = params[:op].select{|k,v| (v == "!*") || query_value_present?(k) }.permit!.to_h
-          op.each do |k,v|
-            h[k] = {op: v, v: params[:v][k]}
-          end
-          h
-        end
-    end
-
-    def query_value_present?(key)
-      params[:v] && params[:v][key].is_a?(Array) && params[:v][key].any?(&:present?)
     end
 
     #
@@ -221,85 +193,18 @@ module Crud
 
     #
     # indexアクションで呼び出される内部メソッド.
-    # オーバーライドして検索結果を返却するように実装する．
+    # オーバーライドして検索ソートした結果を返却するように実装する．
     #
-    def do_search
-      self.columns = columns_for(request.format.symbol) unless request.format.html? || request.format.js?
-      association_columns = columns.select {|c| reflection.association_key?(c)}
-
-      terms = search_terms
-      model_columns = []
-      conditions = []
-      rejects = []
-      columns_for_search.each do |c|
-        _c = (c.to_s+"!").to_sym
-        param = params[c] if params[c].present?
-        _param = params[_c] if params[_c].present?
-        cond = [c, param, model] if param
-        reject = [c, _param, model] if _param
-        if search_method_defined?(c)
-          model_columns.push([model, c])
-        elsif association = reflection.association_class(c)
-          association_columns.push(c)
-          fields = association.respond_to?(:search_field, true) ?
-            association.send(:search_field) :
-            [:name, :title].find {|c| reflection(association).column_key?(c)}
-          Array(fields).each do |f|
-            model_columns.push([association, f])
-            cond = [f, param, association] if param
-            reject = [f, _param, association] if _param
-          end
-        else
-          model_columns.push([model, c])
-        end
-        conditions.push(search_condition_for_column(*cond)) if cond
-        rejects.push(search_condition_for_column(*reject)) if reject
-      end
-
-      include_association(*association_columns)
-      r = terms.inject(resources) do |scope, term|
-        conds = model_columns.map do |model, column|
-          search_condition_for_column(column, term, model)
-        end.compact
-        cond = if conds.size > 1
-          if activerecord?
-            "(#{conds.join(" OR ")})"
-          elsif mongoid?
-            {"$and" => [{"$or" => conds}]}
-          end
-        else
-          conds.first
-        end
-        scope.where(cond)
-      end
-
-      r=conditions.inject(r) do |scope, cond|
-        scope.where(cond)
-      end
-      rejects.inject(r) do |scope, reject|
-        scope.where.not(reject)
-      end
+    def do_query
+      query = SearchQuery.new(resources, columns_for_search, self)
+      query.keyword_search(keyword)
+      #query.advanced_search
+      query.sort(sort_key, sort_order) if sort_key
+      query.scope
     end
 
-    def advanced_search_query
-      @advanced_search_query ||= AdvancedSearchQuery
-    end
-
-    def do_advanced_search
-      @query = advanced_search_query.build(model, columns_for_advanced_search, query_params)
-      @query.apply(resources)
-    end
-
-    def include_association(*associations)
-      return if associations.empty?
-      if activerecord?
-        self.resources = resources.includes(associations).references(associations)
-      elsif mongoid?
-        associations.select! do |a|
-          !model.reflect_on_association(a).relation.embedded?
-        end
-        self.resources = resources.includes(associations)
-      end
+    def keyword
+      params[:term]
     end
 
     def sort_key
@@ -315,118 +220,6 @@ module Crud
       end.to_sym
     end
 
-    #
-    # search_by_:column_name という名前のメソッドを定義すると、
-    # カラム毎の検索条件をカスタマイズできる。
-    # whereに渡す条件式を返すように実装する。
-    #
-    #  def search_by_name(term)
-    #    ["users.lastname like ? and users.firstname ?", "%#{term}%", "%#{term}%"]
-    #  end
-    #
-    def search_condition_for_column(column, term, model = nil)
-      model ||= self.model
-      ref = ModelReflection[model]
-      method = "search_by_#{column}"
-      if activerecord?
-        cond = if respond_to?(method, true)
-          c = send(method, term)
-          case c
-          when Array
-            model.send(:sanitize_sql_for_conditions, c)
-          when Hash
-            # https://github.com/rails/rails/blob/4-2-stable/activerecord/lib/active_record/sanitization.rb#L89-L100
-            attrs = model.send(:table_metadata).resolve_column_aliases(c)
-            attrs = model.send(:expand_hash_conditions_for_aggregates, attrs)
-            model.predicate_builder.build_from_hash(attrs.stringify_keys).map { |b|
-              model.connection.visitor.compile b
-            }.join(' AND ')
-          else
-            c
-          end
-        else
-          c = ref.column_metadata(column)
-          t = model.arel_table
-          if enum_values = enum_values_for(model, column)
-            t[c.name].eq(enum_values[term] || term)
-          else
-            case c.type
-            when :string, :text
-              t[c.name].matches("%#{term}%")
-            when :integer
-              t[c.name].eq(Integer(term)) rescue "0 = 1"
-            else
-              t[c.name].eq(term)
-            end
-          end
-        end
-        cond.respond_to?(:to_sql) ? cond.to_sql : cond
-      elsif mongoid?
-        if respond_to?(method, true)
-          send(method, term)
-        else
-          c = ref.column_metadata(column)
-          if enum_values = enum_values_for(model, column)
-            { c.name => enum_values[term] || term }
-          else
-            if c.type == String
-              { c.name => Regexp.new(Regexp.escape(term)) }
-            elsif c.type == Integer
-              { c.name => Integer(term) } rescue { id: 0 }
-            else
-              { c.name => term }
-            end
-          end
-        end
-      end
-    end
-
-    # enumerize
-    def enum_values_for(model, column)
-      enum = model.try(:enumerized_attributes).try(:[], column)
-      enum && Hash[enum.options]
-    end
-
-    #
-    # sort_by_:column_name という名前のメソッドを定義すると、
-    # カラム毎のソート条件をカスタマイズできる。
-    #
-    #  def sort_by_name(order)
-    #    "users.last_name #{order}, users.first_name #{order}"
-    #  end
-    #
-    def sort_condition_for_column(name)
-      method = "sort_by_#{name}"
-      if respond_to?(method, true)
-        send(method, sort_order)
-      elsif activerecord?
-        column = if association = reflection.association_class(name)
-          include_association(name)
-          f = association.respond_to?(:sort_field, true) ?
-            association.send(:sort_field) :
-            [:name, :title, :id].find {|c| relection(association).column_key?(c)}
-          "#{association.table_name}.#{f.to_s}" if f
-        else
-          c = reflection.column_metadata(name)
-          "#{model.table_name}.#{c.name}" if c
-        end
-        "#{column} #{sort_order}" if column
-      elsif mongoid?
-        { name => sort_order }
-      end
-    end
-
-    def do_sort
-      return unless key = sort_key
-      if cond = sort_condition_for_column(key)
-        if activerecord?
-          resources.order(cond) 
-        elsif mongoid?
-          resources.order_by(cond) 
-        end
-      end
-    end
-
     def do_page
       resources.page(params[:page]).per(params[:per]) unless params[:page] == "false"
     end
@@ -436,13 +229,7 @@ module Crud
     #
     def do_index
       self.resources = do_filter || resources
-      if enable_advanced_search?
-        @query ||= advanced_search_query.build(model, columns_for_advanced_search)
-        self.resources = do_advanced_search || resources if query_params.present?
-      else
-        self.resources = do_search || resources
-      end
-      self.resources = do_sort || resources
+      self.resources = do_query || resources
       self.resources = do_page || resources
     end
 
@@ -496,6 +283,10 @@ module Crud
       model.find(params[:id])
     end
 
+    def columns_for_index
+      columns_for(request.format.symbol)
+    end
+
     #
     # 検索に利用するカラムリスト.
     # デフォルトではindexで表示する項目のうちtypeがstring, text, integerであるものまたは関連
@@ -508,15 +299,7 @@ module Crud
     # 詳細検索に利用するカラムリスト.
     #
     def columns_for_advanced_search
-      columns_for(:index)
-    end
-
-    #
-    # 詳細検索を使用するかどうか.
-    # 今のところActiveRecordモデルのみ
-    #
-    def enable_advanced_search?
-      activerecord?
+      columns_for_search
     end
 
     def search_method_defined?(column_name)
@@ -526,7 +309,7 @@ module Crud
     def search_column?(model, column_name)
       return true if search_method_defined?(column_name)
       type = reflection(model).column_type(column_name)
-      (type && [:string, :text, :integer].include?(type)) ||
+      (type && [:enum, :string, :text, :integer, :float].include?(type)) ||
         (activerecord? && reflection(model).association_key?(column_name))
     end
 

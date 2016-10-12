@@ -13,6 +13,7 @@
     * 必要な場合はCrud::ModelReflectionを使う
 * Authorizationクラスはapp/authorizationsディレクトリに定義するように変更
     * 互換性を保つため、今までと同様コントローラのインナークラスでも読み込まれる
+* コントローラのdo_search, do_sortメソッドをdo_queryメソッドに統合
 
 ### その他の変更点
 
