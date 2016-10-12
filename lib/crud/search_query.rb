@@ -8,6 +8,7 @@ module Crud
       @model = scope.try(:model) || scope.try(:klass)
       @reflection = ModelReflection[@model]
       @extension = extension
+      include_associations
     end
 
     def self.tokenize(keyword)
@@ -28,12 +29,10 @@ module Crud
     end
 
     def keyword_search(keyword)
-      include_associations
-
       terms = self.class.tokenize(keyword)
       @scope = terms.inject(@scope) do |scope, term|
         conds = columns.map do |column|
-          where_clause(model, column, nil, term)
+          where_clause(column, nil, term)
         end
         cond = if conds.size > 1
           if reflection.activerecord?
@@ -48,14 +47,27 @@ module Crud
       end
     end
 
-    def where_clause(model, column, operator, *values)
-      ref = ModelReflection[model]
+    def advanced_search(condition_values, operators)
+      condition_values ||= {}
+      operators ||= {}
+      @scope = (condition_values.keys + operators.keys).uniq.inject(@scope) do |scope, column|
+        operator = operators[column] || "equals"
+        values = Array(condition_values[column])
+        r = where_clause(column, operator, *values)
+        scope.where(where_clause(column, operator, *values))
+      end
+    end
 
+    def sort(column, order)
+      @scope = @scope.order(order_clause(column, order))
+    end
+
+    def where_clause(column, operator, *values)
       if operator.blank?
         if method = search_method_for(column)
-          return ref.sanitize_sql(method.call(values.first))
+          return reflection.sanitize_sql(method.call(values.first))
         end
-        operator = case ref.column_type(column)
+        operator = case reflection.column_type(column)
         when :string, :text
           "contains"
         else
@@ -64,11 +76,30 @@ module Crud
       end
 
       if method = advanced_search_method_for(column)
-        ref.sanitize_sql method.call(Operator.canonical_name(operator), *values)
+        reflection.sanitize_sql method.call(Operator.canonical_name(operator), *values)
       elsif op = Operator[operator]
         op.new(model, column).apply(*values)
       else
-        ref.none_condition
+        reflection.none_condition
+      end
+    end
+
+    def order_clause(column, order)
+      if method = sort_method_for(column)
+        method.call(order)
+      elsif reflection.activerecord?
+        if association = reflection.association_class(column)
+          ref = ModelReflection[association]
+          f = association.respond_to?(:sort_field, true) ?
+            association.send(:sort_field) :
+            [:name, :title, :id].find {|c| ref.column_key?(c)}
+          "#{association.table_name}.#{f} #{order}" if f
+        else
+          meta = reflection.column_metadata(column)
+          "#{model.table_name}.#{meta[:name]} #{order}" if meta
+        end
+      elsif reflection.mongoid?
+        { column => order }
       end
     end
 

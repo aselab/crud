@@ -39,7 +39,7 @@ describe Crud::SearchQuery do
   end
 
   describe "#include_associations" do
-    subject { query.include_associations }
+    subject { query.scope }
     context Ar::Misc do
       let(:columns) { [:string, :integer, :misc_belongings] }
 
@@ -57,7 +57,7 @@ describe Crud::SearchQuery do
   end
 
   describe "#where_clause" do
-    subject { query.where_clause(model, column, operator, *values) }
+    subject { query.where_clause(column, operator, *values) }
     context "operator: nil" do
       let(:operator) {}
       context "column: string" do
@@ -161,37 +161,146 @@ describe Crud::SearchQuery do
     end
   end
 
-  describe "#keyword_search" do
-    subject { query.keyword_search(keyword) }
+  describe "#order_clause" do
+    subject { query.order_clause(column, order) }
+    context "association" do
+      let(:model) { Ar::Misc }
+      let(:column) { :misc_belongings }
+      let(:order) { :asc }
+
+      context "association_class#sort_field 定義なし" do
+        it { should eq "ar_misc_belongings.name asc" }
+      end
+      context "association_class#sort_field 定義あり" do
+        before { expect(Ar::MiscBelonging).to receive(:sort_field).and_return(:id) }
+        let(:order) { :desc }
+        it { should eq "ar_misc_belongings.id desc" }
+      end
+    end
+
+    context "column: string" do
+      let(:column) { :string }
+      let(:order) { :desc }
+
+      context "sort_by_stringメソッド定義あり" do
+        before { expect(extension).to receive(:sort_by_string).with(order).and_return(integer: :asc) }
+        [Ar::Misc, Mongo::Misc].each do |m|
+          context m do
+            it { should eq(integer: :asc) }
+          end
+        end
+      end
+      context "sortメソッド定義なし" do
+        context Ar::Misc do
+          it { should eq "ar_miscs.string desc" }
+        end
+        context Mongo::Misc do
+          it { should eq(string: :desc) }
+        end
+      end
+    end
+  end
+
+  context "with items" do
     let(:columns) { [:string, :integer] }
     let(:factory) { model == Ar::Misc ? :ar_misc : :mongo_misc }
-    let!(:item1) { create(factory, string: "item1", integer: 1) }
+    let!(:item1) { create(factory, string: "item1", integer: 22) }
     let!(:item2) { create(factory, string: "item2", integer: 11) }
-    let!(:item3) { create(factory, string: "foo", integer: 22) }
-    
-    context "keyword: nil" do
-      let(:keyword) { nil }
-      [Ar::Misc, Mongo::Misc].each do |m|
-        context m do
-          it { should eq m.all }
+    let!(:item3) { create(factory, string: "foo", integer: 1) }
+
+    describe "#keyword_search" do
+      subject { query.keyword_search(keyword) }
+      
+      context "keyword: nil" do
+        let(:keyword) { nil }
+        [Ar::Misc, Mongo::Misc].each do |m|
+          context m do
+            it { should eq m.all }
+          end
+        end
+      end
+
+      context "keyword: item" do
+        let(:keyword) { "item" }
+        [Ar::Misc, Mongo::Misc].each do |m|
+          context m do
+            it { should eq [item1, item2] }
+          end
+        end
+      end
+
+      context "keyword: 1" do
+        let(:keyword) { "1" }
+        [Ar::Misc, Mongo::Misc].each do |m|
+          context m do
+            it { should eq [item1, item3] }
+          end
         end
       end
     end
 
-    context "keyword: item" do
-      let(:keyword) { "item" }
-      [Ar::Misc, Mongo::Misc].each do |m|
-        context m do
-          it { should eq [item1, item2] }
+    describe "#advanced_search" do
+      subject { query.advanced_search(values, operators) }
+      
+      context "operator指定なし: equals" do
+        let(:operators) { nil }
+        let(:values) { {string: "item2", integer: 11} }
+        [Ar::Misc, Mongo::Misc].each do |m|
+          context m do
+            it { should eq [item2] }
+          end
+        end
+      end
+
+      context "contains and between" do
+        let(:operators) { {string: "contains", integer: "between"} }
+        let(:values) { {string: "item", integer: [20, 30]} }
+        [Ar::Misc, Mongo::Misc].each do |m|
+          context m do
+            it { should eq [item1] }
+          end
         end
       end
     end
 
-    context "keyword: 1" do
-      let(:keyword) { "1" }
-      [Ar::Misc, Mongo::Misc].each do |m|
-        context m do
-          it { should eq [item1] }
+    describe "#sort" do
+      subject { query.sort(column, order) }
+      context "string" do
+        let(:column) { :string }
+        context "asc" do
+          let(:order) { :asc }
+          [Ar::Misc, Mongo::Misc].each do |m|
+            context m do
+              it { should eq [item3, item1, item2] }
+            end
+          end
+        end
+        context "desc" do
+          let(:order) { :desc }
+          [Ar::Misc, Mongo::Misc].each do |m|
+            context m do
+              it { should eq [item2, item1, item3] }
+            end
+          end
+        end
+      end
+      context "integer" do
+        let(:column) { :integer }
+        context "asc" do
+          let(:order) { :asc }
+          [Ar::Misc, Mongo::Misc].each do |m|
+            context m do
+              it { should eq [item3, item2, item1] }
+            end
+          end
+        end
+        context "desc" do
+          let(:order) { :desc }
+          [Ar::Misc, Mongo::Misc].each do |m|
+            context m do
+              it { should eq [item1, item2, item3] }
+            end
+          end
         end
       end
     end
