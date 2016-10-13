@@ -53,7 +53,7 @@ module Crud
         meta = reflection.column_metadata(column) || {}
         @name = meta[:name]
         @type = meta[:type]
-        raise NotSupportedType, meta unless @type == :association || self.class.supported_types.include?(@type)
+        raise NotSupportedType, meta unless self.class.supported_types.include?(@type)
         @enum_values = reflection.enum_values_for(column) if @type == :enum
       end
 
@@ -94,7 +94,7 @@ module Crud
 
     class EqualsOperator < Operator
       def self.supported_types
-        [:enum, :string, :text, :boolean, :integer, :float, :datetime, :date, :time]
+        [:association, :enum, :string, :text, :boolean, :integer, :float, :datetime, :date, :time]
       end
 
       def condition(value)
@@ -108,7 +108,7 @@ module Crud
 
     class NotEqualsOperator < Operator
       def self.supported_types
-        [:enum, :string, :text, :boolean, :integer, :float, :datetime, :date, :time]
+        [:association, :enum, :string, :text, :boolean, :integer, :float, :datetime, :date, :time]
       end
 
       def condition(value)

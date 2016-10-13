@@ -199,11 +199,13 @@ module Crud
       select_options = options_for_select(operators.map {|o| [o.label, o.operator_name]}, selected_operator.operator_name)
       values = search_values[column] || []
       options = (input_options(column) || {}).merge(id: nil, name: "v[#{column}][]", class: "form-control")
+      is_select = options[:as] ? [:select, :select2].include?(options[:as]) : [:enum, :association].include?(type)
+      value_key = is_select ? :selected : :value
       content_tag :div, class: "form-group" do
         concat f.label(column, required: false, class: "col-sm-2 control-label")
         concat content_tag(:div, select_tag("op[#{column}]", select_options, class: "operator form-control"), class: "col-sm-2")
         (0...selected_operator.args).each do |i|
-          concat content_tag(:div, f.input_field(column, options.merge(value: values[i])), class: "col-sm-#{8 / selected_operator.args}")
+          concat content_tag(:div, f.input_field(column, options.merge(id: "query-#{column}-#{i}", value_key => values[i])), class: "col-sm-#{8 / selected_operator.args}")
         end
       end
     end

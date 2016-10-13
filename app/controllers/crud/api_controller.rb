@@ -208,7 +208,7 @@ module Crud
     end
 
     def search_operators
-      params[:op] || {}
+      params[:op] || params[:operator] || {}
     end
 
     def search_values
@@ -320,7 +320,7 @@ module Crud
     # 詳細検索に利用するカラムリスト.
     #
     def columns_for_advanced_search
-      columns_for_search
+      columns_for(:index)
     end
 
     def search_method_defined?(column_name)

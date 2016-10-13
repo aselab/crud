@@ -23,7 +23,7 @@ class Select2Input < SimpleForm::Inputs::CollectionSelectInput
   end
 
   def value
-    @value ||= input_options[:value] || input_options[:input_html].try("[]", :value) ||
+    @value ||= input_options[:selected] ||
       (object.respond_to?(attribute_name) && object.send(attribute_name)) || []
   end
 
@@ -43,7 +43,10 @@ class Select2Input < SimpleForm::Inputs::CollectionSelectInput
   end
 
   def url
-    @url ||= input_options.delete(:url) || reflection && polymorphic_path(reflection.klass)
+    @url ||= input_options.delete(:url) || polymorphic_path(model)
+  end
+
+  def model
   end
 
   def ajax?
@@ -55,7 +58,11 @@ class Select2Input < SimpleForm::Inputs::CollectionSelectInput
   end
 
   def init_data(ids)
-    reflection.try(:klass).try(:where, :id => ids)
+    model.where(id: ids)
+  end
+
+  def model
+    @model ||= input_options.delete(:model) || reflection.klass
   end
 
   def select2_options(options)
