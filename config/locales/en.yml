@@ -10,6 +10,7 @@ en:
       create: Create
       update: Update
       destroy: Destroy
+      advanced_search: Advanced Search
 
     action_title:
       new: "New %{name}"
@@ -20,16 +21,7 @@ en:
       update: "Update %{name}"
       destroy: "Destroy %{name}"
 
-    message:
-      successfully_created: "%{name} was successfully created."
-      successfully_updated: "%{name} was successfully updated."
-      successfully_deleted: "%{name} was successfully deleted."
-      are_you_sure: "Are you sure?"
-      enter_search_term: "Enter search term..."
-      advanced_search: "Advanced Search"
-
-  helpers:
-    query:
+    operator:
       equals: is
       not_equals: is not
       greater_or_equal: '>='
@@ -37,7 +29,15 @@ en:
       contains: contains
       not_contains: doesn't contain
       between: between
+      any: any
       none: none
+
+    message:
+      successfully_created: "%{name} was successfully created."
+      successfully_updated: "%{name} was successfully updated."
+      successfully_deleted: "%{name} was successfully deleted."
+      are_you_sure: "Are you sure?"
+      enter_search_term: "Enter search term..."
 
   simple_form:
     "yes": 'Yes'

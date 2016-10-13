@@ -8,4 +8,25 @@
   </div>
 </div>
 
-<%#= render partial: "advanced_search_form" %>
+<div id="<%= temp_id :advanced %>">
+  <%= render partial: "advanced_search_form" if advanced_search? %>
+</div>
+
+<%= javascript_tag do %>
+  $(function() {
+    var form = $("#<%= temp_id :advanced %>");
+    var url = "<%= url_for(format: :form, container: temp_id(:advanced)) %>";
+    $("#<%= temp_id :index %>").find(".advanced-search-toggle").click(function() {
+      var button = $(this);
+      if (form.find("*").length == 0) {
+      $.get(url).then(function() { button.addClass("active"); });
+      } else {
+        form.toggle();
+        button.toggleClass("active");
+      }
+    });
+    form.on("change", ".operator", function() {
+      $.get(url, $(this).closest("form").serialize());
+    });
+  });
+<% end %>

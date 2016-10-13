@@ -1,11 +1,11 @@
 <%= form_tag stored_params(:container, :sort_key, :sort_order, :per), class: "navbar-form form-search", method: "GET", remote: @remote do %>
   <div class="input-group">
-    <div class="input-group-btn" data-toggle="collapse" data-target="#<%#= @query.dom_id %>">
-      <button type="button" class="btn btn-default <%#= @query.empty? ? "" : "active" %>" data-toggle="button">
+    <div class="input-group-btn">
+      <button type="button" class="btn btn-default advanced-search-toggle <%= "active" if advanced_search? %>">
         <span class="caret"></span>
       </button>
     </div>
-    <%= text_field_tag :term, params[:term], :class => "search-query form-control",
+    <%= text_field_tag :term, search_keyword, :class => "search-query form-control",
       :placeholder => t("crud.message.enter_search_term") %>
     <div class="input-group-btn">
       <button id="search-button" type="submit" class="btn btn-primary">

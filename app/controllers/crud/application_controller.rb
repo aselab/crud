@@ -7,14 +7,15 @@ module Crud
     else
       helper BootstrapHelper
       helper_method :model, :model_name, :model_key, :resources, :resource, :columns,
-        :stored_params, :cancel_path, :sort_key?,
-        :sort_key, :sort_order, :index_actions, :can?, :cannot?, :crud_action
+        :stored_params, :cancel_path, :sort_key?, :sort_key, :sort_order,
+        :search_keyword, :search_values, :search_operators, :advanced_search?,
+        :columns_for_advanced_search, :index_actions, :can?, :cannot?, :crud_action
     end
 
     def index(&format_block)
       super do |format|
         format_block.try(:call, format)
-        format.any(:html, :js) {}
+        format.any(:html, :js, :form) {}
       end
     end
 
@@ -77,6 +78,10 @@ module Crud
 
     protected
 
+    def do_index
+      super unless request.format.form?
+    end
+
     def do_page
       params.delete(:page) if params[:page] == "false" && (request.format.html? || request.format.js?)
       super
@@ -98,7 +103,7 @@ module Crud
     def stored_params(*args)
       overwrites = args.extract_options!
       keys = args.blank? ? stored_params_keys : args
-      params.dup.permit!.to_h.symbolize_keys.extract!(*keys).merge(overwrites)
+      params.to_unsafe_hash.symbolize_keys.extract!(*keys).merge(overwrites)
     end
 
     def index_actions

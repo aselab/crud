@@ -3,6 +3,8 @@ require 'kaminari'
 require 'active_model_serializers'
 require 'memoist'
 
+Mime::Type.register_alias "text/javascript", :form
+
 begin
   require 'mongoid'
   module BSON

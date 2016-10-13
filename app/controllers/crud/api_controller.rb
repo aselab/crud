@@ -197,14 +197,35 @@ module Crud
     #
     def do_query
       query = SearchQuery.new(resources, columns_for_search, self)
-      query.keyword_search(keyword)
-      #query.advanced_search
+      query.keyword_search(search_keyword)
+      query.advanced_search(search_values, search_operators)
       query.sort(sort_key, sort_order) if sort_key
       query.scope
     end
 
-    def keyword
+    def search_keyword
       params[:term]
+    end
+
+    def search_operators
+      params[:op] || {}
+    end
+
+    def search_values
+      @search_values ||= begin
+        p = params[:v] || params[:value]
+        if p.is_a?(ActionController::Parameters)
+          p.to_unsafe_hash
+        else
+          columns_for_advanced_search.each_with_object({}) do |column, h|
+            h[column] = params[column] if params.has_key?(column)
+          end
+        end
+      end
+    end
+
+    def advanced_search?
+      search_values.present? || search_operators.present?
     end
 
     def sort_key

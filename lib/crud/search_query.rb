@@ -50,10 +50,10 @@ module Crud
     def advanced_search(condition_values, operators)
       condition_values ||= {}
       operators ||= {}
-      @scope = (condition_values.keys + operators.keys).uniq.inject(@scope) do |scope, column|
+      keys = (condition_values.keys + operators.keys).map(&:to_sym).uniq
+      @scope = keys.inject(@scope) do |scope, column|
         operator = operators[column] || "equals"
         values = Array(condition_values[column])
-        r = where_clause(column, operator, *values)
         scope.where(where_clause(column, operator, *values))
       end
     end
@@ -63,6 +63,7 @@ module Crud
     end
 
     def where_clause(column, operator, *values)
+      return nil unless values.any?(&:present?)
       if operator.blank?
         if method = search_method_for(column)
           return reflection.sanitize_sql(method.call(values.first))

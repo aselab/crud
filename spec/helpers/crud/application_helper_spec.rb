@@ -26,7 +26,7 @@ describe Crud::ApplicationHelper do
 
       it "sort_keyと一致しない場合のリンクが正しいこと" do
         expect(helper).to receive(:link_to).with("human name of aaa", 
-          @params.dup.permit!.merge(:sort_key => "aaa", :sort_order => "asc"),
+          @params.to_unsafe_hash.merge(:sort_key => "aaa", :sort_order => "asc"),
           remote: nil
           ).and_return("xxx")
         expect(helper.link_to_sort(:aaa)).to eq "xxx"
@@ -34,7 +34,7 @@ describe Crud::ApplicationHelper do
 
       it "sort_keyと一致した場合のリンクが正しいこと" do
         expect(helper).to receive(:link_to).with("human name of sort_key", 
-          @params.dup.permit!.merge(:sort_key => "sort_key", :sort_order => "desc"),
+          @params.to_unsafe_hash.merge(:sort_key => "sort_key", :sort_order => "desc"),
           remote: nil
           ).and_return("xxx")
         expect(helper.link_to_sort(:sort_key)).to eq 'xxx<i class="fa fa-sort-asc"></i>'
