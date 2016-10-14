@@ -26,7 +26,11 @@ module Crud
     end
 
     def column_metadata(name)
-      return {name: name, type: :association} if association_key?(name)
+      if association_key?(name)
+        ref = association_reflection(name)
+        name = ref.foreign_key if ref.macro == :belongs_to
+        return {name: name.to_sym, type: :association, macro: ref.macro, class: ref.klass}
+      end
 
       meta = if activerecord?
         model.columns_hash[name.to_s]
@@ -47,13 +51,17 @@ module Crud
       !!column_metadata(key)
     end
 
+    def association_reflection(key)
+      model.reflect_on_association(key.to_sym)
+    end
+
     def association_key?(key)
-      return false unless ref = model.reflect_on_association(key.to_sym)
+      return false unless ref = association_reflection(key)
       mongoid? ? !ref.relation.embedded? : true
     end
 
     def association_class(key)
-      model.reflect_on_association(key.to_sym).try(:klass)
+      association_reflection(key).try(:klass)
     end
 
     def enum_values_for(column)

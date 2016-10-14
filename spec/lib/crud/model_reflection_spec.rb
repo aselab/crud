@@ -39,6 +39,16 @@ describe Crud::ModelReflection do
         it { is_expected.to eq condition }
       end
     end
+
+    describe "#column_metadata" do
+      context "belongs_to association" do
+        let(:model) { Ar::MiscBelonging }
+        it { expect(subject.column_metadata(:misc)).to eq(name: :misc_id, type: :association, macro: :belongs_to, class: Ar::Misc) }
+      end
+      context "has_many association" do
+        it { expect(subject.column_metadata(:misc_belongings)).to eq(name: :misc_belongings, type: :association, macro: :has_many, class: Ar::MiscBelonging) }
+      end
+    end
   end
 
   context "Mongoid" do
@@ -51,6 +61,19 @@ describe Crud::ModelReflection do
       expect(subject.association_key?(:misc_embeds)).to be false
       expect(subject.association_key?(:zzz)).to be false
     end
+
+    describe "#column_metadata" do
+      context "belongs_to association" do
+        let(:model) { Mongo::MiscBelonging }
+        it { expect(subject.column_metadata(:misc)).to eq(name: :misc_id, type: :association, macro: :belongs_to, class: Mongo::Misc) }
+      end
+      context "has_many association" do
+        it { expect(subject.column_metadata(:misc_belongings)).to eq(name: :misc_belongings, type: :association, macro: :has_many, class: Mongo::MiscBelonging) }
+      end
+      context "embeds association" do
+        it { expect(subject.column_metadata(:misc_embeds)).to be nil }
+      end
+    end
   end
 
   [Ar::Misc, Mongo::Misc].each do |m|
@@ -61,7 +84,6 @@ describe Crud::ModelReflection do
         expect(subject.column_metadata(:string)).to eq(name: :string, type: :string)
         expect(subject.column_metadata(:enumerized)).to eq(name: :enumerized, type: :enum)
         expect(subject.column_metadata(:zzz)).to be nil
-        expect(subject.column_metadata(:misc_belongings)).to eq(name: :misc_belongings, type: :association)
       end
 
       it "#column_type" do

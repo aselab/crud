@@ -51,6 +51,7 @@ module Crud
         @model = model
         @reflection = ModelReflection[model]
         meta = reflection.column_metadata(column) || {}
+        @meta = meta
         @name = meta[:name]
         @type = meta[:type]
         raise NotSupportedType, meta unless self.class.supported_types.include?(@type)
@@ -60,7 +61,7 @@ module Crud
       def apply(*values)
         if type == :association
           raise if mongoid?
-          association = reflection.association_class(name)
+          association = @meta[:class]
           ref = ModelReflection[association]
           columns = association.respond_to?(:search_field, true) ?
             association.send(:search_field) :

@@ -32,7 +32,7 @@ module Crud
       terms = self.class.tokenize(keyword)
       @scope = terms.inject(@scope) do |scope, term|
         conds = columns.map do |column|
-          where_clause(column, nil, term)
+          where_clause(model, column, nil, term)
         end
         cond = if conds.size > 1
           if reflection.activerecord?
@@ -54,7 +54,18 @@ module Crud
       @scope = keys.inject(@scope) do |scope, column|
         operator = operators[column] || "equals"
         values = Array(condition_values[column])
-        scope.where(where_clause(column, operator, *values))
+        meta = reflection.column_metadata(column)
+        m = model
+        key = column
+        if meta[:type] == :association
+          if meta[:macro] == :belongs_to
+            key = meta[:name]
+          else
+            m = meta[:class]
+            key = :id
+          end
+        end
+        scope.where(where_clause(m, key, operator, *values))
       end
     end
 
@@ -62,26 +73,28 @@ module Crud
       @scope = @scope.order(order_clause(column, order))
     end
 
-    def where_clause(column, operator, *values)
-      return nil unless values.any?(&:present?)
-      if operator.blank?
+    def where_clause(model, column, operator, *values)
+      ref = ModelReflection[model]
+      if operator.nil?
         if method = search_method_for(column)
-          return reflection.sanitize_sql(method.call(values.first))
+          return ref.sanitize_sql(method.call(values.first))
         end
-        operator = case reflection.column_type(column)
+        operator = case ref.column_type(column)
         when :string, :text
           "contains"
         else
           "equals"
         end
+      elsif operator.empty?
+        return nil
       end
 
       if method = advanced_search_method_for(column)
-        reflection.sanitize_sql method.call(Operator.canonical_name(operator), *values)
+        ref.sanitize_sql method.call(Operator.canonical_name(operator), *values)
       elsif op = Operator[operator]
         op.new(model, column).apply(*values)
       else
-        reflection.none_condition
+        ref.none_condition
       end
     end
 

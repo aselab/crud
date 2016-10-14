@@ -57,7 +57,7 @@ describe Crud::SearchQuery do
   end
 
   describe "#where_clause" do
-    subject { query.where_clause(column, operator, *values) }
+    subject { query.where_clause(model, column, operator, *values) }
     context "operator: nil" do
       let(:operator) {}
       context "column: string" do
