@@ -33,7 +33,7 @@ module Crud
       @scope = terms.inject(@scope) do |scope, term|
         conds = columns.map do |column|
           where_clause(model, column, nil, term)
-        end
+        end.compact
         cond = if conds.size > 1
           if reflection.activerecord?
             "(#{conds.join(" OR ")})"
@@ -57,13 +57,13 @@ module Crud
         meta = reflection.column_metadata(column)
         m = model
         key = column
-        if meta[:type] == :association
-          if meta[:macro] == :belongs_to
-            key = meta[:name]
-          else
-            m = meta[:class]
-            key = :id
-          end
+        case meta[:type]
+        when :belongs_to
+          key = meta[:name]
+        when :has_many, :has_and_belongs_to_many
+          m = meta[:class]
+          values = [values.select(&:present?)]
+          key = :id
         end
         scope.where(where_clause(m, key, operator, *values))
       end
@@ -73,26 +73,19 @@ module Crud
       @scope = @scope.order(order_clause(column, order))
     end
 
-    def where_clause(model, column, operator, *values)
+    def where_clause(model, column, operator_name, *values)
       ref = ModelReflection[model]
-      if operator.nil?
-        if method = search_method_for(column)
-          return ref.sanitize_sql(method.call(values.first))
-        end
-        operator = case ref.column_type(column)
-        when :string, :text
-          "contains"
-        else
-          "equals"
-        end
-      elsif operator.empty?
-        return nil
+      return nil if operator_name.try(:empty?)
+      operator = operator_name ? Operator[operator_name] : DefaultOperator
+      if operator_name.nil? && method = search_method_for(column)
+        return ref.sanitize_sql(method.call(values.first))
       end
 
       if method = advanced_search_method_for(column)
-        ref.sanitize_sql method.call(Operator.canonical_name(operator), *values)
-      elsif op = Operator[operator]
-        op.new(model, column).apply(*values)
+        operator_name &&= Operator.canonical_name(operator_name)
+        ref.sanitize_sql method.call(operator_name, *values)
+      elsif operator
+        operator.new(model, column).apply(*values)
       else
         ref.none_condition
       end

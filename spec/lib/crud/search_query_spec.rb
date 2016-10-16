@@ -75,7 +75,7 @@ describe Crud::SearchQuery do
         end
 
         context "advanced_search_by_stringメソッド定義あり" do
-          before { expect(extension).to receive(:advanced_search_by_string).with("contains", "abc").and_return(string: "foo") }
+          before { expect(extension).to receive(:advanced_search_by_string).with(nil, "abc").and_return(string: "foo") }
           context Ar::Misc do
             it { should eq %q["ar_miscs"."string" = 'foo'] }
           end

@@ -43,10 +43,10 @@ describe Crud::ModelReflection do
     describe "#column_metadata" do
       context "belongs_to association" do
         let(:model) { Ar::MiscBelonging }
-        it { expect(subject.column_metadata(:misc)).to eq(name: :misc_id, type: :association, macro: :belongs_to, class: Ar::Misc) }
+        it { expect(subject.column_metadata(:misc)).to eq(name: :misc_id, type: :belongs_to, class: Ar::Misc) }
       end
       context "has_many association" do
-        it { expect(subject.column_metadata(:misc_belongings)).to eq(name: :misc_belongings, type: :association, macro: :has_many, class: Ar::MiscBelonging) }
+        it { expect(subject.column_metadata(:misc_belongings)).to eq(name: :misc_belongings, type: :has_many, class: Ar::MiscBelonging) }
       end
     end
   end
@@ -65,10 +65,10 @@ describe Crud::ModelReflection do
     describe "#column_metadata" do
       context "belongs_to association" do
         let(:model) { Mongo::MiscBelonging }
-        it { expect(subject.column_metadata(:misc)).to eq(name: :misc_id, type: :association, macro: :belongs_to, class: Mongo::Misc) }
+        it { expect(subject.column_metadata(:misc)).to eq(name: :misc_id, type: :belongs_to, class: Mongo::Misc) }
       end
       context "has_many association" do
-        it { expect(subject.column_metadata(:misc_belongings)).to eq(name: :misc_belongings, type: :association, macro: :has_many, class: Mongo::MiscBelonging) }
+        it { expect(subject.column_metadata(:misc_belongings)).to eq(name: :misc_belongings, type: :has_many, class: Mongo::MiscBelonging) }
       end
       context "embeds association" do
         it { expect(subject.column_metadata(:misc_embeds)).to be nil }
@@ -91,7 +91,7 @@ describe Crud::ModelReflection do
         expect(subject.column_type(:date)).to be :date
         expect(subject.column_type(:enumerized)).to be :enum
         expect(subject.column_type(:zzz)).to be nil
-        expect(subject.column_type(:misc_belongings)).to be :association
+        expect(subject.column_type(:misc_belongings)).to be :has_many
       end
 
       it "#column_key?" do

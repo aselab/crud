@@ -29,7 +29,7 @@ module Crud
       if association_key?(name)
         ref = association_reflection(name)
         name = ref.foreign_key if ref.macro == :belongs_to
-        return {name: name.to_sym, type: :association, macro: ref.macro, class: ref.klass}
+        return {name: name.to_sym, type: ref.macro, class: ref.klass}
       end
 
       meta = if activerecord?
@@ -78,7 +78,7 @@ module Crud
     end
 
     def sanitize_sql(cond)
-      return cond unless activerecord?
+      return cond unless cond && activerecord?
       result = case cond
       when Array
         model.send(:sanitize_sql_for_conditions, cond)

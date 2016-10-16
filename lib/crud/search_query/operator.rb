@@ -4,7 +4,7 @@ module Crud
     end
 
     class Operator
-      attr_reader :model, :reflection, :name, :type, :enum_values
+      attr_reader :model, :reflection, :meta, :name, :type, :enum_values
       delegate :activerecord?, :mongoid?, to: :reflection
 
       @@operators = {}
@@ -50,40 +50,36 @@ module Crud
       def initialize(model, column)
         @model = model
         @reflection = ModelReflection[model]
-        meta = reflection.column_metadata(column) || {}
-        @meta = meta
-        @name = meta[:name]
-        @type = meta[:type]
-        raise NotSupportedType, meta unless self.class.supported_types.include?(@type)
+        @meta = reflection.column_metadata(column) || {}
+        @name = @meta[:name]
+        @type = @meta[:type]
         @enum_values = reflection.enum_values_for(column) if @type == :enum
       end
 
-      def apply(*values)
-        if type == :association
-          raise if mongoid?
-          association = @meta[:class]
-          ref = ModelReflection[association]
-          columns = association.respond_to?(:search_field, true) ?
-            association.send(:search_field) :
-            [:name, :title].find {|c| ref.column_key?(c)}
-          Array(columns).map {|c| self.class.new(association, c).apply(*values)}.join(" OR ")
-        else
-          values = values.map do |value|
-            case type
-            when :enum
-              enum_values[value] || value
-            when :boolean
-              !!value
-            when :integer
-              Integer(value)
-            when :float
-              Float(value)
-            else
-              value
-            end
+      def validate!
+        raise NotSupportedType, meta unless self.class.supported_types.include?(type)
+      end
+
+      def cast(value)
+        value.is_a?(Array) ? value.map {|v| cast(v)} :
+          case type
+          when :enum
+            enum_values[value] || value
+          when :boolean
+            !!value
+          when :integer
+            Integer(value)
+          when :float
+            Float(value)
+          else
+            value
           end
-          reflection.sanitize_sql condition(*values)
-        end
+      end
+
+      def apply(*values)
+        #validate!
+        values = cast(values)
+        reflection.sanitize_sql condition(*values)
       rescue
         reflection.none_condition
       end
@@ -93,9 +89,29 @@ module Crud
       end
     end
 
+    class DefaultOperator < Operator
+      def apply(value)
+        case type
+        when :string, :text
+          ContainsOperator.new(model, name).apply(value)
+        when :belongs_to, :has_many, :has_and_belongs_to_many
+          raise if mongoid?
+          association = meta[:class]
+          ref = ModelReflection[association]
+          columns = association.respond_to?(:search_field, true) ?
+            association.send(:search_field) :
+            [:name, :title].find {|c| ref.column_key?(c)}
+          conds = Array(columns).map {|c| self.class.new(association, c).apply(value)}
+          conds.empty? ? nil : conds.join(" OR ")
+        else
+          EqualsOperator.new(model, name).apply(value)
+        end
+      end
+    end
+
     class EqualsOperator < Operator
       def self.supported_types
-        [:association, :enum, :string, :text, :boolean, :integer, :float, :datetime, :date, :time]
+        [:belongs_to, :enum, :string, :text, :boolean, :integer, :float, :datetime, :date, :time]
       end
 
       def condition(value)
@@ -109,7 +125,7 @@ module Crud
 
     class NotEqualsOperator < Operator
       def self.supported_types
-        [:association, :enum, :string, :text, :boolean, :integer, :float, :datetime, :date, :time]
+        [:belongs_to, :enum, :string, :text, :boolean, :integer, :float, :datetime, :date, :time]
       end
 
       def condition(value)
@@ -123,24 +139,46 @@ module Crud
 
     class ContainsOperator < Operator
       def self.supported_types
-        [:string, :text]
+        [:has_many, :has_and_belongs_to_many, :string, :text]
       end
 
       def condition(value)
-        if activerecord?
-          model.arel_table[name].matches("%#{value}%")
-        elsif mongoid?
-          { name => Regexp.new(Regexp.escape(value)) }
+        case type
+        when :string, :text
+          if activerecord?
+            model.arel_table[name].matches("%#{value}%")
+          elsif mongoid?
+            { name => Regexp.new(Regexp.escape(value)) }
+          end
+        else
+          if activerecord?
+            model.arel_table[name].in(value)
+          elsif mongoid?
+            { name => value }
+          end
         end
       end
     end
 
-    class NotContainsOperator < ContainsOperator
+    class NotContainsOperator < Operator
+      def self.supported_types
+        [:has_many, :has_and_belongs_to_many, :string, :text]
+      end
+
       def condition(value)
-        if activerecord?
-          super.not
-        elsif
-          { name.not => Regexp.new(Regexp.escape(value)) }
+        case type
+        when :string, :text
+          if activerecord?
+            model.arel_table[name].matches("%#{value}%").not
+          elsif mongoid?
+            { name.not => Regexp.new(Regexp.escape(value)) }
+          end
+        else
+          if activerecord?
+            model.arel_table[name].not_in(value)
+          elsif mongoid?
+            { name.nin => value }
+          end
         end
       end
     end

@@ -195,25 +195,27 @@ module Crud
       ref = ModelReflection[f.object.class]
       return nil unless type = ref.column_type(column)
       operators = SearchQuery::Operator.available_for(type)
-      selected_operator = SearchQuery::Operator[search_operators[column]]
+      selected_operator = SearchQuery::Operator[search_operators[column]] || search_values[column] && SearchQuery::EqualsOperator
       select_options = options_for_select(operators.map {|o| [o.label, o.operator_name]}, selected_operator.try(:operator_name))
-      values = search_values[column] || []
-      options = (input_options(column) || {}).merge(class: "form-control", label: false, wrapper: false)
-      is_select = options[:as] ? [:select, :select2].include?(options[:as]) : [:enum, :association].include?(type)
+      values = Array(search_values[column])
+      options = (input_options(column) || {}).merge(label: false, wrapper: :input_only)
+      is_select = options[:as] ? [:select, :select2].include?(options[:as]) : [:enum, :belongs_to, :has_many, :has_and_belongs_to_many].include?(type)
       content_tag :div, class: "form-group" do
         concat f.label(column, required: false, class: "col-sm-2 control-label")
         concat content_tag(:div, select_tag("op[#{column}]", select_options, class: "operator form-control", include_blank: true), class: "col-sm-2")
         if selected_operator
           (0...selected_operator.args).each do |i|
-            input_options = options.deep_merge(input_html: {id: "query_#{column}_#{i}", name: "v[#{column}][]"})
+            input_options = options.deep_merge(
+              input_html: {id: "query_#{column}_#{i}", name: "v[#{column}][]"},
+              wrapper_html: {class: "col-sm-#{8 / selected_operator.args}"}
+            )
             if is_select
               input_options[:selected] = values[i]
               input_options[:include_blank] = true
             else
               input_options[:input_html][:value] = values[i]
             end
-            input = simple_form_input(f, column, input_options)
-            concat content_tag(:div, input, class: "col-sm-#{8 / selected_operator.args}")
+            concat simple_form_input(f, column, input_options)
           end
         end
       end

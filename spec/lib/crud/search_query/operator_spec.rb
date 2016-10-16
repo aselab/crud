@@ -1,6 +1,7 @@
 require 'spec_helper'
 
 describe Crud::SearchQuery::Operator do
+  let(:default) { Crud::SearchQuery::DefaultOperator }
   let(:equals) { Crud::SearchQuery::EqualsOperator }
   let(:not_equals) { Crud::SearchQuery::NotEqualsOperator }
   let(:contains) { Crud::SearchQuery::ContainsOperator }
@@ -56,6 +57,33 @@ describe Crud::SearchQuery::Operator do
     let(:model) { described_class }
     let(:args) { [] }
 
+    context "default" do
+      let(:operator) { default }
+      context "association" do
+        let(:column) { :misc_belongings }
+        context "search_field定義なし" do
+          let(:args) { ["abc"] }
+          context Ar::Misc do
+            it { should eq %q["ar_misc_belongings"."name" LIKE '%abc%'] }
+          end
+        end
+        context "search_field定義あり" do
+          let(:args) { [34] }
+          before { expect(Ar::MiscBelonging).to receive(:search_field).and_return("id") }
+          context Ar::Misc do
+            it { should eq %q["ar_misc_belongings"."id" = 34] }
+          end
+        end
+        context "search_field複数項目指定" do
+          let(:args) { ["abc"] }
+          before { expect(Ar::MiscBelonging).to receive(:search_field).and_return([:id, :name]) }
+          context Ar::Misc do
+            it { should eq %q[0 = 1 OR "ar_misc_belongings"."name" LIKE '%abc%'] }
+          end
+        end
+      end
+    end
+
     context "equals" do
       let(:operator) { equals }
       context "string" do
@@ -96,29 +124,6 @@ describe Crud::SearchQuery::Operator do
           end
           context Mongo::Misc do
             it { should eq(enumerized: 'B') }
-          end
-        end
-      end
-      context "association" do
-        let(:column) { :misc_belongings }
-        context "search_field定義なし" do
-          let(:args) { ["abc"] }
-          context Ar::Misc do
-            it { should eq %q["ar_misc_belongings"."name" = 'abc'] }
-          end
-        end
-        context "search_field定義あり" do
-          let(:args) { [34] }
-          before { expect(Ar::MiscBelonging).to receive(:search_field).and_return("id") }
-          context Ar::Misc do
-            it { should eq %q["ar_misc_belongings"."id" = 34] }
-          end
-        end
-        context "search_field複数項目指定" do
-          let(:args) { ["abc"] }
-          before { expect(Ar::MiscBelonging).to receive(:search_field).and_return([:id, :name]) }
-          context Ar::Misc do
-            it { should eq %q[0 = 1 OR "ar_misc_belongings"."name" = 'abc'] }
           end
         end
       end
