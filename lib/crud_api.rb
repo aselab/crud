@@ -9,6 +9,10 @@ begin
   require 'mongoid'
   module BSON
     class ObjectId   
+      def inspect
+        to_s.inspect
+      end
+
       def as_json(options = nil)
         to_s
       end

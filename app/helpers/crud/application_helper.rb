@@ -82,7 +82,7 @@ module Crud
 
     def to_label(value, blank = nil)
       return blank if value.blank?
-      return value.map {|v| to_label(v, blank)} if value.is_a?(Enumerable)
+      return value.map {|v| to_label(v, blank)}.join(", ") if value.is_a?(Enumerable)
       return I18n.l(value) if value.is_a?(Time) || value.is_a?(Date)
       return value.label if value.respond_to?(:label)
       return value.text if value.respond_to?(:text)
@@ -195,11 +195,14 @@ module Crud
       ref = ModelReflection[f.object.class]
       return nil unless type = ref.column_type(column)
       operators = SearchQuery::Operator.available_for(type)
-      selected_operator = SearchQuery::Operator[search_operators[column]] || search_values[column] && SearchQuery::EqualsOperator
-      select_options = options_for_select(operators.map {|o| [o.label, o.operator_name]}, selected_operator.try(:operator_name))
+      selected_operator = SearchQuery::Operator[search_operators[column]]
       values = Array(search_values[column])
+      selected_operator ||= SearchQuery::EqualsOperator if !search_operators[column] && values.first.present?
+      select_options = options_for_select(operators.map {|o| [o.label, o.operator_name]}, selected_operator.try(:operator_name))
       options = (input_options(column) || {}).merge(label: false, wrapper: :input_only)
+      is_boolean = options[:as] ? options[:as] == :boolean : type == :boolean
       is_select = options[:as] ? [:select, :select2].include?(options[:as]) : [:enum, :belongs_to, :has_many, :has_and_belongs_to_many].include?(type)
+      is_multiple = is_select && (options.has_key?(:multiple) ? options[:multiple] : [:has_many, :has_and_belongs_to_many].include?(type))
       content_tag :div, class: "form-group" do
         concat f.label(column, required: false, class: "col-sm-2 control-label")
         concat content_tag(:div, select_tag("op[#{column}]", select_options, class: "operator form-control", include_blank: true), class: "col-sm-2")
@@ -209,9 +212,16 @@ module Crud
               input_html: {id: "query_#{column}_#{i}", name: "v[#{column}][]"},
               wrapper_html: {class: "col-sm-#{8 / selected_operator.args}"}
             )
-            if is_select
-              input_options[:selected] = values[i]
-              input_options[:include_blank] = true
+            if is_boolean
+              input_options[:wrapper] = :input_only_checkbox
+              input_options[:input_html][:checked] = ref.boolean_cast(values)
+            elsif is_select
+              if is_multiple
+                input_options[:selected] = values
+              else
+                input_options[:selected] = values[i]
+                input_options[:include_blank] = true
+              end
             else
               input_options[:input_html][:value] = values[i]
             end

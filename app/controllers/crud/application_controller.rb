@@ -113,7 +113,7 @@ module Crud
     def set_defaults
       super
       @title = t("crud.action_title." + crud_action.to_s, :name => model_name)
-      @remote = request.format.js?
+      @remote = request.format.js? || (request.format.form? && params[:container])
     end
 
     def cancel_path

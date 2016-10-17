@@ -1,7 +1,7 @@
 <%= form_tag stored_params(:container, :sort_key, :sort_order, :per), class: "navbar-form form-search", method: "GET", remote: @remote do %>
   <div class="input-group">
     <div class="input-group-btn">
-      <button type="button" class="btn btn-default advanced-search-toggle <%= "active" if advanced_search? %>">
+      <button type="button" class="btn btn-default advanced-search-toggle">
         <span class="caret"></span>
       </button>
     </div>

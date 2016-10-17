@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20161005102104) do
+ActiveRecord::Schema.define(version: 20161017023118) do
 
   create_table "ar_groups", force: :cascade do |t|
     t.string   "name"
@@ -22,6 +22,23 @@ ActiveRecord::Schema.define(version: 20161005102104) do
     t.integer "misc_id"
     t.string  "name"
     t.index ["misc_id"], name: "index_ar_misc_belongings_on_misc_id"
+  end
+
+  create_table "ar_misc_habtms", force: :cascade do |t|
+    t.string "name"
+  end
+
+  create_table "ar_misc_habtms_miscs", id: false, force: :cascade do |t|
+    t.integer "misc_id"
+    t.integer "misc_habtm_id"
+    t.index ["misc_habtm_id"], name: "index_ar_misc_habtms_miscs_on_misc_habtm_id"
+    t.index ["misc_id"], name: "index_ar_misc_habtms_miscs_on_misc_id"
+  end
+
+  create_table "ar_misc_throughs", force: :cascade do |t|
+    t.integer "misc_belonging_id"
+    t.string  "name"
+    t.index ["misc_belonging_id"], name: "index_ar_misc_throughs_on_misc_belonging_id"
   end
 
   create_table "ar_miscs", force: :cascade do |t|

@@ -105,6 +105,12 @@ SimpleForm.setup do |config|
     b.use :input, class: 'form-control'
   end
 
+  config.wrappers :input_only_checkbox, tag: 'div', class: 'checkbox' do |b|
+    b.use :html5
+    b.use :placeholder
+    b.use :label_input
+  end
+
   # Wrappers for forms and inputs using the Bootstrap toolkit.
   # Check the Bootstrap docs (http://getbootstrap.com)
   # to learn about the different styles for forms and inputs,

@@ -1,6 +1,8 @@
 module ApplicationHelper
   def orm_models
-    %w[User Group Misc MiscBelonging].map {|name| orm_model(name)}
+    names = %w[User Group Misc MiscBelonging MiscHabtm]
+    names.push("MiscThrough") unless session[:model] == "Mongoid"
+    names.map {|name| orm_model(name)}
   end
 
   def orm_model(name)
@@ -46,5 +48,13 @@ module ApplicationHelper
 
   def misc_html(resource, value)
     link_to value.string, value, remote: @remote
+  end
+
+  def misc_belongings_input_options
+    { as: :select2 }
+  end
+
+  def misc_habtms_input_options
+    { as: :select2 }
   end
 end

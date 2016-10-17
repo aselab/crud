@@ -61,9 +61,20 @@ module Crud
         when :belongs_to
           key = meta[:name]
         when :has_many, :has_and_belongs_to_many
-          m = meta[:class]
-          values = [values.select(&:present?)]
-          key = :id
+          values = values.select(&:present?)
+          if reflection.activerecord?
+            m = meta[:class]
+            key = :id
+          elsif reflection.mongoid?
+            foreign_key = reflection.association_reflection(column).foreign_key.to_sym
+            if meta[:type] == :has_many
+              key = :id
+              values = meta[:class].in(id: values).pluck(foreign_key)
+            else
+              key = foreign_key
+            end
+          end
+          values = [values]
         end
         scope.where(where_clause(m, key, operator, *values))
       end

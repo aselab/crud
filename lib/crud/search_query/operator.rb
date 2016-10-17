@@ -61,12 +61,11 @@ module Crud
       end
 
       def cast(value)
+        return reflection.boolean_cast(value) if type == :boolean
         value.is_a?(Array) ? value.map {|v| cast(v)} :
           case type
           when :enum
             enum_values[value] || value
-          when :boolean
-            !!value
           when :integer
             Integer(value)
           when :float
@@ -125,7 +124,7 @@ module Crud
 
     class NotEqualsOperator < Operator
       def self.supported_types
-        [:belongs_to, :enum, :string, :text, :boolean, :integer, :float, :datetime, :date, :time]
+        [:belongs_to, :enum, :string, :text, :integer, :float, :datetime, :date, :time]
       end
 
       def condition(value)
@@ -154,7 +153,7 @@ module Crud
           if activerecord?
             model.arel_table[name].in(value)
           elsif mongoid?
-            { name => value }
+            { name.in => value }
           end
         end
       end
@@ -162,23 +161,14 @@ module Crud
 
     class NotContainsOperator < Operator
       def self.supported_types
-        [:has_many, :has_and_belongs_to_many, :string, :text]
+        [:string, :text]
       end
 
       def condition(value)
-        case type
-        when :string, :text
-          if activerecord?
-            model.arel_table[name].matches("%#{value}%").not
-          elsif mongoid?
-            { name.not => Regexp.new(Regexp.escape(value)) }
-          end
-        else
-          if activerecord?
-            model.arel_table[name].not_in(value)
-          elsif mongoid?
-            { name.nin => value }
-          end
+        if activerecord?
+          model.arel_table[name].matches("%#{value}%").not
+        elsif mongoid?
+          { name.not => Regexp.new(Regexp.escape(value)) }
         end
       end
     end

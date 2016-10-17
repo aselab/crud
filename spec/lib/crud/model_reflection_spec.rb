@@ -87,6 +87,7 @@ describe Crud::ModelReflection do
       end
 
       it "#column_type" do
+        expect(subject.column_type(:boolean)).to be :boolean
         expect(subject.column_type(:string)).to be :string
         expect(subject.column_type(:date)).to be :date
         expect(subject.column_type(:enumerized)).to be :enum
