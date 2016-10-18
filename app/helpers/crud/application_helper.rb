@@ -192,21 +192,25 @@ module Crud
     end
 
     def advanced_search_input(f, column)
+      values = Array(search_values[column])
+      op = search_operators[column]
+      selected_operator = SearchQuery::Operator[op].try(:operator_name)
+      selected_operator ||= "equals" if !op && values.first.present?
+      if html = call_method_for_column(params[:controller], column, :search_input, f, selected_operator, *values)
+        return html
+      end
+
       ref = ModelReflection[f.object.class]
       return nil unless type = ref.column_type(column)
       type = ref.column_type(column)
       operators = SearchQuery::Operator.available_for(type)
-      selected_operator = SearchQuery::Operator[search_operators[column]]
-      values = Array(search_values[column])
-      selected_operator ||= SearchQuery::EqualsOperator if !search_operators[column] && values.first.present?
-      select_options = options_for_select(operators.map {|o| [o.label, o.operator_name]}, selected_operator.try(:operator_name))
       options = (input_options(column) || {}).merge(label: false, wrapper: :input_only)
       is_boolean = options[:as] ? options[:as] == :boolean : type == :boolean
       is_select = options[:as] ? [:select, :select2].include?(options[:as]) : [:enum, :belongs_to, :has_many, :has_and_belongs_to_many].include?(type)
       is_multiple = is_select && (options.has_key?(:multiple) ? options[:multiple] : [:has_many, :has_and_belongs_to_many].include?(type))
       content_tag :div, class: "form-group" do
         concat f.label(column, required: false, class: "col-sm-2 control-label")
-        concat content_tag(:div, select_tag("op[#{column}]", select_options, class: "operator form-control", include_blank: true), class: "col-sm-2")
+        concat content_tag(:div, search_operator_select("op[#{column}]", operators, selected_operator), class: "col-sm-2")
         if selected_operator
           (0...selected_operator.args).each do |i|
             input_options = options.deep_merge(
@@ -230,6 +234,14 @@ module Crud
           end
         end
       end
+    end
+
+    def search_operator_select(name, operators, selected)
+      options = operators.map do |o|
+        o = SearchQuery::Operator[o] || o
+        o.is_a?(Class) && o < SearchQuery::Operator ? [o.label, o.operator_name] : o
+      end
+      select_tag(name, options_for_select(options, selected), class: "operator form-control", include_blank: true)
     end
 
     private

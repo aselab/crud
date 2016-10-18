@@ -311,7 +311,14 @@ search_fieldを指定しない場合は、デフォルトでnameまたはtitle�
 検索処理を変更したい場合は、advanced_search_by_#{column_name} というメソッドをコントローラに定義する。
 引数にはoperatorと検索値が渡される。検索値の個数は可変なので、可変長引数で定義するとよい。
 
-TODO
+実装例は spec/dummy/app/controllers/ar/users_controller.rb を参照。
+
+詳細検索フォームを変更したい場合は、以下の優先順でhelperメソッドを定義してカスタマイズすることができる。
+1. \#{controller_name}_#{column_name}_search_input
+2. \#{column_name}_search_input
+
+引数にはsimple_form_forのbuilder, operator, 検索値が渡される。検索値の個数は可変なので、可変長引数で定義する。
+実装例は spec/dummy/app/helpers/ar/users_helper.rb を参照。
 
 ### ソート条件の指定
 
