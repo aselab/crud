@@ -211,20 +211,11 @@ module Crud
     end
 
     def search_operators
-      params[:op] || params[:operator] || {}
+      @search_operators ||= (params[:op] || params[:operator] || {}).slice(*columns_for_advanced_search)
     end
 
     def search_values
-      @search_values ||= begin
-        p = params[:v] || params[:value]
-        if p.is_a?(ActionController::Parameters)
-          p.to_unsafe_hash
-        else
-          columns_for_advanced_search.each_with_object({}) do |column, h|
-            h[column] = params[column] if params.has_key?(column)
-          end
-        end
-      end
+      @search_values ||= (params[:v] || params[:value] || params).slice(*columns_for_advanced_search)
     end
 
     def advanced_search?
@@ -316,14 +307,14 @@ module Crud
     # デフォルトではindexで表示する項目のうちtypeがstring, text, integerであるものまたは関連
     #
     def columns_for_search
-      columns_for(:index).select {|c| query.search_column?(c)}
+      @columns_for_search ||= columns_for(:index).select {|c| query.search_column?(c)}
     end
 
     #
     # 詳細検索に利用するカラムリスト.
     #
     def columns_for_advanced_search
-      columns_for(:index).select {|c| query.advanced_search_column?(c)}
+      @columns_for_advanced_search ||= columns_for(:index).select {|c| query.advanced_search_column?(c)}
     end
 
     #
