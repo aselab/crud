@@ -1,10 +1,9 @@
 require 'spec_helper'
 
 describe Crud::SearchQuery do
-  let(:query) { Crud::SearchQuery.new(scope, columns, extension) }
+  let(:query) { Crud::SearchQuery.new(scope, extension) }
   let(:model) { described_class }
   let(:scope) { model.all }
-  let(:columns) { [] }
   let(:extension) { double("extension") }
 
   describe ".tokenize" do
@@ -38,8 +37,8 @@ describe Crud::SearchQuery do
     end
   end
 
-  describe "#include_associations" do
-    subject { query.scope }
+  describe "#include_association" do
+    subject { query.include_associations(columns) }
     context Ar::Misc do
       let(:columns) { [:string, :integer, :misc_belongings] }
 
@@ -209,7 +208,7 @@ describe Crud::SearchQuery do
     let!(:item3) { create(factory, string: "foo", integer: 1) }
 
     describe "#keyword_search" do
-      subject { query.keyword_search(keyword) }
+      subject { query.keyword_search([:string, :integer], keyword) }
       
       context "keyword: nil" do
         let(:keyword) { nil }

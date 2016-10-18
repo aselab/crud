@@ -1,14 +1,12 @@
 module Crud
   class SearchQuery
-    attr_reader :scope, :columns, :model, :reflection, :extension
+    attr_reader :scope, :model, :reflection, :extension
 
-    def initialize(scope, search_columns, extension = nil)
+    def initialize(scope, extension = nil)
       @scope = scope
-      @columns = search_columns
       @model = scope.try(:model) || scope.try(:klass)
       @reflection = ModelReflection[@model]
       @extension = extension
-      include_associations
     end
 
     def self.tokenize(keyword)
@@ -17,7 +15,7 @@ module Crud
       }
     end
 
-    def include_associations
+    def include_associations(columns)
       associations = columns.select {|c| reflection.association_key?(c)}
       if associations.empty?
         @scope
@@ -28,7 +26,9 @@ module Crud
       end
     end
 
-    def keyword_search(keyword)
+    def keyword_search(columns, keyword)
+      include_associations(columns)
+
       terms = self.class.tokenize(keyword)
       @scope = terms.inject(@scope) do |scope, term|
         conds = columns.map do |column|
@@ -51,30 +51,33 @@ module Crud
       condition_values ||= {}
       operators ||= {}
       keys = (condition_values.keys + operators.keys).map(&:to_sym).uniq
+      include_associations(keys)
       @scope = keys.inject(@scope) do |scope, column|
         operator = operators[column] || "equals"
         values = Array(condition_values[column])
-        meta = reflection.column_metadata(column)
         m = model
         key = column
-        case meta[:type]
-        when :belongs_to
-          key = meta[:name]
-        when :has_many, :has_and_belongs_to_many
-          values = values.select(&:present?)
-          if reflection.activerecord?
-            m = meta[:class]
-            key = :id
-          elsif reflection.mongoid?
-            foreign_key = reflection.association_reflection(column).foreign_key.to_sym
-            if meta[:type] == :has_many
+        unless advanced_search_method_for(column)
+          meta = reflection.column_metadata(column)
+          case meta[:type]
+          when :belongs_to
+            key = meta[:name]
+          when :has_many, :has_and_belongs_to_many
+            values = values.select(&:present?)
+            if reflection.activerecord?
+              m = meta[:class]
               key = :id
-              values = meta[:class].in(id: values).pluck(foreign_key)
-            else
-              key = foreign_key
+            elsif reflection.mongoid?
+              foreign_key = reflection.association_reflection(column).foreign_key.to_sym
+              if meta[:type] == :has_many
+                key = :id
+                values = meta[:class].in(id: values).pluck(foreign_key)
+              else
+                key = foreign_key
+              end
             end
+            values = [values]
           end
-          values = [values]
         end
         scope.where(where_clause(m, key, operator, *values))
       end
@@ -119,6 +122,22 @@ module Crud
       elsif reflection.mongoid?
         { column => order }
       end
+    end
+
+    def search_column?(name)
+      return true if search_method_for(name) || advanced_search_method_for(name)
+      return false unless meta = reflection.column_metadata(name)
+      [:enum, :string, :text, :integer, :float].include?(meta[:type]) ||
+        (reflection.activerecord? && reflection.association_key?(name))
+    end
+
+    def advanced_search_column?(name)
+      !!(advanced_search_method_for(name) || reflection.column_metadata(name))
+    end
+
+    def sort_column?(name)
+      return true if sort_method_for(name)
+      reflection.column_key?(name) && !(reflection.mongoid? && reflection.association_key?(name))
     end
 
     private

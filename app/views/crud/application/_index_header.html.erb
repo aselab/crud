@@ -13,7 +13,7 @@
 <%= javascript_tag do %>
   $(function() {
     var form = $("#<%= temp_id :advanced %>");
-    var url = "<%= url_for(format: :form, container: params[:container], form: temp_id(:advanced)) %>";
+    var url = "<%= url_for(stored_params(:sort_key, :sort_order, :per, format: :form, container: params[:container], form: temp_id(:advanced))).html_safe %>";
     $("#<%= temp_id :index %>").find(".advanced-search-toggle").click(function() {
       var button = $(this);
       if (form.is(":empty")) {

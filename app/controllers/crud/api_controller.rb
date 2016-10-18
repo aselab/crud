@@ -145,8 +145,7 @@ module Crud
     end
 
     def sort_key?(key)
-      respond_to?("sort_by_#{key}", true) || reflection.column_key?(key) ||
-        (activerecord? && reflection.association_key?(key))
+      query.sort_column?(key)
     end
 
     #
@@ -196,11 +195,15 @@ module Crud
     # オーバーライドして検索ソートした結果を返却するように実装する．
     #
     def do_query
-      query = SearchQuery.new(resources, columns_for_search, self)
-      query.keyword_search(search_keyword)
-      query.advanced_search(search_values, search_operators)
-      query.sort(sort_key, sort_order) if sort_key
-      query.scope
+      @query = SearchQuery.new(resources, self)
+      @query.keyword_search(columns_for_search, search_keyword)
+      @query.advanced_search(search_values, search_operators)
+      @query.sort(sort_key, sort_order) if sort_key
+      @query.scope
+    end
+
+    def query
+      @query ||= SearchQuery.new(resources, self)
     end
 
     def search_keyword
@@ -313,25 +316,14 @@ module Crud
     # デフォルトではindexで表示する項目のうちtypeがstring, text, integerであるものまたは関連
     #
     def columns_for_search
-      columns_for(:index).select {|c| search_column?(model, c)}
+      columns_for(:index).select {|c| query.search_column?(c)}
     end
 
     #
     # 詳細検索に利用するカラムリスト.
     #
     def columns_for_advanced_search
-      columns_for(:index)
-    end
-
-    def search_method_defined?(column_name)
-      respond_to?("search_by_#{column_name}", true)
-    end
-
-    def search_column?(model, column_name)
-      return true if search_method_defined?(column_name)
-      type = reflection(model).column_type(column_name)
-      (type && [:enum, :string, :text, :integer, :float].include?(type)) ||
-        (activerecord? && reflection(model).association_key?(column_name))
+      columns_for(:index).select {|c| query.advanced_search_column?(c)}
     end
 
     #

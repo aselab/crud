@@ -194,6 +194,7 @@ module Crud
     def advanced_search_input(f, column)
       ref = ModelReflection[f.object.class]
       return nil unless type = ref.column_type(column)
+      type = ref.column_type(column)
       operators = SearchQuery::Operator.available_for(type)
       selected_operator = SearchQuery::Operator[search_operators[column]]
       values = Array(search_values[column])
