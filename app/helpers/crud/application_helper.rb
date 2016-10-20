@@ -29,7 +29,7 @@ module Crud
     def link_to_action(action, resource = nil, options = nil, &block)
       options ||= {}
       params = stored_params(action: action, id: resource).merge(options.delete(:params) || {})
-      method = find_method(params[:controller], "link_to_#{action}")
+      method = find_method("link_to_#{action}")
       return send(method, params) if method
 
       begin
@@ -64,11 +64,10 @@ module Crud
     # 2. #{column_name}_html という名前のhelperメソッド
     # 3. #{column_name}_label という名前のmodelメソッド
     #
-    def column_html(resource, column, controller = nil)
+    def column_html(resource, column)
       return nil unless resource && column
-      controller ||= params[:controller]
       value = resource.send(column)
-      if html = call_method_for_column(controller, column, :html, resource, value)
+      if html = call_method_for_column(column, :html, resource, value)
         return html
       end
 
@@ -98,7 +97,6 @@ module Crud
       if options[:model]
         m = options[:model]
         params = options[:params] ||= {}
-        controller = params[:controller] ||= m.model_name.plural
       end
       sort = options[:sort] != false
       remote = options.has_key?(:remote) ? options[:remote] : @remote
@@ -116,7 +114,7 @@ module Crud
           resources.each do |resource|
             concat(content_tag(:tr) do
               columns.each do |column|
-                concat content_tag(:td, column_html(resource, column, controller))
+                concat content_tag(:td, column_html(resource, column))
               end
               unless actions.empty?
                 concat(content_tag(:td) do
@@ -148,7 +146,7 @@ module Crud
     end
 
     def simple_form_input(f, column, options = nil)
-      if html = call_method_for_column(params[:controller], column, :input, f)
+      if html = call_method_for_column(column, :input, f)
         return html
       end
 
@@ -177,7 +175,7 @@ module Crud
         default[:as] = :bootstrap_timepicker
       end
       controller ||= params[:controller]
-      options = call_method_for_column(controller, column, :input_options) || {}
+      options = call_method_for_column(column, :input_options) || {}
       options = default.merge(options)
       options[:collection] = [] if options[:as] == :select2 && (options[:ajax] || options[:url].present?)
       options
@@ -196,7 +194,7 @@ module Crud
       op = search_operators[column]
       selected_operator = SearchQuery::Operator[op].try(:operator_name)
       selected_operator ||= "equals" if !op && values.first.present?
-      if html = call_method_for_column(params[:controller], column, :search_input, f, selected_operator, *values)
+      if html = call_method_for_column(column, :search_input, f, selected_operator, *values)
         return html
       end
 
@@ -245,14 +243,20 @@ module Crud
     end
 
     private
-    def call_method_for_column(controller, column, suffix, *args)
-      method = find_method(controller, "#{column}_#{suffix}")
+    def call_method_for_column(column, suffix, *args)
+      method = find_method("#{column}_#{suffix}")
       send(method, *args) if method
     end
 
-    def find_method(controller, short_method)
-      method = controller.gsub("/", "_") + "_" + short_method
-      return method if respond_to?(method)
+    def find_method(short_method)
+      return unless controller.is_a?(Crud::ApplicationController)
+      c = controller.class
+      while c != Crud::ApplicationController
+        prefix = c.name.sub(/Controller$/, "").underscore.gsub("/", "_")
+        method = "#{prefix}_#{short_method}"
+        return method if respond_to?(method)
+        c = c.superclass
+      end
       return short_method if respond_to?(short_method)
       nil
     end

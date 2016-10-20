@@ -83,7 +83,7 @@ describe Crud::ApplicationHelper do
   describe "#column_html" do
     before do
       @resource = double("resource", :aaa => "xxx")
-      allow(helper).to receive(:params).and_return({:controller => "controller_name"})
+      allow(helper).to receive(:controller).and_return(Ar::UsersController.new)
     end
 
     subject { helper.column_html(@resource, :aaa) }
@@ -95,7 +95,12 @@ describe Crud::ApplicationHelper do
     end
 
     context '#{controller_name}_#{column_name}_htmlという名前のhelperメソッドが定義されているとき' do
-      before { expect(helper).to receive(:controller_name_aaa_html).with(@resource, "xxx").and_return("html") }
+      before { expect(helper).to receive(:ar_users_aaa_html).with(@resource, "xxx").and_return("html") }
+      it("その結果を返すこと") { should == "html" }
+    end
+
+    context '親クラスの#{controller_name}_#{column_name}_htmlという名前のhelperメソッドが定義されているとき' do
+      before { expect(helper).to receive(:users_aaa_html).with(@resource, "xxx").and_return("html") }
       it("その結果を返すこと") { should == "html" }
     end
 

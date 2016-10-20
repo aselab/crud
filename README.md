@@ -318,7 +318,7 @@ search_fieldを指定しない場合は、デフォルトでnameまたはtitle�
 2. \#{column_name}_search_input
 
 引数にはsimple_form_forのbuilder, operator, 検索値が渡される。検索値の個数は可変なので、可変長引数で定義する。
-実装例は spec/dummy/app/helpers/ar/users_helper.rb を参照。
+実装例は spec/dummy/app/helpers/users_helper.rb を参照。
 
 ### ソート条件の指定
 
