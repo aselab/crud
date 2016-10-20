@@ -211,11 +211,11 @@ module Crud
       content_tag :div, class: "form-group" do
         concat f.label(column, required: false, class: "col-sm-2 control-label")
         concat content_tag(:div, search_operator_select("op[#{column}]", operators, selected_operator), class: "col-sm-2")
-        if selected_operator
-          (0...selected_operator.args).each do |i|
+        if args = SearchQuery::Operator[selected_operator].try(:args)
+          (0...args).each do |i|
             input_options = options.deep_merge(
               input_html: {id: "query_#{column}_#{i}", name: "v[#{column}][]"},
-              wrapper_html: {class: "col-sm-#{8 / selected_operator.args}"}
+              wrapper_html: {class: "col-sm-#{8 / args}"}
             )
             if is_boolean
               input_options[:wrapper] = :input_only_checkbox
