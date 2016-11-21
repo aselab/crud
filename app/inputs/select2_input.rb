@@ -11,10 +11,7 @@ class Select2Input < SimpleForm::Inputs::CollectionSelectInput
 
     js = javascript_tag(<<-SCRIPT
       $(function() {
-        var select = $("##{input_id}");
-        select.select2(#{select2_options(input_options)});
-        #{'select.data("select2").$container.css("width", "100%");' unless input_options.has_key?(:width)}
-        select.val(#{value.inspect}).trigger("change");
+        $("##{input_id}").val(#{value.inspect}).crudSelect2(#{select2_options(input_options).to_json});
       });
       SCRIPT
     )
@@ -66,29 +63,8 @@ class Select2Input < SimpleForm::Inputs::CollectionSelectInput
   end
 
   def select2_options(options)
-    search_key = options.delete(:search_key) || "term"
-    label = options[:label_method] || "name"
     name = reflection.try(:name) || attribute_name
-    options[:placeholder] ||= "#{I18n.t("simple_form.select2.placeholder", :name => object.class.human_attribute_name(name))}"
-
-    append_options = []
-    append_options << <<-STRING if ajax?
-      ,ajax: {
-        url: "#{url}",
-        dataType: "json",
-        delay: 300,
-        cache: true,
-        data: function(params) {
-          return {#{search_key}: params.term, page: params.page};
-        },
-        processResults: function(d, params) {
-          $(d.items).each(function() { this.text = this.#{label}; });
-          var currentPage = params.page || 1;
-          return {results: d.items, pagination: {more: currentPage < d.meta.total_pages}};
-        },
-        cache: true
-      }
-    STRING
-    {:multiple => multiple?, :allowClear => true}.merge(options).to_json.sub(/}$/, append_options.join("") + "}")
+    options[:placeholder] ||= I18n.t("simple_form.select2.placeholder", name: object.class.human_attribute_name(name))
+    options.except(:as, :collection).transform_keys {|key| key.to_s.camelize(:lower)}
   end
 end
