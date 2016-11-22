@@ -14,28 +14,28 @@ module Crud
       {}
     end
 
-    def json_options(items, options = nil)
-      defaults = {
+    def generate_json(items, options = nil)
+      options = {
         scope: serialization_scope,
-        root: false
-      }
+        serializer: serializer
+      }.merge(options || {})
       if items.respond_to?(:to_ary)
+        result = ActiveModel::Serializer::CollectionSerializer.new(items.to_ary, options).as_json
         if items.is_a?(Kaminari::PageScopeMethods)
-          defaults[:root] = "items"
-          defaults[:meta] = json_metadata.merge(
-            per_page: items.limit_value,
-            total_count: items.total_count,
-            total_pages: items.total_pages,
-            current_page: items.current_page
-          )
+          result = {
+            items: result,
+            meta: json_metadata.merge(
+              per_page: items.limit_value,
+              total_count: items.total_count,
+              total_pages: items.total_pages,
+              current_page: items.current_page
+            )
+          }
         end
-        items = items.to_ary
-        defaults[:each_serializer] = serializer
+        result.to_json
       else
-        defaults[:serializer] = serializer
+        ActiveModelSerializers::SerializableResource.new(items, options).to_json
       end
-      defaults[:json] = items
-      options ? defaults.merge(options) : defaults
     end
 
     def json_errors_options(item)

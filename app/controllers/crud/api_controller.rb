@@ -358,7 +358,7 @@ module Crud
     end
 
     def render_json(items, options = nil)
-      render json_options(items, options)
+      render json: generate_json(items, options)
     end
 
     def render_json_errors(item)
