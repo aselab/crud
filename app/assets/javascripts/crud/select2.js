@@ -16,6 +16,10 @@
         data: function(params) {
           var data = {page: params.page};
           data[options.searchKey] = params.term;
+           if (params.term) {
+             data[options.searchKey] = params.term;
+             data = $.extend(true, data, options.searchParams);
+           }
           return data;
         },
         processResults: function(d, params) {
