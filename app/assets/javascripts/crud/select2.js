@@ -4,7 +4,8 @@
     var defaultOptions = {
       searchKey: "term",
       labelMethod: "name",
-      allowClear: true
+      language: "ja",
+      allowClear: !options.multiple
     };
     if (options.url) {
       defaultOptions.ajax = {

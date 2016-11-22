@@ -65,6 +65,7 @@ class Select2Input < SimpleForm::Inputs::CollectionSelectInput
   def select2_options(options)
     name = reflection.try(:name) || attribute_name
     options[:placeholder] ||= I18n.t("simple_form.select2.placeholder", name: object.class.human_attribute_name(name))
+    options[:language] = I18n.locale
     options.except(:as, :collection).transform_keys {|key| key.to_s.camelize(:lower)}
   end
 end
