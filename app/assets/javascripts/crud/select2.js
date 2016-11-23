@@ -1,4 +1,18 @@
 (function($){
+  // https://github.com/select2/select2/issues/3320
+  $.fn.select2UnselectFix = function() {
+    return this.each(function() {
+      var elem = $(this).on('select2:unselecting', function(e) {
+        elem.data('unselecting', true);
+      }).on('select2:open', function(e) {
+        if (elem.data('unselecting')) {
+          elem.removeData('unselecting');
+          elem.select2('close');
+        }
+      });
+    });
+  };
+
   $.fn.crudSelect2 = function(options) {
     if (!options) options = {};
     var defaultOptions = {
@@ -33,7 +47,7 @@
 
     return this.each(function() {
       var select = $(this);
-      select.select2(options);
+      select.select2(options).select2UnselectFix();
       if (!options.width) select.data("select2").$container.css("width", "100%");
     });
   };
