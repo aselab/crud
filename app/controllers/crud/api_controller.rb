@@ -314,7 +314,7 @@ module Crud
     # 詳細検索に利用するカラムリスト.
     #
     def columns_for_advanced_search
-      @columns_for_advanced_search ||= columns_for_search.select {|c| query.advanced_search_column?(c)}
+      @columns_for_advanced_search ||= columns_for(:index).select {|c| query.advanced_search_column?(c)}
     end
 
     #
