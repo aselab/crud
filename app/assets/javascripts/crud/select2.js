@@ -47,7 +47,9 @@
 
     return this.each(function() {
       var select = $(this);
-      select.select2(options).select2UnselectFix();
+      // bodyに追加するとmodalのフォーカスと衝突するのを回避
+      var opts = $.extend({dropdownParent: select.parent()}, options);
+      select.select2(opts).select2UnselectFix();
       if (!options.width) select.data("select2").$container.css("width", "100%");
     });
   };
