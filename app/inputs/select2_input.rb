@@ -5,7 +5,7 @@ class Select2Input < SimpleForm::Inputs::CollectionSelectInput
   include Rails.application.routes.url_helpers
 
   def input(wrapper_options)
-    if ajax? && options[:collection].blank? && object.respond_to?(attribute_name)
+    if ajax? && options[:collection].nil? && object.respond_to?(attribute_name)
       options[:collection] = init_data(value)
     end
 
@@ -41,9 +41,6 @@ class Select2Input < SimpleForm::Inputs::CollectionSelectInput
 
   def url
     @url ||= input_options.delete(:url) || polymorphic_path(model)
-  end
-
-  def model
   end
 
   def ajax?
