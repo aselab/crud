@@ -200,8 +200,7 @@ module Crud
 
       ref = ModelReflection[f.object.class]
       return nil unless type = ref.column_type(column)
-      type = ref.column_type(column)
-      operators = SearchQuery::Operator.available_for(type)
+      return nil unless operators = SearchQuery::Operator.available_for(type)
       options = (input_options(column) || {}).merge(label: false, wrapper: :input_only)
       is_boolean = options[:as] ? options[:as] == :boolean : type == :boolean
       is_select = options[:as] ? [:select, :select2].include?(options[:as]) : [:enum, :belongs_to, :has_many, :has_and_belongs_to_many].include?(type)

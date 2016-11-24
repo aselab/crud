@@ -93,7 +93,7 @@ module Crud
         case type
         when :string, :text
           ContainsOperator.new(model, name).apply(value)
-        when :belongs_to, :has_many, :has_and_belongs_to_many
+        when :belongs_to, :has_one, :has_many, :has_and_belongs_to_many
           raise if mongoid?
           association = meta[:class]
           ref = ModelReflection[association]

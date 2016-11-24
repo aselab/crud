@@ -5,4 +5,8 @@ class Ar::MiscThroughsController < Crud::ApplicationController
   def model_columns
     [:misc_belonging, :name]
   end
+
+  def columns_for_index
+    [:misc] + model_columns
+  end
 end
