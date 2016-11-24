@@ -118,6 +118,7 @@ params[:value]またはparams[:v]またはparams直下で各カラムの検索�
 | not_equals | != | 1 |
 | contains | ~ | 1 |
 | not_contains | !~ | 1 |
+| any_of | in | * |
 | greater_or_equal | >= | 1 |
 | less_or_equal | <= | 1 |
 | between | <> | 2 |

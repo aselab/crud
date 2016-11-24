@@ -24,7 +24,7 @@ module Crud
       end
 
       def self.supported_types
-        raise NotImplementedError
+        []
       end
 
       def self.[](name)
@@ -173,6 +173,16 @@ module Crud
       end
     end
 
+    class AnyOfOperator < Operator
+      def condition(*values)
+        if activerecord?
+          model.arel_table[name].in(values)
+        elsif mongoid?
+          { name.in => values }
+        end
+      end
+    end
+
     class GreaterOrEqualOperator < Operator
       def self.supported_types
         [:integer, :float, :datetime, :date, :time]
@@ -231,6 +241,7 @@ module Crud
     NotEqualsOperator.register("!=")
     ContainsOperator.register("~")
     NotContainsOperator.register("!~")
+    AnyOfOperator.register("in")
     GreaterOrEqualOperator.register(">=")
     LessOrEqualOperator.register("<=")
     BetweenOperator.register("<>")
