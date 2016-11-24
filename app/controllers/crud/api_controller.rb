@@ -314,7 +314,7 @@ module Crud
     # 詳細検索に利用するカラムリスト.
     #
     def columns_for_advanced_search
-      @columns_for_advanced_search ||= columns_for(:index).select {|c| query.advanced_search_column?(c)}
+      @columns_for_advanced_search ||= columns_for_search.select {|c| query.advanced_search_column?(c)}
     end
 
     #
@@ -322,9 +322,9 @@ module Crud
     #
     def columns_for_json
       if params[:action] == "new"
-        columns_for(crud_action)
+        model_columns
       else
-        [:id] + columns_for(crud_action)
+        [:id] + model_columns
       end
     end
 
@@ -332,7 +332,7 @@ module Crud
     # CSV出力に利用するカラムリスト.
     #
     def columns_for_csv
-      columns_for(:index)
+      model_columns
     end
 
     def crud_action
