@@ -36,7 +36,7 @@ module Crud
       end
 
       def self.available_for(type)
-        @@operators_for_type[type.to_sym]
+        @@operators_for_type[type.try(:to_sym)]
       end
 
       def self.label

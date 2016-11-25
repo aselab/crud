@@ -162,7 +162,7 @@ module Crud
     # def users_name_input_options または name_input_options
     # を定義して指定する規約にしている．
     #
-    def input_options(column, controller = nil)
+    def input_options(column)
       default = {}
       case Crud::ModelReflection[resource].column_type(column)
       when :boolean
@@ -174,10 +174,9 @@ module Crud
       when :time
         default[:as] = :bootstrap_timepicker
       end
-      controller ||= params[:controller]
       options = call_method_for_column(column, :input_options) || {}
       options = default.merge(options)
-      options[:collection] = [] if options[:as] == :select2 && (options[:ajax] || options[:url].present?)
+      options[:collection] ||= [] if options[:as] == :select2 && (options[:ajax] || options[:url].present?)
       options
     end
 
@@ -187,6 +186,11 @@ module Crud
 
     def password_confirmation_input_options
       password_input_options
+    end
+
+    def search_input_options(column)
+      options = call_method_for_column(column, :search_input_options) || {}
+      input_options(column).merge(label: false, wrapper: :input_only).deep_merge(options)
     end
 
     def advanced_search_input(f, column)
@@ -199,9 +203,9 @@ module Crud
       end
 
       ref = ModelReflection[f.object.class]
-      return nil unless type = ref.column_type(column)
-      return nil unless operators = SearchQuery::Operator.available_for(type)
-      options = (input_options(column) || {}).merge(label: false, wrapper: :input_only)
+      type = ref.column_type(column)
+      return nil unless operators = call_method_for_column(column, :search_operator_options) || SearchQuery::Operator.available_for(type)
+      options = search_input_options(column)
       is_boolean = options[:as] ? options[:as] == :boolean : type == :boolean
       is_select = options[:as] ? [:select, :select2].include?(options[:as]) : [:enum, :belongs_to, :has_many, :has_and_belongs_to_many].include?(type)
       is_multiple = is_select && (options.has_key?(:multiple) ? options[:multiple] : [:has_many, :has_and_belongs_to_many].include?(type))
@@ -227,7 +231,8 @@ module Crud
             else
               input_options[:input_html][:value] = values[i]
             end
-            concat simple_form_input(f, column, input_options)
+            method = ref.association_key?(column) ? :association : :input
+            concat f.send(method, column, input_options)
           end
         end
       end

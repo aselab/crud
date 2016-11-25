@@ -317,9 +317,19 @@ search_fieldを指定しない場合は、デフォルトでnameまたはtitle�
 詳細検索フォームを変更したい場合は、以下の優先順でhelperメソッドを定義してカスタマイズすることができる。
 1. \#{controller_name}_#{column_name}_search_input
 2. \#{column_name}_search_input
+3. \#{controller_name}_#{column_name}_search_input_options
+4. \#{column_name}_search_input_options
+5. \#{controller_name}_#{column_name}_input_options
+6. \#{column_name}_input_options
 
-引数にはsimple_form_forのbuilder, operator, 検索値が渡される。検索値の個数は可変なので、可変長引数で定義する。
-実装例は spec/dummy/app/helpers/users_helper.rb を参照。
+search_inputメソッドの引数にはsimple_form_forのbuilder, operator, 検索値が渡される。検索値の個数は可変なので、可変長引数で定義する。
+search_input_optionsとinput_optionsメソッドは引数なしで、input_optionsメソッドは編集フォームでも使われる。
+
+詳細検索のオペレータを変更したい場合は、以下の優先順でhelperメソッドを定義してカスタマイズすることができる。
+1. \#{controller_name}_#{column_name}_search_operator_options
+2. \#{column_name}_search_operator_options
+
+詳細検索カスタマイズの実装例は spec/dummy/app/helpers/users_helper.rb を参照。
 
 ### ソート条件の指定
 

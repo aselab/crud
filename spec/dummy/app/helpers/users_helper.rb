@@ -1,4 +1,17 @@
 module UsersHelper
+  def users_name_search_operator_options
+    ["equals", "contains"]
+  end
+
+  def users_age_search_operator_options
+    ["equals", "between"]
+  end
+
+  def users_age_search_input_options
+    { as: :integer }
+  end
+
+=begin
   def users_name_search_input(f, operator, *values)
     content_tag :div, class: "form-group" do
       concat f.label(:name, class: "col-sm-2 control-label")
@@ -26,4 +39,5 @@ module UsersHelper
       end
     end
   end
+=end
 end
