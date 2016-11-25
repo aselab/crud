@@ -16,13 +16,14 @@
 * コントローラのdo_search, do_sortメソッドをdo_queryメソッドに統合
 * ヘルパーメソッドのルックアップ時にコントローラの継承関係を考慮するように
     * privateメソッドの引数等が変更
-* jQuery拡張としてcrudSelect2を追加
 
 ### その他の変更点
 
 * 詳細検索対応
 * デフォルトのソートキーと順序が継承されない問題を修正
 * crud:scaffoldジェネレータ追加
+* jQuery拡張としてcrudSelect2を追加
+* helperにcrud_table_optionsメソッドを定義するとcrud_tableのデフォルトオプションとして渡せる。コントローラー毎にも定義可能。
 
 ## 0.3.2
 

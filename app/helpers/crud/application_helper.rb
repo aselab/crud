@@ -91,7 +91,7 @@ module Crud
     end
 
     def crud_table(columns, resources, actions, options = nil)
-      options ||= {}
+      options = (try(:crud_table_options) || {}).deep_merge(options || {})
       options[:class] ||= "table table-striped table-bordered table-vcenter"
       header_options = options[:header] || {}
       m = model
@@ -131,6 +131,11 @@ module Crud
       end
 
       content_tag(:div, table, class: "table-responsive")
+    end
+
+    def index_crud_table_options
+      method = find_method(:crud_table_options)
+      send(method) if method && method != :crud_table_options
     end
 
     def crud_form(resource, options = nil, &block)
