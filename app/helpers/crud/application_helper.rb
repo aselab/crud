@@ -29,7 +29,7 @@ module Crud
     def link_to_action(action, resource = nil, options = nil, &block)
       options ||= {}
       params = stored_params(action: action, id: resource).merge(options.delete(:params) || {})
-      method = find_method("link_to_#{action}")
+      method = find_method("link_to_#{action}", params[:controller])
       return send(method, params) if method
 
       begin
@@ -64,11 +64,12 @@ module Crud
     # 2. #{column_name}_html という名前のhelperメソッド
     # 3. #{column_name}_label という名前のmodelメソッド
     #
-    def column_html(resource, column)
+    def column_html(resource, column, prefix = nil)
       return nil unless resource && column
       value = resource.send(column)
-      if html = call_method_for_column(column, :html, resource, value)
-        return html
+      if method = find_method("#{column}_html", prefix)
+        html = send(method, resource, value)
+        return html if html
       end
 
       method = "#{column.to_s}_label"
@@ -97,6 +98,7 @@ module Crud
       if options[:model]
         m = options[:model]
         params = options[:params] ||= {}
+        controller = params[:controller] ||= m.model_name.plural
       end
       sort = options[:sort] != false
       remote = options.has_key?(:remote) ? options[:remote] : @remote
@@ -114,7 +116,7 @@ module Crud
           resources.each do |resource|
             concat(content_tag(:tr) do
               columns.each do |column|
-                concat content_tag(:td, column_html(resource, column))
+                concat content_tag(:td, column_html(resource, column, controller))
               end
               unless actions.empty?
                 concat(content_tag(:td) do
@@ -150,7 +152,7 @@ module Crud
         return html
       end
 
-      options ||= input_options(column) || {}
+      options = input_options(f, column).deep_merge(options || {})
       method = Crud::ModelReflection[f.object].association_key?(column) ? :association : :input
       f.send(method, column, options)
     end
@@ -162,9 +164,9 @@ module Crud
     # def users_name_input_options または name_input_options
     # を定義して指定する規約にしている．
     #
-    def input_options(column)
+    def input_options(f, column)
       default = {}
-      case Crud::ModelReflection[resource].column_type(column)
+      case Crud::ModelReflection[f.object].column_type(column)
       when :boolean
         default[:wrapper] = :vertical_boolean
       when :datetime, :timestamp
@@ -188,9 +190,9 @@ module Crud
       password_input_options
     end
 
-    def search_input_options(column)
+    def search_input_options(f, column)
       options = call_method_for_column(column, :search_input_options) || {}
-      input_options(column).merge(label: false, wrapper: :input_only).deep_merge(options)
+      input_options(f, column).merge(label: false, wrapper: :input_only).deep_merge(options)
     end
 
     def advanced_search_input(f, column)
@@ -205,7 +207,7 @@ module Crud
       ref = ModelReflection[f.object.class]
       type = ref.column_type(column)
       return nil unless operators = call_method_for_column(column, :search_operator_options) || SearchQuery::Operator.available_for(type)
-      options = search_input_options(column)
+      options = search_input_options(f, column)
       is_boolean = options[:as] ? options[:as] == :boolean : type == :boolean
       is_select = options[:as] ? [:select, :select2].include?(options[:as]) : [:enum, :belongs_to, :has_many, :has_and_belongs_to_many].include?(type)
       is_multiple = is_select && (options.has_key?(:multiple) ? options[:multiple] : [:has_many, :has_and_belongs_to_many].include?(type))
@@ -252,14 +254,19 @@ module Crud
       send(method, *args) if method
     end
 
-    def find_method(short_method)
-      return unless controller.is_a?(Crud::ApplicationController)
-      c = controller.class
-      while c != Crud::ApplicationController
-        prefix = c.name.sub(/Controller$/, "").underscore.gsub("/", "_")
-        method = "#{prefix}_#{short_method}"
+    def find_method(short_method, controller_name = nil)
+      if controller_name
+        method = "#{controller_name}_#{short_method}"
         return method if respond_to?(method)
-        c = c.superclass
+      else
+        return unless controller.is_a?(Crud::ApplicationController)
+        c = controller.class
+        while c != Crud::ApplicationController
+          prefix = c.name.sub(/Controller$/, "").underscore.gsub("/", "_")
+          method = "#{prefix}_#{short_method}"
+          return method if respond_to?(method)
+          c = c.superclass
+        end
       end
       return short_method if respond_to?(short_method)
       nil
