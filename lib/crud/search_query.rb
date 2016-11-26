@@ -1,12 +1,12 @@
 module Crud
   class SearchQuery
-    attr_reader :scope, :model, :reflection, :extension
+    attr_reader :scope, :model, :reflection, :extensions
 
-    def initialize(scope, extension = nil)
+    def initialize(scope, *extensions)
       @scope = scope
       @model = scope.try(:model) || scope.try(:klass)
       @reflection = ModelReflection[@model]
-      @extension = extension
+      @extensions = extensions
     end
 
     def self.tokenize(keyword)
@@ -142,7 +142,7 @@ module Crud
 
     private
     def extension_method(name)
-      extension.try(:respond_to?, name, true) ? extension.method(name) : nil
+      extensions.find {|e| e.respond_to?(name, true)}.try(:method, name)
     end
 
     def search_method_for(column)

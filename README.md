@@ -309,10 +309,11 @@ search_fieldを指定しない場合は、デフォルトでnameまたはtitle�
 
 検索対象のカラムを変更したい場合はコントローラにcolumns_for_advanced_searchメソッドを定義する。
 
-検索処理を変更したい場合は、advanced_search_by_#{column_name} というメソッドをコントローラに定義する。
+検索処理を変更したい場合は、advanced_search_by_#{column_name} というメソッドをコントローラに定義するか、
+モデルのクラスメソッドとして定義する。
 引数にはoperatorと検索値が渡される。検索値の個数は可変なので、可変長引数で定義するとよい。
 
-実装例は spec/dummy/app/controllers/ar/users_controller.rb を参照。
+実装例は spec/dummy/app/models/ar/user.rb を参照。
 
 詳細検索フォームを変更したい場合は、以下の優先順でhelperメソッドを定義してカスタマイズすることができる。
 1. \#{controller_name}_#{column_name}_search_input
@@ -329,7 +330,7 @@ search_input_optionsとinput_optionsメソッドは引数なしで、input_optio
 1. \#{controller_name}_#{column_name}_search_operator_options
 2. \#{column_name}_search_operator_options
 
-詳細検索カスタマイズの実装例は spec/dummy/app/helpers/users_helper.rb を参照。
+詳細検索フォームカスタマイズの実装例は spec/dummy/app/helpers/users_helper.rb を参照。
 
 ### ソート条件の指定
 

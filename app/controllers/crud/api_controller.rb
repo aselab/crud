@@ -195,15 +195,15 @@ module Crud
     # オーバーライドして検索ソートした結果を返却するように実装する．
     #
     def do_query
-      @query = SearchQuery.new(resources, self)
-      @query.keyword_search(columns_for_search, search_keyword)
-      @query.advanced_search(search_values, search_operators)
-      @query.sort(sort_key, sort_order) if sort_key
-      @query.scope
+      @query = nil
+      query.keyword_search(columns_for_search, search_keyword)
+      query.advanced_search(search_values, search_operators)
+      query.sort(sort_key, sort_order) if sort_key
+      query.scope
     end
 
     def query
-      @query ||= SearchQuery.new(resources, self)
+      @query ||= SearchQuery.new(resources, self, model)
     end
 
     def search_keyword
