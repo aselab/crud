@@ -20,16 +20,18 @@
       var setFormAction = function() { form.find("form").attr("action", url); };
       setFormAction();
       toggle.click(function() {
-        var button = $(this);
+        var button = $(this).blur();
         if (form.is(":empty")) {
           $.get(url, data).then(function() {
             setFormAction();
             button.addClass("active");
+            button.find(".fa").removeClass("fa-caret-down").addClass("fa-caret-up");
             form.show();
           });
         } else {
           form.toggle();
           button.toggleClass("active");
+          button.find(".fa").toggleClass("fa-caret-down").toggleClass("fa-caret-up");
         }
       });
       form.on("change", ".operator", function() {
