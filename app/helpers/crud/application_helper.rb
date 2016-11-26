@@ -183,7 +183,6 @@ module Crud
       end
       options = call_method_for_column(column, :input_options) || {}
       options = default.merge(options)
-      options[:collection] ||= [] if options[:as] == :select2 && (options[:ajax] || options[:url].present?)
       options
     end
 
