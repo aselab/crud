@@ -14,11 +14,16 @@
   <%= javascript_tag do %>
     $(function() {
       var form = $("#<%= temp_id :advanced %>");
-      var url = "<%= url_for(stored_params(:sort_key, :sort_order, :per, format: :form, container: params[:container], form: temp_id(:advanced))).html_safe %>";
-      $("#<%= temp_id :index %>").find(".advanced-search-toggle").click(function() {
+      var toggle = $("#<%= temp_id :index %>").find(".advanced-search-toggle");
+      var url = toggle.closest("form").attr("action");
+      var data = [{name: "format", value: "form"}, {name: "form", value: "<%= temp_id(:advanced) %>"}];
+      var setFormAction = function() { form.find("form").attr("action", url); };
+      setFormAction();
+      toggle.click(function() {
         var button = $(this);
         if (form.is(":empty")) {
-          $.get(url).then(function() {
+          $.get(url, data).then(function() {
+            setFormAction();
             button.addClass("active");
             form.show();
           });
@@ -28,7 +33,7 @@
         }
       });
       form.on("change", ".operator", function() {
-        $.get(url, $(this).closest("form").serialize());
+        $.get(url, data.concat($(this).closest("form").serializeArray())).then(setFormAction);
       });
     });
   <% end %>

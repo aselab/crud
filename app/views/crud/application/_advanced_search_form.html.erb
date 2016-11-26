@@ -1,6 +1,6 @@
 <%= content_tag(:div, class: "panel panel-default") do %>
   <div class="panel-body">
-    <%= simple_form_for resource, wrapper: :horizontal_form, html: { class: "form-horizontal" }, method: "GET", remote: @remote do |f| %>
+    <%= simple_form_for resource, wrapper: :horizontal_form, html: { class: "form-horizontal" }, method: "GET", url: "", remote: @remote do |f| %>
       <% stored_params(:container, :sort_key, :sort_order, :per).each do |key, value| %>
         <%= hidden_field_tag key, value %>
       <% end %>
