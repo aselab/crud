@@ -3,6 +3,7 @@ ja:
     action:
       ok: OK
       cancel: キャンセル
+      clear: クリア
       new: 新規作成
       edit: 編集
       index: 一覧

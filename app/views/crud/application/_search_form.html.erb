@@ -7,8 +7,8 @@
         </button>
       </div>
     <% end %>
-    <%= text_field_tag :term, search_keyword, :class => "search-query form-control",
-      :placeholder => t("crud.message.enter_search_term") %>
+    <%= text_field_tag :term, search_keyword, class: "search-query form-control",
+      placeholder: t("crud.message.enter_search_term") %>
     <div class="input-group-btn">
       <button id="search-button" type="submit" class="btn btn-primary">
         <i class="glyphicon glyphicon-search"></i>

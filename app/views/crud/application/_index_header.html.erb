@@ -37,6 +37,10 @@
       form.on("change", ".operator", function() {
         $.get(url, data.concat($(this).closest("form").serializeArray())).then(setFormAction);
       });
+      form.on("click", ".btn-clear", function(event) {
+        event.preventDefault();
+        $.get(url, data).then(setFormAction);
+      });
     });
   <% end %>
 <% end %>

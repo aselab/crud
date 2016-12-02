@@ -3,6 +3,7 @@ en:
     action:
       ok: OK
       cancel: Cancel
+      clear: Clear
       new: New
       edit: Edit
       index: List
