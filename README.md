@@ -379,7 +379,7 @@ end
 メソッドの引数にはアクションを実行しようとしている対象のレコードが渡される。
 また、コントローラのcurrent_userが渡されるため、ログインユーザによる制御も可能。
 
-コントローラにAuthorizationという名前のインナークラスを定義してもよい。こちらが最優先で用いられる。
+コントローラにAuthorizationという名前のインナークラスを定義してもよい。
 
 ```ruby
 class UsersController < Crud::ApplicationController

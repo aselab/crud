@@ -8,6 +8,19 @@ module Crud
       end
     end
 
+    class_methods do
+      # Controllerに対応するAuthorizationクラスを検索
+      def find_authorization
+        c = self
+        while c < Crud::ApplicationController
+          auth = c.name.sub(/Controller$/, "Authorization").safe_constantize
+          return auth if auth
+          c = c.superclass
+        end
+        nil
+      end
+    end
+
     def authorize_for(action, resource)
       if authorization.respond_to?(action)
         authorization.send(action)
@@ -18,9 +31,8 @@ module Crud
 
     def authorization
       @authorization ||= begin
-        name = self.class.name
-        auth = "#{name}::Authorization".safe_constantize # コントローラのインナークラス
-        auth ||= name.sub(/Controller$/, "Authorization").safe_constantize if name.ends_with?("Controller") # コントローラと同名のAuthorizationクラス
+        auth = self.class.find_authorization
+        auth ||= "#{self.class.name}::Authorization".safe_constantize # コントローラのインナークラス
         auth ||= Default
         auth.new(current_user)
       end
