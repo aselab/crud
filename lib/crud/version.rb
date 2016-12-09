@@ -1,3 +1,3 @@
 module Crud
-  VERSION = "0.4.0b"
+  VERSION = "0.4.0"
 end
