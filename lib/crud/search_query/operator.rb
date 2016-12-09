@@ -226,12 +226,20 @@ module Crud
     end
 
     class AnyOperator < NotEqualsOperator
+      def self.supported_types
+        []
+      end
+
       def condition
         super nil
       end
     end
 
     class NoneOperator < EqualsOperator
+      def self.supported_types
+        []
+      end
+
       def condition
         super nil
       end

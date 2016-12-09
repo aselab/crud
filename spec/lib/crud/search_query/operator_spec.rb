@@ -28,11 +28,11 @@ describe Crud::SearchQuery::Operator do
     subject { Crud::SearchQuery::Operator.available_for(type) }
     let(:type) { self.class.description }
     context :string do
-      it { should eq [equals, not_equals, contains, not_contains, any, none] }
+      it { should eq [equals, not_equals, contains, not_contains] }
     end
 
     context :integer do
-      it { should eq [equals, not_equals, greater_or_equal, less_or_equal, between, any, none] }
+      it { should eq [equals, not_equals, greater_or_equal, less_or_equal, between] }
     end
   end
 
