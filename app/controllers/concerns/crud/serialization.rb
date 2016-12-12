@@ -86,7 +86,7 @@ module Crud
         item.errors.messages.each do |key, messages|
           key = key.to_s.split(".").first.to_sym
           next if errors.has_key?(key)
-          if item.association_cache[key]
+          if item.association_cached?(key)
             e = association_json_errors(item.send(key))
             errors[key] = e || messages
           else
