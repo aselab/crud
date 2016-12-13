@@ -18,6 +18,7 @@
     var defaultOptions = {
       searchKey: "term",
       labelMethod: "name",
+      idMethod: "id",
       language: "ja",
       allowClear: !options.multiple
     };
@@ -37,7 +38,10 @@
           return data;
         },
         processResults: function(d, params) {
-          $(d.items).each(function() { this.text = this[options.labelMethod]; });
+          $(d.items).each(function() {
+            this.id = this[options.idMethod];
+            this.text = this[options.labelMethod];
+          });
           var currentPage = params.page || 1;
           return {results: d.items, pagination: {more: currentPage < d.meta.total_pages}};
         }

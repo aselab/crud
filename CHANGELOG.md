@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4.1(master)
+
+* select2 ajax時のidMethodを指定できるように
+
 ## 0.4.0
 
 ### 非互換を含む変更点
