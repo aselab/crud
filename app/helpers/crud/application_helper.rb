@@ -92,7 +92,7 @@ module Crud
 
     def crud_table(columns, resources, actions, options = nil)
       options = (try(:crud_table_options) || {}).deep_merge(options || {})
-      options[:class] ||= "table table-striped table-bordered table-vcenter"
+      options[:class] ||= "table table-striped table-bordered table-vcenter crud-table"
       header_options = options[:header] || {}
       m = model
       if options[:model]
@@ -110,7 +110,7 @@ module Crud
               label = link_to_sort(column, label: label, remote: remote, params: params) if sort
               concat content_tag(:th, label, header_options[column])
             end
-            concat content_tag(:th, nil, class: :table_action_th) unless actions.empty?
+            concat content_tag(:th, nil, class: "crud-actions") unless actions.empty?
           end
         end + content_tag(:tbody) do
           resources.each do |resource|
