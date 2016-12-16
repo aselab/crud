@@ -1,4 +1,10 @@
 (function($){
+  // IEでtagモードのときfocusが外れるバグがあるのでoption追加削除検知を無効化
+  if (document.uniqueID) {
+    var Select2 = $.fn.select2.amd.require('select2/core');
+    Select2.prototype._syncSubtree = function() {}
+  }
+
   // https://github.com/select2/select2/issues/3320
   $.fn.select2UnselectFix = function() {
     return this.each(function() {
