@@ -5,8 +5,8 @@ class Select2Input < SimpleForm::Inputs::CollectionSelectInput
   include Rails.application.routes.url_helpers
 
   def input(wrapper_options)
-    if ajax? && options[:collection].nil? && object.respond_to?(attribute_name)
-      options[:collection] = init_data(value)
+    if ajax?
+      options[:collection] = object.respond_to?(attribute_name) ? init_data(value) : []
     end
 
     js = javascript_tag(<<-SCRIPT
@@ -52,11 +52,11 @@ class Select2Input < SimpleForm::Inputs::CollectionSelectInput
   end
 
   def init_data(ids)
-    model.where(id: ids)
+    model ? model.where(id: ids) : ids
   end
 
   def model
-    @model ||= input_options.delete(:model) || reflection.klass
+    @model ||= input_options.delete(:model) || reflection.try(:klass)
   end
 
   def select2_options(options)
