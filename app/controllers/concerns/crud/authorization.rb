@@ -57,9 +57,6 @@ module Crud
         @current_user = user
       end
 
-      def index
-      end
-
       # 各アクションの権限は def update?(resource) のようなメソッドを定義し、
       # true or falseを返すように実装する。定義しない場合のデフォルトはtrueである。
       def can?(action, resource)
