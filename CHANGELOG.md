@@ -1,6 +1,9 @@
 # Changelog
 
-## 0.4.1(master)
+## 0.4.1
+
+* 0.4.0のバグ修正
+* select2 ajax時のidMethodを指定できるように
 
 ## 0.4.0
 
@@ -27,7 +30,6 @@
 * jQuery拡張としてcrudSelect2を追加
 * helperにcrud_table_optionsメソッドを定義するとcrud_tableのデフォルトオプションとして渡せる。コントローラー毎にも定義可能。
 * 検索メソッドはコントローラー以外にモデルのクラスメソッドとしても定義できるように
-* select2 ajax時のidMethodを指定できるように
 
 ## 0.3.2
 
