@@ -76,7 +76,7 @@ module Crud
       if resource.respond_to?(method)
         escape_once resource.send(method)
       else
-        simple_format escape_once(to_label(value))
+        escape_once to_label(value)
       end
     end
 
