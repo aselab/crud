@@ -3,6 +3,19 @@
 RailsのDBの[CRUD](https://ja.wikipedia.org/wiki/CRUD)操作を簡単に実装するためのライブラリ。
 一覧の検索、ソート、ページネーションや各アクションの認可機能も備える。
 
+## デモアプリ
+
+```
+git clone git@bitbucket.org:aselab/crud.git
+cd crud
+bundle install
+cd spec/dummy
+rails db:migrate
+rails s
+```
+
+http://localhost:3000
+
 ## インストール
 
 以下をGemfileに追加してbundle install
@@ -394,6 +407,26 @@ class UsersController < Crud::ApplicationController
   end
 end
 ```
+
+#### acts_as_permissible
+
+リソース毎に権限を細かく設定したい場合に使うライブラリ。
+
+```
+rails generate permissible:install
+```
+
+権限制御したいモデルごとに任意のロール名と値をビットで定義し、包含関係を作ることができる。
+
+```ruby
+class Article < ApplicationRecord
+  acts_as_permissible(admin: 0b111, write: 0b011, read: 0b001, default: 0b001)
+end
+```
+
+上記の場合、write権限を持つロールはadmin, writeで、read権限を持つロールはadmin, write, readになる。
+
+TODO
 
 ### 各アクションの表示結果のカスタマイズ
 
