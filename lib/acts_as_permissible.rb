@@ -98,12 +98,12 @@ module Acts
           has_many permissions, as: permissible_name, dependent: :destroy,
             before_add: :set_default_flag, extend: AssociationExtensions
 
-          has_many principals, through: permissions
+          has_many principals, -> { distinct }, through: permissions
 
           accepts_nested_attributes_for permissions, allow_destroy: true
 
           scope :permissible, lambda {|principal_ids, permission = nil|
-            includes(permissions).references(permissions).
+            left_joins(permissions).distinct.
               where(principal_key => principal_ids).
               where(permission_condition(permission))
           }
@@ -111,14 +111,12 @@ module Acts
           class_eval <<-RUBY
             def authorized_#{principals}(permission)
               self.#{principals}.
-                includes(:#{permissions}).references(:#{permissions}).
                 where(self.class.permission_condition(permission))
             end
 
             def authorized?(principal, permission = nil)
               return false unless principal
-              self.#{principals}.joins(:#{permissions}).
-                where(self.class.permission_condition(permission)).
+              authorized_#{principals}(permission).
                 exists?("#{principal_class.table_name}.id" => principal)
             end
 
