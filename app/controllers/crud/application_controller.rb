@@ -134,7 +134,7 @@ module Crud
     end
 
     def render_edit(status = :ok)
-      render action: "edit", status: status
+      render action: "edit", status: status, layout: !request.xhr?
     end
 
     def columns_for_index
