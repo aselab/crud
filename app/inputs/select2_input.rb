@@ -6,7 +6,11 @@ class Select2Input < SimpleForm::Inputs::CollectionSelectInput
 
   def input(wrapper_options)
     if ajax?
-      options[:collection] = object.respond_to?(attribute_name) ? init_data(value) : []
+      if options[:selected_item].present?
+        options[:collection] = [options[:selected_item]]
+      else
+        options[:collection] = object.respond_to?(attribute_name) ? init_data(value) : []
+      end
     end
 
     js = javascript_tag(<<-SCRIPT
