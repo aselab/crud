@@ -20,7 +20,7 @@ Gem::Specification.new do |s|
   s.add_dependency "bootstrap-sass"
   s.add_dependency "font-awesome-sass"
 
-  s.add_dependency "simple_form", "~> 3.2.1"
+  s.add_dependency "simple_form", "~> 3.5.0"
   s.add_dependency "select2-rails", "4.0.3"
 
   s.add_development_dependency "sass-rails", "~> 5.0.5"
