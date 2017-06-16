@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.4.3
+
+* Rails 5.1対応
+* render_editのlayoutをAjax通信で有無切り替え
+* select2_inputで:selected_itemオプション追加(ajax時の初期値設定)
+* 一覧のjsリクエストでparams[:template]で切り替えられるように
+
 ## 0.4.2
 
 * permissionsのキャッシュ結果が不正だったのを修正

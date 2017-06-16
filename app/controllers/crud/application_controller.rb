@@ -90,7 +90,7 @@ module Crud
     # CRUDの画面遷移で保持するパラメータのkey
     #
     def stored_params_keys
-      [:controller, :action, :term, :sort_key, :sort_order, :page, :per, :container]
+      [:controller, :action, :term, :sort_key, :sort_order, :page, :per, :container, :template]
     end
 
     #
