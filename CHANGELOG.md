@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4.4
+
+* link_to_actionのオプションをカスタマイズできるように
+
 ## 0.4.3
 
 * Rails 5.1対応

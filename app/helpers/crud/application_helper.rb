@@ -26,8 +26,9 @@ module Crud
       end
     end
 
-    def link_to_action(action, resource = nil, options = nil, &block)
-      options ||= {}
+    def link_to_action(action, resource = nil, **options, &block)
+      method = find_method("link_to_#{action}_options", params[:controller])
+      options = send(method).merge(options) if method
       params = stored_params(action: action, id: resource).merge(options.delete(:params) || {})
       method = find_method("link_to_#{action}", params[:controller])
       return send(method, params) if method
@@ -259,18 +260,14 @@ module Crud
     end
 
     def find_method(short_method, controller_name = nil)
-      if controller_name
-        method = "#{controller_name}_#{short_method}"
+      c = controller_name ? "#{controller_name.camelize}Controller".constantize : controller.class
+
+      return unless c < Crud::ApplicationController
+      while c != Crud::ApplicationController
+        prefix = c.name.sub(/Controller$/, "").underscore.gsub("/", "_")
+        method = "#{prefix}_#{short_method}"
         return method if respond_to?(method)
-      else
-        return unless controller.is_a?(Crud::ApplicationController)
-        c = controller.class
-        while c != Crud::ApplicationController
-          prefix = c.name.sub(/Controller$/, "").underscore.gsub("/", "_")
-          method = "#{prefix}_#{short_method}"
-          return method if respond_to?(method)
-          c = c.superclass
-        end
+        c = c.superclass
       end
       return short_method if respond_to?(short_method)
       nil

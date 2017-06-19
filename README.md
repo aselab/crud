@@ -199,6 +199,17 @@ class FoosController < Crud::ApplicationController
 end
 ```
 
+### 一覧画面のアクション定義とリンク表示
+
+index_actionsメソッドで一覧画面の各行ごとのアクションを定義できる。デフォルトは:show, :edit, :destroy
+
+各アクションのリンク表示を変更したい場合、以下の優先順でメソッドを定義してカスタマイズできる。
+
+1. helperに #{controller_name}_link_to_#{action} という名前のメソッドを実装
+2. helperに link_to_#{action} という名前のメソッドを実装
+3. helperに #{controller_name}_link_to_#{action}_options という名前のメソッドを実装
+4. helperに link_to_#{action}_options という名前のメソッドを実装
+
 ### カラムのhtml表示
 
 一覧や詳細画面で表示されるカラムの内容は、デフォルトではsimple_formatで出力される。
