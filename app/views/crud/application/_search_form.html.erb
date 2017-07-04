@@ -2,9 +2,11 @@
   <div class="input-group">
     <% if columns_for_advanced_search.present? %>
       <div class="input-group-btn">
-        <button type="button" class="btn btn-default advanced-search-toggle">
-          <span class="fa fa-caret-down"></span>
+        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+          <span class="fa fa-filter"></span>
         </button>
+        <ul class="dropdown-menu">
+        </ul>
       </div>
     <% end %>
     <%= text_field_tag :term, search_keyword, class: "search-query form-control",

@@ -1,4 +1,5 @@
-<%= content_tag(:div, class: "panel panel-default") do %>
+<div class="panel panel-default">
+  <div class="panel-heading"><%= t("crud.advanced_search_conditions") %></div>
   <div class="panel-body">
     <%= simple_form_for resource, wrapper: :horizontal_form, html: { class: "form-horizontal" }, method: "GET", url: "", remote: @remote do |f| %>
       <% stored_params(:container, :sort_key, :sort_order, :per).each do |key, value| %>
@@ -18,4 +19,4 @@
       </div>
     <% end %>
   </div>
-<% end %>
+</div>

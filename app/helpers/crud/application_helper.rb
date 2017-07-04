@@ -216,7 +216,9 @@ module Crud
       is_boolean = options[:as] ? options[:as] == :boolean : type == :boolean
       is_select = options[:as] ? [:select, :select2].include?(options[:as]) : [:enum, :belongs_to, :has_many, :has_and_belongs_to_many].include?(type)
       is_multiple = is_select && (options.has_key?(:multiple) ? options[:multiple] : [:has_many, :has_and_belongs_to_many].include?(type))
-      content_tag :div, class: "form-group" do
+      div_options = { class: "form-group" }
+      div_options[:style] = "display: none;" if op.blank? && values.empty?
+      content_tag :div, div_options do
         concat f.label(column, required: false, class: "col-sm-2 control-label")
         concat content_tag(:div, search_operator_select("op[#{column}]", operators, selected_operator), class: "col-sm-2")
         if args = SearchQuery::Operator[selected_operator].try(:args)

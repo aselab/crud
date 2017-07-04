@@ -1,5 +1,7 @@
 en:
   crud:
+    advanced_search_conditions: Advanced search conditions
+
     action:
       ok: OK
       cancel: Cancel

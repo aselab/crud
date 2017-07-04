@@ -1,5 +1,7 @@
 ja:
   crud:
+    advanced_search_conditions: 詳細検索条件
+
     action:
       ok: OK
       cancel: キャンセル
