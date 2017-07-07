@@ -223,10 +223,11 @@ module Crud
         concat content_tag(:div, search_operator_select("op[#{column}]", operators, selected_operator), class: "col-sm-2")
         if args = SearchQuery::Operator[selected_operator].try(:args)
           (0...args).each do |i|
-            input_options = options.deep_merge(
-              input_html: {id: "query_#{column}_#{i}", name: "v[#{column}][]"},
-              wrapper_html: {class: "col-sm-#{8 / args}"}
-            )
+            input_options = {
+              input_html: { name: "v[#{column}][]" },
+              wrapper_html: { class: "col-sm" }
+            }.deep_merge(options)
+            input_options[:input_html][:id] ||= "query_#{column}_#{i}"
             if is_boolean
               input_options[:wrapper] = :input_only_checkbox
               input_options[:input_html][:checked] = ref.boolean_cast(values)
