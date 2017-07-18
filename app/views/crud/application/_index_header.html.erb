@@ -20,8 +20,12 @@
 
       dropdown.click(function(e) { e.stopPropagation(); });
       dropdown.on("change", ":checkbox", function() {
-        form.find(".form-group").eq($(this).data("index")).toggle(this.checked);
-        form.toggle(dropdown.find(":checkbox").is(":checked"));
+        var formGroup = form.find(".form-group").eq($(this).data("index"));
+
+        formGroup.toggle(this.checked);
+        if (!this.checked) formGroup.find(".operator").val("").trigger("change");
+
+        if (dropdown.find(":checkbox").is(":checked")) form.show();
       });
 
       form.find(".form-group label").each(function(index) {
@@ -38,7 +42,7 @@
         var checks = dropdown.find(":checkbox").each(function(index) {
           group.eq(index).toggle(this.checked);
         });
-        form.toggle(checks.is(":checked"));
+        if (checks.is(":checked")) form.show();
       };
       updateForm();
       form.on("change", ".operator", function() {
