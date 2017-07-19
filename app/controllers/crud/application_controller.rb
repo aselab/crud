@@ -68,7 +68,7 @@ module Crud
       super do |success, error|
         if success
           respond_with_condition(format_block, success, true)
-          success.any(:html, :js) { redirect_after_success notice: message(:successfully_deleted, :name => model_name), status: 303 }
+          success.any(:html, :js) { redirect_after_success notice: message(:successfully_deleted, :name => model_name) }
         else
           respond_with_condition(format_block, error, false)
           error.any(:html, :js) { redirect_to request.referer, alert: resource.errors.full_messages.join(", ") }
@@ -126,6 +126,7 @@ module Crud
 
     # 作成，更新，削除成功後のリダイレクト先
     def redirect_after_success(options)
+      options = { status: 303 }.merge(options)
       redirect_to(@redirect_to_url || cancel_path, options)
     end
 
