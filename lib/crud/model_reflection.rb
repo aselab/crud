@@ -31,11 +31,8 @@ module Crud
         name = ref.foreign_key if ref.macro == :belongs_to
         return {name: name.to_sym, type: ref.macro, class: ref.klass}
       end
-      if enum_values_for(name)
-        return {name: name.to_sym, type: :enum}
-      end
 
-      if activerecord?
+      metadata = if activerecord?
         meta = model.columns_hash[name.to_s]
         meta && {name: meta.name.to_sym, type: meta.type}
       elsif mongoid?
@@ -51,6 +48,9 @@ module Crud
         end
         type && {name: name.to_sym, type: type}
       end
+      metadata[:type] = :enum if metadata && enum_values_for(name)
+
+      metadata
     end
 
     def column_type(name)
