@@ -62,7 +62,7 @@ module Crud
     module ClassMethods
       def permit_keys(*keys)
         self._permit_keys ||= []
-        keys.each do |key|
+        keys.flatten.each do |key|
           self._permit_keys.push(key)
           self._permit_keys += key.keys if key.is_a?(Hash)
         end
