@@ -141,13 +141,13 @@ module Crud
     end
 
     def crud_form(resource, options = nil, &block)
-      action = resource.new_record? ? :create : :update
+      method = crud_action == :update ? :put : :post
+      url = url_for(stored_params(action: crud_action, only_path: true))
       options = {
         remote: @remote,
         as: model_key,
-        url: resource.new_record? ?
-          stored_params(action: action) :
-          stored_params(action: action, id: resource),
+        method: method,
+        url: url,
         html: { class: "col-sm-9" }
       }.merge(options || {})
 

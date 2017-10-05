@@ -6,6 +6,7 @@
 * 詳細検索のUI変更、現在の検索条件が見えるように
 * 変更後のリダイレクトステータスを303に変更
 * DBに存在しないenumerized attributesがデフォルトでソート対象に含まれるのを修正
+* crud_formのurlはresourceではなくparamsに依存するように変更
 
 ## 0.4.3
 
