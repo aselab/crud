@@ -67,7 +67,7 @@ module Crud
     #
     def column_html(resource, column, prefix = nil)
       return nil unless resource && column
-      value = resource.send(column)
+      value = resource.try(column)
       if method = find_method("#{column}_html", prefix)
         html = send(method, resource, value)
         return html if html
