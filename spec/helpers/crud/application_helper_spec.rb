@@ -122,16 +122,9 @@ describe Crud::ApplicationHelper do
     end
 
     context "どのメソッドも定義されていないとき" do
-      it "to_labelメソッドの結果をsimple_formatして返すこと" do
-        expect(helper).to receive(:to_label).with(@resource.aaa).and_return("to_label")
-        expect(helper).to receive(:simple_format).with("to_label").and_return("simple_format")
-        should == "simple_format"
-      end
-
-      it "エスケープされること" do
+      it "to_labelの結果がエスケープされること" do
         expect(helper).to receive(:to_label).with(@resource.aaa).and_return("<to_label>")
-        expect(helper).to receive(:simple_format).with("&lt;to_label&gt;").and_return("simple_format")
-        should == "simple_format" 
+        should == "&lt;to_label&gt;" 
       end
     end
   end
