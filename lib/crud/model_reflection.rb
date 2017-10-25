@@ -77,7 +77,7 @@ module Crud
 
     def enum_values_for(column)
       enum = model.try(:enumerized_attributes).try(:[], column)
-      enum && Hash[enum.options]
+      enum && enum.values.map {|v| [v.text, v.value] }.to_h
     end
 
     def none_condition
