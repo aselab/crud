@@ -17,6 +17,6 @@ Gem::Specification.new do |s|
 
   s.add_dependency "rails", ">= 5.0.0"
   s.add_dependency "kaminari"
-  s.add_dependency "active_model_serializers", "~> 0.10.2"
+  s.add_dependency "active_model_serializers", "~> 0.10.7"
   s.add_dependency "memoist"
 end

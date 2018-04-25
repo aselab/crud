@@ -1,6 +1,2 @@
 require 'crud_api'
-require 'jquery-rails'
-require 'bootstrap-sass'
-require 'font-awesome-sass'
 require 'simple_form'
-require 'select2-rails'
