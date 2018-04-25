@@ -5,13 +5,27 @@ RailsのDBの[CRUD](https://ja.wikipedia.org/wiki/CRUD)操作を簡単に実装�
 
 ## デモアプリ
 
+事前にyarnを実行できる環境を構築しておくこと。
+```
+curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.10/install.sh | bash
+※nvmのインストールは最新の情報をサイトで確認
+nvm install --lts
+
+curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
+echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
+sudo apt update
+sudo apt-get install --no-install-recommends yarn
+※yarnのインストールは最新の情報をサイトで確認
+```
+
 ```
 git clone git@bitbucket.org:aselab/crud.git
 cd crud
 bundle install
 cd spec/dummy
-rails db:migrate
-rails s
+bin/yarn install
+bin/rails db:migrate
+bin/rails s
 ```
 
 http://localhost:3000
