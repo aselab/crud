@@ -7,6 +7,10 @@
 * 変更後のリダイレクトステータスを303に変更
 * DBに存在しないenumerized attributesがデフォルトでソート対象に含まれるのを修正
 * crud_formのurlはresourceではなくparamsに依存するように変更
+* デフォルトのページネーション件数を設定できるように
+* String以外のenumerize検索に対応
+* モーダルピッカー追加
+* Crud::Wizard追加
 
 ## 0.4.3
 

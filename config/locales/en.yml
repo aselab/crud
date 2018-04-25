@@ -41,6 +41,8 @@ en:
       successfully_deleted: "%{name} was successfully deleted."
       are_you_sure: "Are you sure?"
       enter_search_term: "Enter search term..."
+      modal_picker_title: "Select %{name}"
+      invalid_transition: "Invalid transition detected."
 
   simple_form:
     "yes": 'Yes'

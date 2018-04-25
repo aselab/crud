@@ -1,4 +1,4 @@
-<%= form_tag stored_params(:container, :sort_key, :sort_order, :per), class: "navbar-form form-search", method: "GET", remote: @remote do %>
+<%= form_tag stored_params(:container, :sort_key, :sort_order, :per, :modal_target, :multiple), class: "navbar-form form-search", method: "GET", remote: @remote do %>
   <div class="input-group">
     <% if columns_for_advanced_search.present? %>
       <div class="input-group-btn">
@@ -8,6 +8,15 @@
         <ul class="dropdown-menu">
         </ul>
       </div>
+    <% end %>
+    <% stored_params(*stored_params_keys_for_search).each do |key, value| %>
+      <% if value.is_a?(Array) %>
+        <% value.each do |v| %>
+          <%= hidden_field_tag "#{key}[]", v %>
+        <% end %>
+      <% else %>
+        <%= hidden_field_tag key, value %>
+      <% end %>
     <% end %>
     <%= text_field_tag :term, search_keyword, class: "search-query form-control",
       placeholder: t("crud.message.enter_search_term") %>

@@ -11,6 +11,7 @@ class BootstrapDatetimepickerInput < SimpleForm::Inputs::Base
     date_options[:language] ||= "ja"
     date_options[:todayBtn] ||= true
     date_options[:todayHighlight] ||= true
+    date_options[:class] ||= ""
     date_options
   end
 
@@ -22,13 +23,14 @@ class BootstrapDatetimepickerInput < SimpleForm::Inputs::Base
     time_options[:miniteStep] ||= 15
     time_options[:showInputs] ||= false
     time_options[:defaultTime] ||= "value"
+    time_options[:class] ||= ""
     time_options
   end
 
   def date_picker(style = nil)
     s = <<-EOT
-      <div class="input-group date" style="#{style};">
-        <span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span></span>
+      <div class="input-prepend input-group date #{datepicker_options[:class]}" style="#{style};">
+        <span class="input-group-addon"><span class="fa fa-calendar"></span></span>
         #{reset_button}
         <input type="text" class="form-control" value="#{date}"/>
       </div>
@@ -38,8 +40,8 @@ class BootstrapDatetimepickerInput < SimpleForm::Inputs::Base
 
   def time_picker(style = nil)
     s = <<-EOT
-      <div class="input-group time" style="#{style};">
-        <span class="input-group-addon"><span class="glyphicon glyphicon-time"></span></span>
+      <div class="input-prepend input-group time #{timepicker_options[:class]}" style="#{style};">
+        <span class="input-group-addon"><span class="fa fa-clock-o"></span></span>
         #{reset_button}
         <input type="text" class="form-control" value="#{time}"/>
       </div>
@@ -48,7 +50,7 @@ class BootstrapDatetimepickerInput < SimpleForm::Inputs::Base
   end
 
   def reset_button
-    content_tag(:i, nil, class: "glyphicon glyphicon-remove date-clear") unless @required
+    content_tag(:i, nil, class: "fa fa-close date-clear") unless @required
   end
 
   def datetimepicker_js
@@ -73,8 +75,13 @@ class BootstrapDatetimepickerInput < SimpleForm::Inputs::Base
           var minute = timepicker.minute < 10 ? '0' + timepicker.minute : timepicker.minute;
           var second = timepicker.second < 10 ? '0' + timepicker.second : timepicker.second;
           var time = hour + ':' + minute + (timepicker.showSeconds ? ':' + second : '');
-          hiddenInput.val(dateInput.val() + "T" + time);
+          if(dateInput.val() && timeInput.val()){
+            hiddenInput.val(dateInput.val() + "T" + time);
+          }else{
+            hiddenInput.val("");
+          }
           updateClearButton();
+          hiddenInput.trigger("change");
         }
 
         function clear() {
@@ -82,6 +89,7 @@ class BootstrapDatetimepickerInput < SimpleForm::Inputs::Base
           dateInput.val("");
           timeInput.val("");
           updateClearButton();
+          hiddenInput.trigger("change");
         }
 
         dateDiv.datepicker(#{datepicker_options.to_json}).on("change", datetimeSync);
@@ -90,6 +98,8 @@ class BootstrapDatetimepickerInput < SimpleForm::Inputs::Base
 
         dateClear.on("click", clear);
         timeClear.on("click", clear);
+
+        #{"clear()" if date.nil? && time.nil? }
       });
     SCRIPT
   end
@@ -109,6 +119,7 @@ class BootstrapDatetimepickerInput < SimpleForm::Inputs::Base
         function datetimeSync() {
           hiddenInput.val(dateInput.val());
           updateClearButton();
+          hiddenInput.trigger("change");
         }
 
         dateDiv.datepicker(#{datepicker_options.to_json}).change(datetimeSync);
@@ -118,6 +129,7 @@ class BootstrapDatetimepickerInput < SimpleForm::Inputs::Base
           hiddenInput.val("");
           dateInput.val("");
           updateClearButton();
+          hiddenInput.trigger("change");
         });
       });
     SCRIPT
@@ -137,6 +149,7 @@ class BootstrapDatetimepickerInput < SimpleForm::Inputs::Base
         function datetimeSync() {
           hiddenInput.val(timeInput.val());
           updateClearButton();
+          hiddenInput.trigger("change");
         }
 
         timeInput.timepicker(#{timepicker_options.to_json}).change(datetimeSync);
@@ -146,6 +159,7 @@ class BootstrapDatetimepickerInput < SimpleForm::Inputs::Base
           hiddenInput.val("");
           timeInput.val("");
           updateClearButton();
+          hiddenInput.trigger("change");
         });
       });
     SCRIPT
@@ -177,10 +191,10 @@ class BootstrapDatetimepickerInput < SimpleForm::Inputs::Base
   end
 
   def inline_elements(*elements)
-    content_tag(:span, elements.map(&:strip).join("").html_safe, :class => "crud-form-inline")
+    content_tag(:span, elements.map(&:strip).join("").html_safe, :class => "crud-form-inline row")
   end
 
   def input(wrapper_options)
-    hidden_input + inline_elements(date_picker("width: 50%"), time_picker("width: 50%")) + datetimepicker_js
+    hidden_input + inline_elements(date_picker(), time_picker()) + datetimepicker_js
   end
 end

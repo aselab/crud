@@ -61,18 +61,13 @@ module Crud
       end
 
       def cast(value)
-        return reflection.boolean_cast(value) if type == :boolean
-        value.is_a?(Array) ? value.map {|v| cast(v)} :
-          case type
-          when :enum
-            enum_values[value] || value
-          when :integer
-            Integer(value)
-          when :float
-            Float(value)
-          else
-            value
-          end
+        case type
+        when :enum
+          return value.map {|v| cast(v)} if value.is_a?(Array)
+          enum_values[value] || reflection.cast(meta[:original_type], value)
+        else
+          reflection.cast(type, value)
+        end
       end
 
       def apply(*values)

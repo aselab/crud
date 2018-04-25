@@ -59,7 +59,7 @@ module Crud
         key = column
         unless advanced_search_method_for(column)
           meta = reflection.column_metadata(column)
-          case meta[:type]
+          case meta.try("[]", :type)
           when :belongs_to
             key = meta[:name]
           when :has_many, :has_and_belongs_to_many

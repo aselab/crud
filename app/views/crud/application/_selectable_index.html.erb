@@ -1,0 +1,20 @@
+<%= content_tag :div, id: temp_id(:index), class: "index" do %>
+  <%= render "index_header" %>
+
+  <%= crud_form resource, {url: ""}.merge(crud_form_options) do |f| %>
+    <%= f.error_notification %>
+    <%= tag.div(class: "form-group has-error") { f.error(:base) } %>
+
+    <%= crud_table columns, resources, index_actions, index_crud_table_options.merge( { selectable: true } ) %>
+    <%= render "index_footer" %>
+
+    <%= hidden_field_tag nil, id: modal_target %>
+    <% unless modal? %>
+      <div class="form-group">
+        <%= f.button :submit, @submit_label, class: "btn-primary", id: "table-form-button" %>
+        <%= link_to t("crud.action.cancel"), cancel_path, class: "btn btn-default btn-cancel" %>
+      </div>
+    <% end %>
+  <% end %>
+  <%= script_for_index_selector index_crud_table_options %>
+<% end %>

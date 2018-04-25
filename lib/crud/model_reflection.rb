@@ -1,6 +1,7 @@
 module Crud
   class ModelReflection
     extend Memoist
+    @@type_hash = {}
 
     private_class_method :new
     attr_reader :model
@@ -28,6 +29,7 @@ module Crud
     def column_metadata(name)
       if association_key?(name)
         ref = association_reflection(name)
+        return if ref.options[:polymorphic]
         name = ref.foreign_key if ref.macro == :belongs_to
         return {name: name.to_sym, type: ref.macro, class: ref.klass}
       end
@@ -48,7 +50,11 @@ module Crud
         end
         type && {name: name.to_sym, type: type}
       end
-      metadata[:type] = :enum if metadata && enum_values_for(name)
+
+      if metadata && enum_values_for(name)
+        metadata[:original_type] = metadata[:type]
+        metadata[:type] = :enum
+      end
 
       metadata
     end
@@ -62,8 +68,28 @@ module Crud
       !!column_metadata(key)
     end
 
+    def nested_attributes
+      @nested_attributes ||= if activerecord?
+        model.nested_attributes_options.keys
+      elsif mongoid?
+        model.nested_attributes.keys.map {|key| key.sub(/_attributes\z/, "").to_sym}
+      else
+        []
+      end
+    end
+
+    def association_reflections
+      @association_reflections ||= if activerecord?
+        model.reflections.values
+      elsif mongoid?
+        model.relations.values
+      else
+        []
+      end
+    end
+
     def association_reflection(key)
-      model.reflect_on_association(key.to_sym)
+      model.reflect_on_association(key.to_sym) if activerecord? || mongoid?
     end
 
     def association_key?(key)
@@ -77,7 +103,7 @@ module Crud
 
     def enum_values_for(column)
       enum = model.try(:enumerized_attributes).try(:[], column)
-      enum && enum.values.map {|v| [v.text, v.value] }.to_h
+      enum && enum.values.flat_map {|v| [[v.text, v.value], [v.to_s, v.value]] }.to_h
     end
 
     def none_condition
@@ -106,9 +132,14 @@ module Crud
       result.respond_to?(:to_sql) ? result.to_sql : result
     end
 
-    def boolean_cast(value)
-      value = value.last if value.is_a?(Array)
-      ActiveModel::Type::Boolean.new.cast(value)
+    def cast(type, value)
+      return value.map {|v| cast(type, v)} if value.is_a?(Array)
+
+      @@type_hash[type] = ActiveModel::Type.lookup(type) rescue nil unless @@type_hash.key?(type)
+      t = @@type_hash[type]
+      return value unless t
+      raise "invalid number: #{value.inspect}" if t.is_a?(ActiveModel::Type::Helpers::Numeric) && t.send(:non_numeric_string?, value)
+      t.cast(value)
     end
 
     memoize :activerecord?, :mongoid?

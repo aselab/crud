@@ -356,14 +356,16 @@ search_input_optionsとinput_optionsメソッドは引数なしで、input_optio
 
 詳細検索フォームカスタマイズの実装例は spec/dummy/app/helpers/users_helper.rb を参照。
 
-### ソート条件の指定
+### ソート条件、ページネーション件数の指定
 
-デフォルトのソート条件の指定することができる。
+デフォルトのソート条件やページネーション件数を指定することができる。
+ページネーション件数はデフォルト25件。
 
 ```ruby
 class SampleController < Crud::ApplicationController
   default_sort_key :name
   default_sort_order :desc
+  default_paginates_per 10
 end
 ```
 
@@ -471,3 +473,19 @@ rails generate crud:application_views
 # crudのviewをコントローラ単位でコピー
 rails generate crud:views users
 ```
+
+### モーダルピッカー
+
+```
+include Crud::ModalPickerController
+
+f.input as: :modal_picker, url: picker_controllers_path
+```
+
+TODO
+
+### ウィザード
+
+include Crud::Wizard
+
+TODO

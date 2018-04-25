@@ -153,7 +153,7 @@ describe Crud::SearchQuery do
             it { should eq %q["ar_miscs"."date" BETWEEN '2016-01-23' AND '2016-03-21'] }
           end
           context Mongo::Misc do
-            it { should eq(date: '2016-01-23'..'2016-03-21') }
+            it { should eq(date: Date.parse('2016-01-23')..Date.parse('2016-03-21')) }
           end
         end
       end

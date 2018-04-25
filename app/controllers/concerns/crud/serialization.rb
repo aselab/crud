@@ -32,9 +32,9 @@ module Crud
             )
           }
         end
-        result.to_json
+        result
       else
-        ActiveModelSerializers::SerializableResource.new(items, options).to_json
+        ActiveModelSerializers::SerializableResource.new(items, options).as_json
       end
     end
 
@@ -106,6 +106,11 @@ module Crud
     end
 
     def association_json_errors(association)
+      # 無限ループしないように
+      @error_classes ||= []
+      return if @error_classes.include?(association.class)
+      @error_classes << association.class
+
       errors = if association.respond_to?(:to_ary)
         association.each.with_index.each_with_object({}) do |(o, i), h|
           h[i] = json_errors(o) unless o.errors.empty?

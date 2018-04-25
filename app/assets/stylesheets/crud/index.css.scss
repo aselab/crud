@@ -1,6 +1,5 @@
 /*
  *= require select2
- *= require select2-bootstrap
  *= require bootstrap-datepicker
  *= require bootstrap-timepicker
  */
@@ -9,7 +8,6 @@
   display: inline-table;
   vertical-align: middle;
 }
-
 .input-group.date, .input-group.time {
   .date-clear {
     position: absolute;
@@ -43,4 +41,48 @@
 
 .datepicker-dropdown, .bootstrap-timepicker-widget {
   z-index: 1100 !important;
+}
+
+.modal-picker {
+  .input-group {
+    cursor: pointer;
+    min-height: 30px;
+  }
+
+  .picker-label.multiple {
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    margin-right: 3px;
+    padding: 0 4px;
+  }
+
+  .picker-container {
+    width: 100%;
+  }
+
+  .picker-placeholder {
+    color: #999;
+    display: none;
+  }
+
+  .picker-clear {
+    color: #999;
+    float: right;
+    font-weight: bold;
+    margin-right: 10px;
+
+    &:hover {
+      color: black;
+    }
+  }
+}
+
+.crud-table {
+  th.selector, td.selector {
+    width: 30px;
+  }
+}
+
+span.chnage_hint_effect:not(:last-child)::after {
+  content: ", ";
 }

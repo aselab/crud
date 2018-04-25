@@ -43,6 +43,7 @@ module Crud
             options[:class] ||= "btn btn-default"
           end
           options[:remote] = @remote unless options.has_key?(:remote)
+          options[:remote] = @remote_link unless @remote_link.nil?
 
           if block
             link_to(params, options, &block)
@@ -78,7 +79,9 @@ module Crud
         escape_once resource.send(method)
       else
         html = to_label(value)
-        html.html_safe? ? html : html_escape(html)
+        return html if html.html_safe?
+        return html_escape(html) if !html&.include?("\n")
+        simple_format(html, {}, wrapper_tag: :div)
       end
     end
 
@@ -95,6 +98,7 @@ module Crud
     def crud_table(columns, resources, actions, options = nil)
       options = (try(:crud_table_options) || {}).deep_merge(options || {})
       options[:class] ||= "table table-striped table-bordered table-vcenter crud-table"
+      options[:class] += " modal-table" if modal?
       header_options = options[:header] || {}
       m = model
       if options[:model]
@@ -104,9 +108,19 @@ module Crud
       end
       sort = options[:sort] != false
       remote = options.has_key?(:remote) ? options[:remote] : @remote
+      multiple = options.has_key?(:multiple) ? options[:multiple] : self.params[:multiple] == "true"
+      selectable = options.has_key?(:selectable) ? options[:selectable] : modal?
       table = content_tag(:table, class: options[:class]) do
         content_tag(:thead) do
           content_tag(:tr) do
+            if selectable
+              if multiple
+                input = modal_selector(id: "selector-all", type: "checkbox", value: 0, "data-label": "all")
+                concat content_tag(:th, input, class: "selector-all")
+              else
+                concat content_tag(:th, nil, class: "selector")
+              end
+            end
             columns.each do |column|
               label = m.human_attribute_name(column)
               label = link_to_sort(column, label: label, remote: remote, params: params) if sort
@@ -115,8 +129,9 @@ module Crud
             concat content_tag(:th, nil, class: "crud-actions") unless actions.empty?
           end
         end + content_tag(:tbody) do
-          resources.each do |resource|
+          resources.each.with_index do |resource, index|
             concat(content_tag(:tr) do
+              concat modal_selector_input(resource, options.merge({id: "modal_selector_#{index}", multiple: multiple})) if selectable
               columns.each do |column|
                 concat content_tag(:td, column_html(resource, column, controller))
               end
@@ -135,9 +150,98 @@ module Crud
       content_tag(:div, table, class: "table-responsive")
     end
 
+    def modal_selector_input(resource, options = {})
+      select_type = options[:multiple] ? "checkbox" : "radio"
+      select_name = options.has_key?(:selector_name) ? options[:selector_name] : "modal-select"
+      select_name += "[]" if options[:multiple]
+      data = serializer.new(resource, scope: serialization_scope).as_json
+      data[:label] ||= to_label(resource)
+      input_options = { id: options[:id], type: select_type, name: select_name, value: resource.id, data: { resource: data } }
+      content_tag(:td, modal_selector(input_options), class: "selector")
+    end
+
+    def modal_selector(options)
+      content_tag(:input, nil, options)
+    end
+
+    def modal_target
+      params.has_key?(:modal_target) ? params[:modal_target] : "modal_target"
+    end
+
+    def script_for_index_selector(options = {})
+      table_selector = ".modal-table"
+      table_selector = ".#{options[:class]}" if options.has_key?(:class)
+      table_selector = "##{options[:id]}" if options.has_key?(:id)
+      multiple = options.has_key?(:multiple) ? options[:multiple] : params[:multiple] == "true"
+      exclude_script_tag = options[:exclude_script_tag].present?
+      script = <<-SCRIPT
+        $(function() {
+          $("#term").focus();
+          var modalTarget = $("##{modal_target}");
+          var fields = (modalTarget.data("value_method") || "id").split(".");
+          function getValue(data) {
+            return fields.reduce(function(value, field) { return value == null ? value : value[field]; }, data);
+          }
+
+          var table = $("#{table_selector}");
+          var selectors = table.find("td.selector").find("input:radio, input:checkbox");
+          var selected = modalTarget.data("selected") || [];
+          var changed = {};
+          Array.isArray(selected) && selected.forEach(function(data) { changed[getValue(data)] = data; });
+          modalTarget.data("changed", changed);
+          var multiple = #{multiple};
+          var allSelector = table.find(".selector-all input:checkbox");
+
+          selectors.on("change", function(e) {
+            var data = $(this).data("resource");
+            if (!multiple) { changed = {}; }
+            if ($(this).prop("checked")) {
+              changed[getValue(data)] = data;
+            } else {
+              delete changed[getValue(data)];
+            }
+            modalTarget.data("changed", changed);
+            modalTarget.data("selected", Object.keys(changed).map(function(key) { return changed[key]; }));
+            allSelector.trigger("update");
+            e.stopPropagation();
+          });
+
+          allSelector.on("change", function(e) {
+            var checked = $(this).prop("checked");
+            selectors.each(function() {
+              var self = $(this);
+              var data = self.data("resource");
+              self.prop("checked", checked);
+              if (checked) {
+                changed[getValue(data)] = data;
+              } else {
+                delete changed[getValue(data)];
+              }
+            });
+            modalTarget.data("changed", changed);
+            e.stopPropagation();
+          }).on("update", function() {
+            var checked = selectors.length > 0 && selectors.not(":checked").length == 0;
+            allSelector.prop("checked", checked);
+          });
+
+          selectors.each(function() {
+            var data = $(this).data("resource");
+            if (changed[getValue(data)]) $(this).prop("checked", true);
+          });
+          allSelector.trigger("update");
+
+          #{options[:additional_script]}
+        });
+      SCRIPT
+
+      exclude_script_tag ? raw(script) : javascript_tag(script)
+    end
+
     def index_crud_table_options
       method = find_method(:crud_table_options)
-      send(method) if method && method != :crud_table_options
+      options = send(method) if method && method != :crud_table_options
+      options || {}
     end
 
     def crud_form(resource, options = nil, &block)
@@ -148,7 +252,7 @@ module Crud
         as: model_key,
         method: method,
         url: url,
-        html: { class: "col-sm-9" }
+        html: { class: "col-sm-12" }
       }.merge(options || {})
 
       send(:simple_form_for, resource, options, &block)
@@ -209,6 +313,7 @@ module Crud
       if html = call_method_for_column(column, :search_input, f, selected_operator, *values)
         return html
       end
+      column_size_class = @remote ? "col-sm-3" : "col-sm-2"
 
       ref = ModelReflection[f.object.class]
       type = ref.column_type(column)
@@ -217,32 +322,32 @@ module Crud
       is_boolean = options[:as] ? options[:as] == :boolean : type == :boolean
       is_select = options[:as] ? [:select, :select2].include?(options[:as]) : [:enum, :belongs_to, :has_many, :has_and_belongs_to_many].include?(type)
       is_multiple = is_select && (options.has_key?(:multiple) ? options[:multiple] : [:has_many, :has_and_belongs_to_many].include?(type))
-      div_options = { class: "form-group" }
+      div_options = { class: "form-group row" }
       div_options[:style] = "display: none;" if op.blank? && values.empty?
       content_tag :div, div_options do
-        concat f.label(column, required: false, class: "col-sm-2 control-label")
-        concat content_tag(:div, search_operator_select("op[#{column}]", operators, selected_operator), class: "col-sm-2")
+        concat f.label( column, required: false, class: "#{column_size_class} col-form-label")
+        concat content_tag(:div, search_operator_select("op[#{column}]", operators, selected_operator), class: column_size_class)
         if args = SearchQuery::Operator[selected_operator].try(:args)
           (0...args).each do |i|
-            input_options = {
+            input_options = options.deep_merge(
               input_html: { name: "v[#{column}][]" },
               wrapper_html: { class: "col-sm" }
-            }.deep_merge(options)
+            )
             input_options[:input_html][:id] ||= "query_#{column}_#{i}"
             if is_boolean
               input_options[:wrapper] = :input_only_checkbox
-              input_options[:input_html][:checked] = ref.boolean_cast(values)
+              input_options[:input_html][:checked] = ref.cast(:boolean, values)
             elsif is_select
               if is_multiple
                 input_options[:selected] = values
               else
                 input_options[:selected] = values[i]
-                input_options[:include_blank] = true
+                input_options[:include_blank] = true unless input_options.has_key?(:include_blank)
               end
             else
               input_options[:input_html][:value] = values[i]
             end
-            method = ref.association_key?(column) ? :association : :input
+            method = ref.association_key?(column) && type != :has_one ? :association : :input
             concat f.send(method, column, input_options)
           end
         end
@@ -257,10 +362,31 @@ module Crud
       select_tag(name, options_for_select(options, selected), class: "operator form-control", include_blank: true)
     end
 
+    def translate_wizard_step(step)
+      I18n.t(step, scope: [:wizard, controller_path], default: step.to_s.humanize)
+    end
+
     private
     def call_method_for_column(column, suffix, *args)
       method = find_method("#{column}_#{suffix}")
       send(method, *args) if method
+    end
+
+    def debug?
+      return @debug unless @debug.nil?
+      @debug = ENV["CRUD_DEBUG"] == "true"
+    end
+
+    def dump_method_info(method_name, prefix = nil)
+      if debug? && prefix != "crud"
+        exists = respond_to?(method_name)
+        debug_info = {method_name: method_name, exists: exists}
+        if exists
+          value = begin; send(method_name); rescue; end
+          debug_info.merge!(class: method(method_name).owner, source_location: method(method_name).source_location, value: value)
+        end
+        Pry::ColorPrinter.pp(debug_info)
+      end
     end
 
     def find_method(short_method, controller_name = nil)
@@ -270,9 +396,15 @@ module Crud
       while c != Crud::ApplicationController
         prefix = c.name.sub(/Controller$/, "").underscore.gsub("/", "_")
         method = "#{prefix}_#{short_method}"
+
+        dump_method_info(method, prefix)
+
         return method if respond_to?(method)
         c = c.superclass
       end
+
+      dump_method_info(short_method)
+
       return short_method if respond_to?(short_method)
       nil
     end

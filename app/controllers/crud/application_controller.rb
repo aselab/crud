@@ -7,22 +7,26 @@ module Crud
     else
       helper BootstrapHelper
       helper_method :model, :model_name, :model_key, :resources, :resource, :columns,
-        :stored_params, :cancel_path, :sort_key?, :sort_key, :sort_order,
-        :search_keyword, :search_values, :search_operators, :advanced_search?,
-        :columns_for_advanced_search, :index_actions, :can?, :cannot?, :crud_action
+        :stored_params, :stored_params_keys_for_search, :stored_params_keys_for_advanced_search,
+        :cancel_path, :sort_key?, :sort_key, :sort_order, :search_keyword, :search_values, :search_operators,
+        :advanced_search?, :columns_for_advanced_search, :index_actions, :can?, :cannot?, :crud_action, :modal?,
+        :selectable?, :serializer, :serialization_scope
     end
 
     def index(&format_block)
       super do |format|
         format_block.try(:call, format)
-        format.any(:html, :js, :form) {}
+        format.html { render "index.html" }
+        format.js { render "index.js" }
+        format.form { render "index.form" }
       end
     end
 
     def show(&format_block)
       super do |format|
         format_block.try(:call, format)
-        format.any(:html, :js) {}
+        format.html { render "show.html" }
+        format.js { render "show.js" }
       end
     end
 
@@ -36,7 +40,8 @@ module Crud
     def edit(&format_block)
       super do |format|
         format_block.try(:call, format)
-        format.any(:html, :js) {}
+        format.html { render "edit.html" }
+        format.js { render "edit.js" }
       end
     end
 
@@ -106,6 +111,14 @@ module Crud
       params.to_unsafe_hash.symbolize_keys.extract!(*keys).merge(overwrites)
     end
 
+    def stored_params_keys_for_search
+      [:container, :modal_target, :multiple]
+    end
+
+    def stored_params_keys_for_advanced_search
+      [:sort_key, :sort_order, :per] + stored_params_keys_for_search
+    end
+
     def index_actions
       [:show, :edit, :destroy]
     end
@@ -114,6 +127,11 @@ module Crud
       super
       @title = t("crud.action_title." + crud_action.to_s, :name => model_name)
       @remote = request.format.js? || (request.format.form? && params[:container])
+      @remote_link = params[:remote] == "true" if params[:remote]
+    end
+
+    def modal?
+      @modal ||= self.class.include?(Crud::ModalPickerController)
     end
 
     def cancel_path

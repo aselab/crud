@@ -29,12 +29,16 @@ module Crud
       end
     end
 
+    def authorization_scope
+      {}
+    end
+
     def authorization
       @authorization ||= begin
         auth = self.class.find_authorization
         auth ||= "#{self.class.name}::Authorization".safe_constantize # コントローラのインナークラス
         auth ||= Default
-        auth.new(current_user)
+        auth.new(authorization_scope)
       end
     end
 
@@ -51,10 +55,11 @@ module Crud
     # デフォルト権限
     class Default
       extend Memoist
-      attr_reader :current_user
+      attr_reader :scope, :current_user
 
-      def initialize(user)
-        @current_user = user
+      def initialize(scope)
+        @scope = scope || {}
+        @current_user = @scope[:current_user]
       end
 
       # 各アクションの権限は def update?(resource) のようなメソッドを定義し、

@@ -55,11 +55,47 @@
     }
     options = $.extend(true, defaultOptions, options);
 
+    $.fn.select2OnChangeHintEffect = function() {
+      return this.each(function() {
+        $(this).on("select2:select", function(e) {
+          var data = e.params.data;
+          var callback = Function("$data", "return " + options.onChangeHint);
+          var newHintHtml = $("<span/>").html(callback(data)).attr({"data-id": data.id, "class": "chnage_hint_effect"});
+          var target = $(e.target);
+          var hint = target.siblings("small.text-muted");
+          if (hint.length) {
+            if (hint.text() == options.hint) {
+              hint.html(newHintHtml);
+            } else {
+              hint.append(newHintHtml);
+            }
+          } else {
+            var newHint = $("<small/>").attr("class", "form-text text-muted").html(newHintHtml);
+            newHint.appendTo(target.parent());
+          }
+        }).on("select2:unselect", function(e) {
+          var target = $(e.target);
+          if ($.inArray(e.params.data.id.toString(), target.val()) == -1) {
+            var hint = target.siblings("small.text-muted").find("span[data-id='" + e.params.data.id + "']");
+            hint.remove();
+          }
+        }).on("change", function (e) {
+          var target = $(e.target);
+          if ($.isEmptyObject(target.val())) {
+            target.siblings("small.text-muted").text(options.hint || "");
+          }
+        });
+      });
+    };
+
     return this.each(function() {
       var select = $(this);
       // bodyに追加するとmodalのフォーカスと衝突するのを回避
       var opts = $.extend({dropdownParent: select.parent()}, options);
       select.select2(opts).select2UnselectFix();
+
+      if (options.onChangeHint) select.select2OnChangeHintEffect();
+
       if (!options.width) select.data("select2").$container.css("width", "100%");
     });
   };

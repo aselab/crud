@@ -91,7 +91,7 @@ module Crud
     end
 
     protected
-    class_attribute :_default_sort_key, :_default_sort_order
+    class_attribute :_default_sort_key, :_default_sort_order, :_default_paginates_per
     attr_writer :resources, :resource, :columns
 
     #
@@ -142,6 +142,20 @@ module Crud
     #
     def self.default_sort_order(value = nil)
       value ? self._default_sort_order = value : _default_sort_order
+    end
+
+    #
+    #=== デフォルトのページネーション時のページごとの件数
+    #
+    # コントローラごとにpaginates_perが指定されていない場合のデフォルト値を設定できる
+    # デフォルト値は25件ごと
+    #
+    #  class SampleController < Crud::ApplicationController
+    #    default_paginates_per 10
+    #  end
+    #
+    def self.default_paginates_per(value = nil)
+      value ? self._default_paginates_per = value : _default_paginates_per
     end
 
     def sort_key?(key)
@@ -236,7 +250,7 @@ module Crud
     end
 
     def do_page
-      resources.page(params[:page]).per(params[:per]) unless params[:page] == "false"
+      resources.page(params[:page]).per(params[:per] || self.class.default_paginates_per) unless params[:page] == "false"
     end
 
     #
@@ -254,7 +268,7 @@ module Crud
     # 結果をBooleanで返すように実装する．
     #
     def do_create
-      resource.update_attributes(permit_params)
+      resource.update_attributes(@update_attributes_params || {})
     end
 
     #
@@ -263,7 +277,7 @@ module Crud
     # 結果をBooleanで返すように実装する．
     #
     def do_update
-      resource.update_attributes(permit_params)
+      resource.update_attributes(@update_attributes_params || {})
     end
 
     #
@@ -278,16 +292,22 @@ module Crud
       model.new
     end
 
-    def assign_params
-      return unless params[model_key]
-      options ||= {}
-      p = permit_params
-      # 関連は除外
-      hash_keys = permit_keys.select {|key| key.is_a?(Hash)}
-      hash_keys.each do |hash|
-        hash.keys.each {|key| p.delete(key)}
+    def filter_params(params = nil)
+      filtered = params || permit_params
+      rejected = {}
+      if resource.persisted?
+        reflection(resource).association_reflections.each do |ref|
+          next unless [:has_many, :has_and_belongs_to_many].include?(ref.macro)
+          key = "#{ref.name.to_s.singularize}_ids".to_sym
+          rejected[key] = filtered.delete(key) if filtered.key?(key)
+        end
       end
-      resource.assign_attributes(p)
+      [filtered, rejected]
+    end
+
+    def assign_params
+      filtered, @update_attributes_params = filter_params
+      resource.assign_attributes(filtered)
     end
 
     def find_resource
@@ -355,6 +375,10 @@ module Crud
         authorization: authorization,
         columns: columns_for_json
       }
+    end
+
+    def authorization_scope
+      { current_user: current_user }
     end
 
     def render_json(items, options = nil)

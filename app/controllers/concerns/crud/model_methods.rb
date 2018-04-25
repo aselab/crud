@@ -56,7 +56,8 @@ module Crud
     end
 
     def permit_params
-      params.require(model_key).permit(permit_keys)
+      return {} unless params[model_key]
+      params.require(model_key).permit(permit_keys).to_unsafe_h.with_indifferent_access
     end
 
     module ClassMethods

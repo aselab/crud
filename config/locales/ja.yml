@@ -41,6 +41,8 @@ ja:
       successfully_deleted: "%{name}を削除しました"
       are_you_sure: "よろしいですか？"
       enter_search_term: "検索キーワードを入力..."
+      modal_picker_title: "%{name}選択"
+      invalid_transition: "不正な遷移が行われました。最初からやり直してください。"
 
   views:
     pagination:
