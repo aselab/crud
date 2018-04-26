@@ -1,7 +1,11 @@
 {
   "dependencies": {
+    "bootstrap": "^4.1.0",
+    "bootstrap-datepicker": "^1.8.0",
+    "bootstrap-timepicker": "^0.5.2",
     "crud": "../../dist",
-    "popper.js": "^1.14.3"
+    "popper.js": "^1.14.3",
+    "select2": "^4.0.6-rc.1"
   },
   "devDependencies": {}
 }
