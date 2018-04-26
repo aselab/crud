@@ -17,8 +17,8 @@ Gem::Specification.new do |s|
 
   s.add_dependency "crud_api"
   s.add_dependency "simple_form", "~> 4.0.0"
+  s.add_dependency "webpacker", '~> 3.4.3'
 
-  s.add_development_dependency "webpacker", '~> 3.4.3'
   s.add_development_dependency "sqlite3"
   s.add_development_dependency "mongoid", '~> 7.0.0'
   s.add_development_dependency "kaminari-mongoid"

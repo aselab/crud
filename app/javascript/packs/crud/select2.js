@@ -1,3 +1,5 @@
+import jQuery from 'jquery'
+
 (function($){
   // IEでtagモードのときfocusが外れるバグがあるのでoption追加削除検知を無効化
   if (document.uniqueID) {

@@ -1,8 +1,7 @@
 {
   "dependencies": {
-    "@rails/webpacker": "3.4"
+    "crud": "../../dist",
+    "popper.js": "^1.14.3"
   },
-  "devDependencies": {
-    "webpack-dev-server": "2.11.2"
-  }
+  "devDependencies": {}
 }

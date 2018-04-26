@@ -4,33 +4,28 @@
     <title>Dummy</title>
     <%= csrf_meta_tags %>
 
-    <%= stylesheet_link_tag    'application', media: 'all', 'data-turbolinks-track': 'reload' %>
-    <%= javascript_include_tag 'application', 'data-turbolinks-track': 'reload' %>
+    <%= stylesheet_pack_tag 'application' %>
+    <%= javascript_pack_tag 'application' %>
   </head>
 
   <body>
-    <div class="navbar navbar-default navbar-fixed-top">
-    <div class="container-fluid">
-      <div class="navbar-header">
-        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-        </button>
-        <%= link_to "Dummy", root_path, :class => "navbar-brand" %>
-      </div>
-      <div class="collapse navbar-collapse" id="cc">
+    <div class="navbar navbar-expand-md navbar-light sticky-top bg-light">
+      <%= link_to "Dummy", root_path, :class => "navbar-brand" %>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar-content">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navbar-content">
         <%= header_links %>
-        <form class="navbar-form navbar-right">
+        <form class="form-inline">
           <%= orm_select %>
           <%= locale_select %>
           <%= login_user_select %>
         </form>
       </div>
     </div>
-    </div>
 
-    <div class="container-fluid" style="margin-top: 50px;">
+    <div class="container-fluid">
       <%= bootstrap_flash_messages %>
       <%= yield %>
     </div>

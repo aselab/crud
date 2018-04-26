@@ -7,3 +7,4 @@ tmp/
 .sass-cache
 Gemfile.lock
 node_modules/
+spec/dummy/public/packs/
