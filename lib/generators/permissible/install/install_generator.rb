@@ -32,6 +32,10 @@ module Permissible
       end
 
       private
+      def migration_version
+        "[#{Rails::VERSION::MAJOR}.#{Rails::VERSION::MINOR}]"
+      end
+
       def orm
         options[:orm].to_sym
       end

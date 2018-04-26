@@ -1,4 +1,4 @@
-class Create<%= permission_table_name.camelize %> < ActiveRecord::Migration
+class Create<%= permission_table_name.camelize %> < ActiveRecord::Migration<%= migration_version %>
   def change
     create_table :<%= permission_table_name %> do |t|
       t.references :<%= permissible_name %>, polymorphic: true, index: true, null: false
