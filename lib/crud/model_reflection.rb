@@ -116,19 +116,7 @@ module Crud
 
     def sanitize_sql(cond)
       return cond unless cond && activerecord?
-      result = case cond
-      when Array
-        model.send(:sanitize_sql_for_conditions, cond)
-      when Hash
-        # https://github.com/rails/rails/blob/d5902c9e7eaba4db4e79c464d623a7d7e6e2d0e3/activerecord/lib/active_record/sanitization.rb#L89-L100
-        attrs = model.send(:table_metadata).resolve_column_aliases(cond)
-        attrs = model.send(:expand_hash_conditions_for_aggregates, attrs)
-        model.predicate_builder.build_from_hash(attrs.stringify_keys).map { |b|
-          model.connection.visitor.compile b
-        }.join(' AND ')
-      else
-        cond
-      end
+      result = model.send(:sanitize_sql_for_conditions, cond)
       result.respond_to?(:to_sql) ? result.to_sql : result
     end
 

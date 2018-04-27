@@ -3,7 +3,7 @@ ENV["RAILS_ENV"] ||= 'test'
 require File.expand_path("../dummy/config/environment", __FILE__)
 require 'rspec/rails'
 require 'rspec/its'
-require 'factory_girl'
+require 'factory_bot'
 require 'database_cleaner'
 require 'pry-rails'
 require 'enumerize'
@@ -48,14 +48,14 @@ RSpec.configure do |config|
 
   DatabaseCleaner.strategy = :truncation
   config.before(:all) do
-    FactoryGirl.reload
+    FactoryBot.reload
   end
   config.before(:each) do
     DatabaseCleaner[:active_record].clean
     DatabaseCleaner[:mongoid].clean
   end
 
-  config.include FactoryGirl::Syntax::Methods
+  config.include FactoryBot::Syntax::Methods
   config.filter_run :focus => true
   config.run_all_when_everything_filtered = true
   config.infer_spec_type_from_file_location!

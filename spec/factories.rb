@@ -1,4 +1,4 @@
-FactoryGirl.define do
+FactoryBot.define do
   factory :ar_user, class: "Ar::User" do
     last_name "test"
     sequence(:first_name) {|n| "user#{n}"}

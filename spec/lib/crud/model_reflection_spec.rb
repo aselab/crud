@@ -26,7 +26,7 @@ describe Crud::ModelReflection do
 
       context "Hash condition" do
         let(:condition) { {string: "abc", integer: 3} }
-        it { is_expected.to eq %q["ar_miscs"."string" = 'abc' AND "ar_miscs"."integer" = 3] }
+        it { is_expected.to eq condition }
       end
 
       context "arel condition" do

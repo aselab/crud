@@ -66,7 +66,7 @@ describe Crud::SearchQuery do
         context "search_by_stringメソッド定義あり" do
           before { expect(extension).to receive(:search_by_string).with("abc").and_return(string: "foo") }
           context Ar::Misc do
-            it { should eq %q["ar_miscs"."string" = 'foo'] }
+            it { should eq(string: 'foo') }
           end
           context Mongo::Misc do
             it { should eq(string: 'foo') }
@@ -76,7 +76,7 @@ describe Crud::SearchQuery do
         context "advanced_search_by_stringメソッド定義あり" do
           before { expect(extension).to receive(:advanced_search_by_string).with(nil, "abc").and_return(string: "foo") }
           context Ar::Misc do
-            it { should eq %q["ar_miscs"."string" = 'foo'] }
+            it { should eq(string: 'foo') }
           end
           context Mongo::Misc do
             it { should eq(string: 'foo') }
@@ -141,7 +141,7 @@ describe Crud::SearchQuery do
         context "advanced_search_by_dateメソッド定義あり" do
           before { expect(extension).to receive(:advanced_search_by_date).with("between", *values).and_return(date: nil) }
           context Ar::Misc do
-            it { should eq %q["ar_miscs"."date" IS NULL] }
+            it { should eq(date: nil) }
           end
           context Mongo::Misc do
             it { should eq(date: nil) }
