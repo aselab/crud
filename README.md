@@ -32,33 +32,47 @@ http://localhost:3000
 
 ## インストール
 
+crudは今のところ vendor/gems/crud に置くことを前提とする。
+Webpackerと Bootstrap 4 が前提なので別途インストールしておく。
+
+git submoduleで運用する場合
+
+```
+git submodule add git@bitbucket.org:aselab/crud.git vendor/gems/crud
+git submodule update --init
+# 特定のバージョンを使いたい場合はsubmoduleに移動してcheckoutする
+```
+
+ファイルだけ追加する場合
+
+```
+mkdir -p vendor/gems/crud
+git archive --remote=git@bitbucket.org:aselab/crud.git [master or バージョン指定など] | tar -x -C vendor/gems/crud
+```
+
 以下をGemfileに追加してbundle install
 
 ```
-gem 'crud', git: 'git@bitbucket.org:aselab/crud.git'
+gem 'crud', path: 'vendor/gems/crud'
 # API modeの場合はこちら、以降の設定は不要
-gem 'crud_api', git: 'git@bitbucket.org:aselab/crud.git'
+gem 'crud_api', path: 'vendor/gems/crud'
 ```
 
-app/assets/stylesheets/application.css を application.scssにリネームして以下を追加
+yarnでパッケージ追加
 
 ```
-/*
- *= require crud
-*/
-@import "bootstrap-sprockets";
-@import "font-awesome-sprockets";
-@import "bootstrap";
-@import "font-awesome";
+bin/yarn add vendor/gems/crud/webpacker
+# 以下はinputsを使う時に必要なものだけ
+bin/yarn add select2 select2-bootstrap4-theme
 ```
 
-app/assets/javascripts/application.js に以下を追加
+Webpackerのエントリーポイントに含める
+app/javascript/packs/application.js
 
 ```
-//= require jquery
-//= require jquery_ujs
-//= require bootstrap-sprockets
-//= require crud
+import 'crud'
+// inputsは使うものだけを個別にimportしてもよい
+import 'crud/inputs'
 ```
 
 layoutなどにbootstrap_flash_messagesを追加

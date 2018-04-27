@@ -1,5 +1,5 @@
 import 'crud'
-import 'crud/inputs/select2'
+import 'crud/inputs'
 import 'bootstrap'
 
 import './styles/main'
