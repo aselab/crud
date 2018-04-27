@@ -1,4 +1,7 @@
 import jQuery from 'jquery'
+import select2 from 'select2'
+import 'select2/dist/css/select2.css'
+import 'select2-bootstrap4-theme/dist/select2-bootstrap4.css'
 
 (function($){
   // IEでtagモードのときfocusが外れるバグがあるのでoption追加削除検知を無効化
