@@ -9,7 +9,7 @@
   </head>
 
   <body>
-    <div class="navbar navbar-expand-md navbar-light sticky-top bg-light">
+    <div class="navbar navbar-expand-lg navbar-light sticky-top bg-light">
       <%= link_to "Dummy", root_path, :class => "navbar-brand" %>
       <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar-content">
         <span class="navbar-toggler-icon"></span>
@@ -17,11 +17,11 @@
 
       <div class="collapse navbar-collapse" id="navbar-content">
         <%= header_links %>
-        <form class="form-inline">
+        <%= form_tag "/", class: "form-inline" do %>
           <%= orm_select %>
           <%= locale_select %>
           <%= login_user_select %>
-        </form>
+        <% end %>
       </div>
     </div>
 
