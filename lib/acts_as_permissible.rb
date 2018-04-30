@@ -22,8 +22,6 @@ module Acts
         principal = "#{module_name}::#{principal_name}".safe_constantize || principal_name.constantize
         permission = "#{module_name}::#{permission_name}".safe_constantize || permission_name.constantize
         self.define_singleton_method(:all_flags) {permissions}
-        self.define_singleton_method(:principal_name) {principal_name.demodulize}
-        self.define_singleton_method(:permission_name) {permission_name.demodulize}
         self.define_singleton_method(:permissible_name) {permissible_name}
         self.define_singleton_method(:principal_class) {principal}
         self.define_singleton_method(:permission_class) {permission}
@@ -91,11 +89,12 @@ module Acts
 
       module Methods
         def class_eval_scope
-          principals = principal_name.underscore.pluralize.to_sym
-          permissions = permission_name.underscore.pluralize.to_sym
-          principal_key = "#{permission_class.table_name}.#{principal_name.foreign_key}"
+          principal_name = principal_class.model_name.element
+          principals = principal_name.pluralize.to_sym
+          permissions = permission_class.model_name.element.pluralize.to_sym
+          principal_key = "#{permission_class.table_name}.#{permission_class.reflect_on_association(principal_name).foreign_key}"
 
-          has_many permissions, as: permissible_name, dependent: :destroy,
+          has_many permissions, as: permissible_name, class_name: permission_class.name, dependent: :destroy,
             before_add: :set_default_flag, extend: AssociationExtensions
 
           has_many principals, through: permissions
@@ -157,7 +156,7 @@ module Acts
           end
 
           def create_or_update(principal)
-            name = proxy_association.owner.class.principal_name.underscore
+            name = proxy_association.owner.class.principal_class.model_name.element
             p = self.where("#{name}_id" => principal).first || self.build
             p.send("#{name}=", principal)
             yield p
@@ -178,13 +177,14 @@ module Acts
 
       module Methods
         def class_eval_scope
-          principals = principal_name.underscore.pluralize.to_sym
-          permissions = permission_name.underscore.pluralize.to_sym
-          principal_foreign_key = "#{principal_name.underscore}_id"
+          principal_name = principal_class.model_name.element
+          principals = principal_name.pluralize.to_sym
+          permissions = permission_class.model_name.element.pluralize.to_sym
+          principal_foreign_key = permission_class.reflect_on_association(principal_name).foreign_key
           plural_principal_foreign_key = principal_foreign_key.pluralize
           principal_key = "#{permissions}.#{principal_foreign_key}"
 
-          embeds_many permissions, as: permissible_name,
+          embeds_many permissions, as: permissible_name, class_name: permission_class.name,
             before_add: :set_default_flag, extend: AssociationExtensions
 
           index({principal_key: 1, flags: 1})
@@ -245,7 +245,7 @@ module Acts
         module AssociationExtensions
           def add(principal, permission = nil)
             create_or_update(principal) do |p|
-              p.flags |= base.class.to_flags(permission) if permission
+              p.flags |= association_class.to_flags(permission) if permission
             end
           end
 
@@ -256,12 +256,16 @@ module Acts
           end
 
           private
+          def association_class
+            @association_class ||= Mongoid::VERSION >= "7.0.0" ? _base.class : base.class
+          end
+
           def flags(permission)
-            base.class.split_flag(permission)
+            association_class.split_flag(permission)
           end
 
           def create_or_update(principal)
-            name = base.class.principal_name.underscore
+            name = association_class.principal_class.model_name.element
             p = self.where("#{name}_id" => principal).first || self.build
             p.send("#{name}=", principal)
             yield p
