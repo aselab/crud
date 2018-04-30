@@ -3,7 +3,7 @@
 
   <%= crud_form resource, {url: ""}.merge(crud_form_options) do |f| %>
     <%= f.error_notification %>
-    <%= tag.div(class: "form-group has-error") { f.error(:base) } %>
+    <%= f.error_notification message: f.object.errors[:base].to_sentence if f.object.errors[:base].present? %>
 
     <%= crud_table columns, resources, index_actions, index_crud_table_options.merge( { selectable: true } ) %>
     <%= render "index_footer" %>
