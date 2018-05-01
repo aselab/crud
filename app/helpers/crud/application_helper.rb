@@ -40,7 +40,7 @@ module Crud
             options[:data] = { confirm: t("crud.message.are_you_sure") }.merge(options[:data] || {})
             options[:class] ||= "btn btn-danger"
           else
-            options[:class] ||= "btn btn-default"
+            options[:class] ||= "btn btn-outline-secondary"
           end
           options[:remote] = @remote unless options.has_key?(:remote)
           options[:remote] = @remote_link unless @remote_link.nil?
@@ -302,7 +302,7 @@ module Crud
 
     def search_input_options(f, column)
       options = call_method_for_column(column, :search_input_options) || {}
-      input_options(f, column).merge(label: false, wrapper: :input_only).deep_merge(options)
+      input_options(f, column).merge(wrapper: :inline_form).deep_merge(options)
     end
 
     def advanced_search_input(f, column)
@@ -335,7 +335,6 @@ module Crud
             )
             input_options[:input_html][:id] ||= "query_#{column}_#{i}"
             if is_boolean
-              input_options[:wrapper] = :input_only_checkbox
               input_options[:input_html][:checked] = ref.cast(:boolean, values)
             elsif is_select
               if is_multiple

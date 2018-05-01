@@ -1,6 +1,6 @@
-<div class="panel panel-default">
-  <div class="panel-heading"><%= t("crud.advanced_search_conditions") %></div>
-  <div class="panel-body">
+<div class="card mb-2">
+  <div class="card-header"><%= t("crud.advanced_search_conditions") %></div>
+  <div class="card-body">
     <%= simple_form_for resource, wrapper: :horizontal_form, html: { class: "form-horizontal" }, method: "GET", url: "", remote: @remote do |f| %>
       <% stored_params(*stored_params_keys_for_advanced_search).each do |key, value| %>
         <%= hidden_field_tag key, value %>
@@ -9,8 +9,8 @@
         <%= advanced_search_input f, column %>
       <% end %>
 
-      <div class="form-group">
-        <div class="col-sm-offset-2 col-sm-10">
+      <div class="form-group row">
+        <div class="ml-sm-auto col-sm-10">
           <button type="submit" class="btn btn-primary">
             <i class="glyphicon glyphicon-search"></i> <%= t("crud.action.advanced_search") %>
           </button>

@@ -5,8 +5,8 @@
   <% params[:container] = "modal-body" %>
   <% params[:template] = "selectable_index" %>
   <% content_for(:modal_footer) do %>
-    <button class="btn btn-primary"><%= t("crud.action.ok") %></button>
     <button class="btn btn-cancel" data-dismiss="modal"><%= t("crud.action.cancel") %></button>
+    <button class="btn btn-primary"><%= t("crud.action.ok") %></button>
   <% end %>
 
   $(function() {

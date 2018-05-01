@@ -1,10 +1,9 @@
-<div class="navbar">
-  <div class="pull-right">
-    <%= render "index_menu" %>
-  </div>
-
-  <div class="pull-right">
+<div class="d-flex align-items-center my-2">
+  <div class="mr-auto">
     <%= render "search_form" %>
+  </div>
+  <div>
+    <%= render "index_menu" %>
   </div>
 </div>
 
@@ -30,9 +29,9 @@
 
       form.find(".form-group label").each(function(index) {
         var checked = form.find(".form-group").eq(index).css("display") != "none";
-        var checkbox = $("<input>").attr("type", "checkbox").data("index", index).prop("checked", checked);
-        var label = $("<label>").append(checkbox, " " + $(this).text());
-        dropdown.append($("<li>").append($("<a>").attr("href", "#").append(label)));
+        var checkbox = $("<input>").addClass("form-check-input").attr("type", "checkbox").data("index", index).prop("checked", checked);
+        var label = $("<label>").addClass("form-check-label").append(checkbox, " " + $(this).text());
+        dropdown.append($("<a>").attr("href", "#").addClass("dropdown-item").append(label));
       });
 
       var data = [{name: "format", value: "form"}, {name: "form", value: "<%= temp_id(:advanced) %>"}];

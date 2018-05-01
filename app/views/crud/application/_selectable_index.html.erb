@@ -10,9 +10,9 @@
 
     <%= hidden_field_tag nil, id: modal_target %>
     <% unless modal? %>
-      <div class="form-group">
+      <div class="form-group d-flex justify-content-end">
+        <%= link_to t("crud.action.cancel"), cancel_path, class: "btn btn-cancel" %>
         <%= f.button :submit, @submit_label, class: "btn-primary", id: "table-form-button" %>
-        <%= link_to t("crud.action.cancel"), cancel_path, class: "btn btn-default btn-cancel" %>
       </div>
     <% end %>
   <% end %>

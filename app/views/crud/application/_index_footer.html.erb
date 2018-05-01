@@ -1,9 +1,7 @@
-<div class="clearfix">
-  <div class="pagination text-muted pull-left">
+<div class="d-flex align-items-center">
+  <div class="text-muted flex-fill">
     <%= page_entries_info resources %>
   </div>
 
-  <div class="pull-right">
-    <%= paginate resources, remote: @remote %>
-  </div>
+  <%= paginate resources, remote: @remote %>
 </div>

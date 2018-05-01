@@ -5,8 +5,8 @@
         <% if content_for? :modal_header %>
           <%= content_for :modal_header %>
         <% else %>
+          <h5 class="modal-title"><%= @title %></h5>
           <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-          <h4 class="modal-title"><%= @title %></h4>
         <% end %>
       </div>
       <div class="modal-body" id="modal-body">

@@ -1,12 +1,12 @@
-<%= form_tag stored_params(:container, :sort_key, :sort_order, :per, :modal_target, :multiple), class: "navbar-form form-search", method: "GET", remote: @remote do %>
+<%= form_tag stored_params(:container, :sort_key, :sort_order, :per, :modal_target, :multiple), class: "form-search", method: "GET", remote: @remote do %>
   <div class="input-group">
     <% if columns_for_advanced_search.present? %>
-      <div class="input-group-btn">
-        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+      <div class="input-group-prepend">
+        <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown">
           <span class="fa fa-filter"></span>
         </button>
-        <ul class="dropdown-menu">
-        </ul>
+        <div class="dropdown-menu">
+        </div>
       </div>
     <% end %>
     <% stored_params(*stored_params_keys_for_search).each do |key, value| %>
@@ -20,7 +20,7 @@
     <% end %>
     <%= text_field_tag :term, search_keyword, class: "search-query form-control",
       placeholder: t("crud.message.enter_search_term") %>
-    <div class="input-group-btn">
+    <div class="input-group-append">
       <button id="search-button" type="submit" class="btn btn-primary">
         <i class="glyphicon glyphicon-search"></i>
       </button>
