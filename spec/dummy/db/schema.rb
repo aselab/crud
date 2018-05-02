@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2018_05_01_083409) do
+ActiveRecord::Schema.define(version: 2018_05_02_140604) do
 
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
@@ -71,6 +71,7 @@ ActiveRecord::Schema.define(version: 2018_05_01_083409) do
     t.date "date"
     t.time "time"
     t.string "enumerized"
+    t.decimal "decimal"
   end
 
   create_table "ar_permissions", force: :cascade do |t|

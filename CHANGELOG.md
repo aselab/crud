@@ -11,6 +11,7 @@
 ### その他の変更点
 
 * ActiveStorage対応
+* decimal対応
 
 ## 0.4.4
 

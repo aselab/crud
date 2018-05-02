@@ -107,7 +107,7 @@ module Crud
 
     class EqualsOperator < Operator
       def self.supported_types
-        [:belongs_to, :enum, :string, :text, :boolean, :integer, :float, :datetime, :date, :time]
+        [:belongs_to, :enum, :string, :text, :boolean, :integer, :float, :decimal, :datetime, :date, :time]
       end
 
       def condition(value)
@@ -121,7 +121,7 @@ module Crud
 
     class NotEqualsOperator < Operator
       def self.supported_types
-        [:belongs_to, :enum, :string, :text, :integer, :float, :datetime, :date, :time]
+        [:belongs_to, :enum, :string, :text, :integer, :float, :decimal, :datetime, :date, :time]
       end
 
       def condition(value)
@@ -182,7 +182,7 @@ module Crud
 
     class GreaterOrEqualOperator < Operator
       def self.supported_types
-        [:integer, :float, :datetime, :date, :time]
+        [:integer, :float, :decimal, :datetime, :date, :time]
       end
 
       def condition(value)
@@ -196,7 +196,7 @@ module Crud
 
     class LessOrEqualOperator < Operator
       def self.supported_types
-        [:integer, :float, :datetime, :date, :time]
+        [:integer, :float, :decimal, :datetime, :date, :time]
       end
 
       def condition(value)
@@ -210,7 +210,7 @@ module Crud
 
     class BetweenOperator < Operator
       def self.supported_types
-        [:integer, :float, :datetime, :date, :time]
+        [:integer, :float, :decimal, :datetime, :date, :time]
       end
 
       def condition(s, e)

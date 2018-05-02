@@ -47,6 +47,8 @@ module Crud
           :id
         elsif type == Mongoid::Boolean
           :boolean
+        elsif type == BigDecimal
+          :decimal
         else
           type.is_a?(Class) ? type.name.downcase.to_sym : type
         end

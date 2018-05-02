@@ -10,6 +10,7 @@ class Mongo::Misc
   field :string, type: String
   field :integer, type: Integer
   field :float, type: Float
+  field :decimal, type: BigDecimal
   field :datetime, type: DateTime
   field :date, type: Date
   field :time, type: Time
