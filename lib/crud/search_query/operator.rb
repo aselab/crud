@@ -107,11 +107,13 @@ module Crud
 
     class EqualsOperator < Operator
       def self.supported_types
-        [:belongs_to, :enum, :string, :text, :boolean, :integer, :float, :decimal, :datetime, :date, :time]
+        [:belongs_to, :active_storage, :enum, :string, :text, :boolean, :integer, :float, :decimal, :datetime, :date, :time]
       end
 
       def condition(value)
-        if activerecord?
+        if type == :active_storage
+          ActiveStorage::Blob.arel_table[:filename].eq(value)
+        elsif activerecord?
           model.arel_table[name].eq(value)
         elsif mongoid?
           { name => value }
@@ -121,11 +123,13 @@ module Crud
 
     class NotEqualsOperator < Operator
       def self.supported_types
-        [:belongs_to, :enum, :string, :text, :integer, :float, :decimal, :datetime, :date, :time]
+        [:belongs_to, :active_storage, :enum, :string, :text, :integer, :float, :decimal, :datetime, :date, :time]
       end
 
       def condition(value)
-        if activerecord?
+        if type == :active_storage
+          ActiveStorage::Blob.arel_table[:filename].not_eq(value)
+        elsif activerecord?
           model.arel_table[name].not_eq(value)
         elsif mongoid?
           { name.ne => value }
@@ -135,11 +139,13 @@ module Crud
 
     class ContainsOperator < Operator
       def self.supported_types
-        [:has_many, :has_and_belongs_to_many, :string, :text]
+        [:has_many, :has_and_belongs_to_many, :active_storage, :string, :text]
       end
 
       def condition(value)
         case type
+        when :active_storage
+          ActiveStorage::Blob.arel_table[:filename].matches("%#{value}%")
         when :string, :text
           if activerecord?
             model.arel_table[name].matches("%#{value}%")
@@ -158,11 +164,13 @@ module Crud
 
     class NotContainsOperator < Operator
       def self.supported_types
-        [:string, :text]
+        [:active_storage, :string, :text]
       end
 
       def condition(value)
-        if activerecord?
+        if type == :active_storage
+          ActiveStorage::Blob.arel_table[:filename].matches("%#{value}%").not
+        elsif activerecord?
           model.arel_table[name].matches("%#{value}%").not
         elsif mongoid?
           { name.not => Regexp.new(Regexp.escape(value)) }

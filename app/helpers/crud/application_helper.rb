@@ -327,6 +327,7 @@ module Crud
       is_boolean = options[:as] ? options[:as] == :boolean : type == :boolean
       is_select = options[:as] ? [:select, :select2].include?(options[:as]) : [:enum, :belongs_to, :has_many, :has_and_belongs_to_many].include?(type)
       is_multiple = is_select && (options.has_key?(:multiple) ? options[:multiple] : [:has_many, :has_and_belongs_to_many].include?(type))
+      options[:as] = :string if type == :active_storage
       div_options = { class: "form-group row" }
       div_options[:style] = "display: none;" if op.blank? && values.empty?
       content_tag :div, div_options do
