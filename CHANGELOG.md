@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.5.0.beta
+
+### 非互換な変更点
+
+* Rails 5.2対応
+* Bootstrap 4対応
+* Assets Pipeline廃止、Webpacker対応
+
+### その他の変更点
+
+* ActiveStorage対応
+
 ## 0.4.4
 
 * link_to_actionのオプションをカスタマイズできるように

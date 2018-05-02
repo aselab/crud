@@ -16,7 +16,20 @@ module Crud
     end
 
     def include_associations(columns)
-      associations = columns.select {|c| reflection.association_key?(c)}
+      associations = []
+      storage_keys = []
+      columns.each do |c|
+        if reflection.association_key?(c)
+          associations.push(c)
+        elsif reflection.active_storage_key?(c)
+          storage_keys.push(c)
+        end
+      end
+
+      if storage_keys.present?
+        @scope = storage_keys.inject(@scope) {|s, key| s.send("with_attached_#{key}")}
+      end
+
       if associations.empty?
         @scope
       elsif reflection.activerecord?
@@ -115,6 +128,8 @@ module Crud
             association.send(:sort_field) :
             [:name, :title, :id].find {|c| ref.column_key?(c)}
           "#{association.table_name}.#{f} #{order}" if f
+        elsif reflection.active_storage_key?(column)
+          "active_storage_blobs.filename #{order}"
         else
           meta = reflection.column_metadata(column)
           "#{model.table_name}.#{meta[:name]} #{order}" if meta
@@ -125,10 +140,7 @@ module Crud
     end
 
     def search_column?(name)
-      return true if search_method_for(name) || advanced_search_method_for(name)
-      return false unless meta = reflection.column_metadata(name)
-      [:enum, :string, :text, :integer, :float].include?(meta[:type]) ||
-        (reflection.activerecord? && reflection.association_key?(name))
+      search_method_for(name) || advanced_search_method_for(name) || reflection.searchable?(name)
     end
 
     def advanced_search_column?(name)
@@ -136,8 +148,7 @@ module Crud
     end
 
     def sort_column?(name)
-      return true if sort_method_for(name)
-      reflection.column_key?(name) && !(reflection.mongoid? && reflection.association_key?(name))
+      sort_method_for(name) || reflection.sortable?(name)
     end
 
     private

@@ -32,6 +32,8 @@ module Crud
         return if ref.options[:polymorphic]
         name = ref.foreign_key if ref.macro == :belongs_to
         return {name: name.to_sym, type: ref.macro, class: ref.klass}
+      elsif active_storage_key?(name)
+        return {name: name.to_sym, type: :active_storage}
       end
 
       metadata = if activerecord?
@@ -97,6 +99,21 @@ module Crud
       mongoid? ? !ref.relation.embedded? : true
     end
 
+    def active_storage_key?(key)
+      activerecord? && model.new.try(key).is_a?(ActiveStorage::Attached)
+    end
+
+    def searchable?(column)
+      return false unless meta = column_metadata(column)
+      return true if [:enum, :string, :text, :integer, :float, :decimal].include?(meta[:type])
+      activerecord? && (association_key?(column) || active_storage_key?(column))
+    end
+
+    def sortable?(column)
+      return true if column_key?(column)
+      activerecord? && (association_key?(column) || active_storage_key?(column))
+    end
+
     def association_class(key)
       association_reflection(key).try(:klass)
     end
@@ -130,6 +147,6 @@ module Crud
       t.cast(value)
     end
 
-    memoize :activerecord?, :mongoid?
+    memoize :activerecord?, :mongoid?, :column_metadata
   end
 end

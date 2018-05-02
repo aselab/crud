@@ -63,8 +63,8 @@ describe Crud::ApplicationHelper do
       expect(helper.to_label(time)).to eq "yyy"
     end
 
-    it "Enumerableのとき各要素をto_labelしてカンマ連結した結果を返すこと" do
-      expect(helper.to_label([nil, 1, Date.new(2001, 2, 3), "xxx"], "aaa")).to eq "aaa, 1, 2001-02-03, xxx"
+    it "Enumerableのとき各要素をto_labelしてbrタグ連結した結果を返すこと" do
+      expect(helper.to_label([nil, 1, Date.new(2001, 2, 3), "xxx"], "aaa")).to eq "aaa<br>1<br>2001-02-03<br>xxx"
     end
 
     it "#label, #text, #name, #to_s の優先順で結果を返すこと" do

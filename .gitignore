@@ -9,3 +9,4 @@ Gemfile.lock
 yarn.lock
 node_modules/
 spec/dummy/public/packs/
+spec/dummy/storage

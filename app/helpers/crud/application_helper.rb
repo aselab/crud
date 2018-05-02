@@ -87,7 +87,12 @@ module Crud
 
     def to_label(value, blank = nil)
       return blank if value.blank?
-      return safe_join value.map {|v| to_label(v, blank)}, ", " if value.is_a?(Enumerable)
+      if value.respond_to?(:attached?)
+        return blank unless value.attached?
+        value = value.is_a?(ActiveStorage::Attached::One) ? value.attachment : value.attachments
+      end
+      return safe_join value.map {|v| to_label(v, blank)}, tag.br if value.is_a?(Enumerable)
+      return link_to(value.blob.filename, url_for(value.blob)) if value.is_a?(ActiveStorage::Attachment)
       return I18n.l(value) if value.is_a?(Time) || value.is_a?(Date)
       return value.label if value.respond_to?(:label)
       return value.text if value.respond_to?(:text)

@@ -3,6 +3,7 @@ class Ar::Misc < ApplicationRecord
   has_many :misc_belongings, dependent: :destroy
   has_many :misc_throughs, through: :misc_belongings
   has_and_belongs_to_many :misc_habtms
+  has_one_attached :file
 
   enumerize :enumerized, in: [:A, :B, :C]
 
