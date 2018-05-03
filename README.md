@@ -77,6 +77,17 @@ import 'crud/inputs'
 
 layoutなどにbootstrap_flash_messagesを追加
 
+### 設定変更
+
+config/initializers/crud.rb
+
+```
+Crud.configure do |config|
+  # https://github.com/plataformatec/simple_form/pull/1553 を利用するかどうか
+  config.simple_form.use_valid_class = false
+end
+```
+
 ## Crud::ApplicationController
 
 モデルのCRUD機能を提供するコントローラの基底クラス。

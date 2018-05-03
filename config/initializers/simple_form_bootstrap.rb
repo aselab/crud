@@ -438,4 +438,11 @@ SimpleForm.setup do |config|
   #   time:          :custom_multi_select
   # }
 end
+
+class SimpleForm::Inputs::Base
+  def valid?
+    Crud.config.simple_form.use_valid_class && super
+  end
+end
+
 end

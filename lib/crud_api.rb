@@ -40,6 +40,7 @@ module Crud
 end
 
 require 'acts_as_permissible'
+require 'crud/config'
 require 'crud/engine'
 require 'crud/railtie'
 require 'crud/model_reflection'
