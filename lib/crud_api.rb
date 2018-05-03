@@ -18,6 +18,19 @@ begin
       end
     end
   end
+
+  # Mongoid 7.0 でmacroメソッドが削除されている対策
+  if Mongoid::VERSION >= "7.0.0"
+    module Mongoid::Association
+      REVERSE_MACRO_MAPPING = MACRO_MAPPING.invert
+
+      module Relatable
+        def macro
+          REVERSE_MACRO_MAPPING[self.class]
+        end
+      end
+    end
+  end
 rescue LoadError
 end
 
@@ -28,5 +41,6 @@ end
 
 require 'acts_as_permissible'
 require 'crud/engine'
+require 'crud/railtie'
 require 'crud/model_reflection'
 require 'crud/search_query'
