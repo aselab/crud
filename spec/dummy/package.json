@@ -2,6 +2,7 @@
   "dependencies": {
     "@rails/webpacker": "3.4",
     "bootstrap": "^4.1.0",
+    "bootstrap-filestyle2": "^2.1.0",
     "crud": "../../webpacker",
     "popper.js": "^1.14.3",
     "select2": "^4.0.6-rc.1",

@@ -12,6 +12,7 @@
   },
   "peerDependencies": {
     "bootstrap": "4.x",
+    "bootstrap-filestyle2": "^2.1.0",
     "select2": "4.0.x",
     "select2-bootstrap4-theme": "^1.0.0"
   }

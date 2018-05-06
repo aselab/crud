@@ -42,6 +42,10 @@ module ApplicationHelper
     end
   end
 
+  def file_input_options
+    { as: :bootstrap_filestyle }
+  end
+
   def misc_input_options
     { as: :select2, url: polymorphic_path(orm_model("Misc")), label_method: :string }
   end
