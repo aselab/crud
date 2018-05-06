@@ -29,7 +29,7 @@ describe Crud::ApplicationHelper do
           @params.to_unsafe_hash.merge(:sort_key => "aaa", :sort_order => "asc"),
           remote: nil
           ).and_return("xxx")
-        expect(helper.link_to_sort(:aaa)).to eq "xxx"
+        expect(helper.link_to_sort(:aaa)).to eq 'xxx<i class="fas fa-sort text-muted"></i>'
       end
 
       it "sort_keyと一致した場合のリンクが正しいこと" do
@@ -37,7 +37,7 @@ describe Crud::ApplicationHelper do
           @params.to_unsafe_hash.merge(:sort_key => "sort_key", :sort_order => "desc"),
           remote: nil
           ).and_return("xxx")
-        expect(helper.link_to_sort(:sort_key)).to eq 'xxx<i class="fa fa-sort-asc"></i>'
+        expect(helper.link_to_sort(:sort_key)).to eq 'xxx<i class="fas fa-sort-up"></i>'
       end
     end
 

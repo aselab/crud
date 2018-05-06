@@ -62,6 +62,7 @@ yarnでパッケージ追加
 
 ```
 bin/yarn add vendor/gems/crud/webpacker
+bin/yarn add @fortawesome/fontawesome @fortawesome/fontawesome-free-solid
 # 以下はinputsを使う時に必要なものだけ
 bin/yarn add select2 select2-bootstrap4-theme
 ```
@@ -71,6 +72,7 @@ app/javascript/packs/application.js
 
 ```
 import 'crud'
+import 'crud/fontawesome'
 // inputsは使うものだけを個別にimportしてもよい
 import 'crud/inputs'
 ```
@@ -85,6 +87,8 @@ config/initializers/crud.rb
 Crud.configure do |config|
   # https://github.com/plataformatec/simple_form/pull/1553 を利用するかどうか
   config.simple_form.use_valid_class = false
+
+  config.icon.search = "fas fa-search"
 end
 ```
 

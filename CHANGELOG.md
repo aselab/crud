@@ -7,6 +7,7 @@
 * Rails 5.2対応
 * Bootstrap 4対応
 * Assets Pipeline廃止、Webpacker対応
+* Font Awesome 5をデフォルト、configでアイコンを変更可能に
 
 ### その他の変更点
 

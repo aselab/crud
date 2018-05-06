@@ -3,7 +3,7 @@
     <% if columns_for_advanced_search.present? %>
       <div class="input-group-prepend">
         <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown">
-          <span class="fa fa-filter"></span>
+          <%= crud_icon_tag :advanced_search %>
         </button>
         <div class="dropdown-menu">
         </div>
@@ -22,7 +22,7 @@
       placeholder: t("crud.message.enter_search_term") %>
     <div class="input-group-append">
       <button id="search-button" type="submit" class="btn btn-primary">
-        <i class="glyphicon glyphicon-search"></i>
+        <%= crud_icon_tag :search %>
       </button>
     </div>
   </div>

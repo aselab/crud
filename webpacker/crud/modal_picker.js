@@ -7,7 +7,7 @@ import jQuery from 'jquery'
       var defaultOptions = {
         labelMethod: "label",
         valueMethod: "id",
-        iconClass: "glyphicon glyphicon-th-list",
+        iconClass: "fas fa-th-list",
         selectedItem: []
       };
       options = $.extend(true, defaultOptions, options);

@@ -11,6 +11,8 @@
   "devDependencies": {
   },
   "peerDependencies": {
+    "@fortawesome/fontawesome": ">= 1.1.7",
+    "@fortawesome/fontawesome-free-solid": "5.x",
     "bootstrap": "4.x",
     "bootstrap-filestyle2": "^2.1.0",
     "select2": "4.0.x",

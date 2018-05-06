@@ -4,6 +4,11 @@ module Crud
       "#{prefix}-#{object_id}"
     end
 
+    def crud_icon_tag(name)
+      return nil unless icon = Crud.config.icon[name]
+      Crud.config.icon.builder.call(icon, self)
+    end
+
     def link_to_sort(key, options = nil)
       options ||= {}
       label = options.delete(:label) || model.human_attribute_name(key)
@@ -12,15 +17,11 @@ module Crud
         focus = sort_key == key.to_sym
         current = sort_order
         order = focus && current == :asc ? :desc : :asc
-        icon = current == :asc ? "fa-sort-asc" : "fa-sort-desc"
         p = options.delete(:params) || params.to_unsafe_hash
         p = p.merge(sort_key: key.to_s, sort_order: order.to_s)
         link = link_to(label, p, options)
-        if focus
-          link + content_tag(:i, nil, class: "fa " + icon)
-        else
-          link
-        end
+        icon = crud_icon_tag(focus ? "sort_#{current}" : "sort")
+        icon ?  link + icon : link
       else
         label
       end
