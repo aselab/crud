@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "@coreui/coreui": "^2.0.0-rc.2",
     "@fortawesome/fontawesome": "^1.1.7",
     "@fortawesome/fontawesome-free-solid": "^5.0.12",
     "@rails/webpacker": "3.4",
