@@ -1,7 +1,5 @@
-<%= content_tag :div, id: temp_id(:index), class: "index" do %>
+<%= content_tag :div, id: temp_id(:index), class: "card-body index" do %>
   <%= render "index_header" %>
-
   <%= crud_table columns, resources, index_actions, index_crud_table_options %>
-
   <%= render "index_footer" %>
 <% end %>

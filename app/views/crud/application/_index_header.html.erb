@@ -1,56 +1,58 @@
-<div class="d-flex align-items-center my-2">
-  <div class="mr-auto">
-    <%= render "search_form" %>
+<div class="row mb-3">
+  <div class="col-sm-7">
+    <h4 class="card-title mb-0"><%= @title %></h4>
   </div>
-  <div>
-    <%= render "index_menu" %>
+  <div class="col-sm-5">
+    <div class="mr-auto">
+      <%= render "search_form" %>
+    </div>
+
+  <% if columns_for_advanced_search.present? %>
+    <div id="<%= temp_id :advanced %>" style="display: none;"><%= render partial: "advanced_search_form" %></div>
+
+    <%= javascript_tag do %>
+      $(function() {
+        var searchForm = $("#<%= temp_id :index %>").find("form.form-search");
+        var url = searchForm.attr("action");
+        var dropdown = $("#<%= temp_id :index %>").find(".form-search .dropdown-menu");
+        var form = $("#<%= temp_id :advanced %>");
+
+        dropdown.click(function(e) { e.stopPropagation(); });
+        dropdown.on("change", ":checkbox", function() {
+          var formGroup = form.find(".form-group").eq($(this).data("index"));
+
+          formGroup.toggle(this.checked);
+          if (!this.checked) formGroup.find(".operator").val("").trigger("change");
+
+          if (dropdown.find(":checkbox").is(":checked")) form.show();
+        });
+
+        form.find(".form-group label").each(function(index) {
+          var checked = form.find(".form-group").eq(index).css("display") != "none";
+          var checkbox = $("<input>").addClass("form-check-input").attr("type", "checkbox").data("index", index).prop("checked", checked);
+          var label = $("<label>").addClass("form-check-label").append(checkbox, " " + $(this).text());
+          dropdown.append($("<a>").attr("href", "#").addClass("dropdown-item").append(label));
+        });
+
+        var data = [{name: "format", value: "form"}, {name: "form", value: "<%= temp_id(:advanced) %>"}];
+        var updateForm = function() {
+          form.find("form").attr("action", url);
+          var group = form.find(".form-group");
+          var checks = dropdown.find(":checkbox").each(function(index) {
+            group.eq(index).toggle(this.checked);
+          });
+          if (checks.is(":checked")) form.show();
+        };
+        updateForm();
+        form.on("change", ".operator", function() {
+          $.get(url, data.concat($(this).closest("form").serializeArray())).then(updateForm);
+        });
+        form.on("click", ".btn-clear", function(event) {
+          event.preventDefault();
+          $.get(url, data).then(updateForm);
+        });
+      });
+    <% end %>
+  <% end %>
   </div>
 </div>
-
-<% if columns_for_advanced_search.present? %>
-  <div id="<%= temp_id :advanced %>" style="display: none;"><%= render partial: "advanced_search_form" %></div>
-
-  <%= javascript_tag do %>
-    $(function() {
-      var searchForm = $("#<%= temp_id :index %>").find("form.form-search");
-      var url = searchForm.attr("action");
-      var dropdown = $("#<%= temp_id :index %>").find(".form-search .dropdown-menu");
-      var form = $("#<%= temp_id :advanced %>");
-
-      dropdown.click(function(e) { e.stopPropagation(); });
-      dropdown.on("change", ":checkbox", function() {
-        var formGroup = form.find(".form-group").eq($(this).data("index"));
-
-        formGroup.toggle(this.checked);
-        if (!this.checked) formGroup.find(".operator").val("").trigger("change");
-
-        if (dropdown.find(":checkbox").is(":checked")) form.show();
-      });
-
-      form.find(".form-group label").each(function(index) {
-        var checked = form.find(".form-group").eq(index).css("display") != "none";
-        var checkbox = $("<input>").addClass("form-check-input").attr("type", "checkbox").data("index", index).prop("checked", checked);
-        var label = $("<label>").addClass("form-check-label").append(checkbox, " " + $(this).text());
-        dropdown.append($("<a>").attr("href", "#").addClass("dropdown-item").append(label));
-      });
-
-      var data = [{name: "format", value: "form"}, {name: "form", value: "<%= temp_id(:advanced) %>"}];
-      var updateForm = function() {
-        form.find("form").attr("action", url);
-        var group = form.find(".form-group");
-        var checks = dropdown.find(":checkbox").each(function(index) {
-          group.eq(index).toggle(this.checked);
-        });
-        if (checks.is(":checked")) form.show();
-      };
-      updateForm();
-      form.on("change", ".operator", function() {
-        $.get(url, data.concat($(this).closest("form").serializeArray())).then(updateForm);
-      });
-      form.on("click", ".btn-clear", function(event) {
-        event.preventDefault();
-        $.get(url, data).then(updateForm);
-      });
-    });
-  <% end %>
-<% end %>

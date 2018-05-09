@@ -9,6 +9,15 @@ module Crud
       Crud.config.icon.builder.call(icon, self)
     end
 
+    def icon(i_class, options = nil)
+      options ||= {}
+      content_tag(:i, nil, options.merge(class: i_class))
+    end
+  
+    def icon_label(i_class, label, options = nil)
+      icon(i_class) + " " + content_tag(:span, label, options)
+    end
+
     def link_to_sort(key, options = nil)
       options ||= {}
       label = options.delete(:label) || model.human_attribute_name(key)

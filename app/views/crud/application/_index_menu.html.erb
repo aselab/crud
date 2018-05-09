@@ -1,1 +1,3 @@
-<%= link_to_action :new, resource %>
+<%= link_to_action :new, resource, class: "btn" do %>
+  <%= icon_label("feather f-plus", t("crud.action.new")) %>
+<% end %>
