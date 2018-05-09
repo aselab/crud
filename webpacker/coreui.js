@@ -1,2 +1,2 @@
-import coreui from "@coreui/coreui/dist/js/coreui.min"
+import coreui from "@coreui/coreui/dist/js/coreui"
 import "@coreui/coreui/scss/coreui.scss"

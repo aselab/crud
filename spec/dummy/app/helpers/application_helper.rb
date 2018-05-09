@@ -11,11 +11,9 @@ module ApplicationHelper
   end
 
   def header_links
-    content_tag :ul, class: "navbar-nav mr-auto" do
-      orm_models.each do |model|
-        concat content_tag(:li, link_to(model.model_name.human, polymorphic_path(model), class: "nav-link"), class: "nav-item")
-      end
-    end
+    orm_models.map do |model|
+      content_tag(:li, link_to(model.model_name.human, polymorphic_path(model), class: "nav-link"), class: "nav-item")
+    end.reduce(:+)
   end
 
   def locale_select
@@ -33,7 +31,7 @@ module ApplicationHelper
 
   def select_setting(name, options, include_blank = false)
     content_tag(:div, class: "form-group") do
-      label_tag(name, t("dummy.#{name}"), class: "mx-2") + select_tag(name, options, class: "form-control", include_blank: include_blank) +
+      label_tag(name, t("dummy.#{name}"), class: "mx-2") + select_tag(name, options, class: "form-control-sm", include_blank: include_blank) +
         javascript_tag(<<-EOT)
           $("##{name}").change(function() {
             $.post("/", $(this).closest("form").serialize()).then(function() { location.href = "/"; });
