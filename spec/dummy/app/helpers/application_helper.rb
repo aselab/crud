@@ -12,7 +12,7 @@ module ApplicationHelper
 
   def header_links
     orm_models.map do |model|
-      content_tag(:li, link_to(model.model_name.human, polymorphic_path(model), class: "nav-link"), class: "nav-item")
+      content_tag(:li , link_to(tag.i(class: "feather f-github") + model.model_name.human, polymorphic_path(model), class: "nav-link"), class: "nav-item")
     end.reduce(:+)
   end
 
