@@ -46,9 +46,9 @@ module Crud
           if action == :destroy
             options[:method] ||= :delete
             options[:data] = { confirm: t("crud.message.are_you_sure") }.merge(options[:data] || {})
-            options[:class] ||= "btn btn-link btn-lg text-danger p-0 mr-2"
+            options[:class] ||= "btn btn-link text-danger"
           else
-            options[:class] ||= "btn btn-link btn-lg text-secondary p-0 mr-2"
+            options[:class] ||= "btn btn-link text-secondary"
           end
           options[:remote] = @remote unless options.has_key?(:remote)
           options[:remote] = @remote_link unless @remote_link.nil?
@@ -114,7 +114,7 @@ module Crud
 
     def crud_table(columns, resources, actions, options = nil)
       options = (try(:crud_table_options) || {}).deep_merge(options || {})
-      options[:class] ||= "table table-hover table-sm crud-table"
+      options[:class] ||= "table table-hover table-sm crud-table mb-0"
       options[:class] += " modal-table" if modal?
       header_options = options[:header] || {}
       m = model
@@ -153,7 +153,7 @@ module Crud
                 concat content_tag(:td, column_html(resource, column, controller))
               end
               unless actions.empty?
-                concat(content_tag(:td) do
+                concat(content_tag(:td, nil, class: "crud-actions") do
                   actions.each do |action|
                     concat link_to_action(action, resource, remote: remote, params: params, tooltip: true)
                   end
