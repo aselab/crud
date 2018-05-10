@@ -164,7 +164,7 @@ module Crud
         end
       end
 
-      content_tag(:div, table, class: "table-responsive")
+      content_tag(:div, table, class: "table-responsive mb-1")
     end
 
     def modal_selector_input(resource, options = {})
