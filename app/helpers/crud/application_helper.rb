@@ -46,9 +46,9 @@ module Crud
           if action == :destroy
             options[:method] ||= :delete
             options[:data] = { confirm: t("crud.message.are_you_sure") }.merge(options[:data] || {})
-            options[:class] ||= "btn btn-danger"
+            options[:class] ||= "btn btn-link btn-lg text-danger p-0 mr-2"
           else
-            options[:class] ||= "btn btn-outline-secondary"
+            options[:class] ||= "btn btn-link btn-lg text-secondary p-0 mr-2"
           end
           options[:remote] = @remote unless options.has_key?(:remote)
           options[:remote] = @remote_link unless @remote_link.nil?
