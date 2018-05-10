@@ -1,4 +1,18 @@
 Rails.application.routes.draw do
+  namespace :pickers do
+    namespace :ar do
+      resources :miscs, only: :index
+      resources :misc_belongings, only: :index
+      resources :misc_habtms, only: :index
+    end
+
+    namespace :mongo do
+      resources :miscs, only: :index
+      resources :misc_belongings, only: :index
+      resources :misc_habtms, only: :index
+    end
+  end
+
   namespace :mongo do
     resources :groups
     resources :users

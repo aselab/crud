@@ -1,3 +1,2 @@
-class Mongo::MiscHabtmsController < Crud::ApplicationController
-  permit_keys :name
+class Mongo::MiscHabtmsController < MiscHabtmsController
 end

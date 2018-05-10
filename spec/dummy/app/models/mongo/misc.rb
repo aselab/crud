@@ -18,4 +18,8 @@ class Mongo::Misc
   field :enumerized, type: String
 
   enumerize :enumerized, in: [:A, :B, :C]
+
+  def label
+    string
+  end
 end

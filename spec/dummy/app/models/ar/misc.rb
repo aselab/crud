@@ -10,4 +10,8 @@ class Ar::Misc < ApplicationRecord
   def self.search_field
     :string
   end
+
+  def label
+    string
+  end
 end

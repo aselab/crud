@@ -1,10 +1,6 @@
 class ModalPickerInput < SimpleForm::Inputs::Base
-  include ActionView::Context
-  include ActionView::Helpers::TagHelper
-  include ActionView::Helpers::JavaScriptHelper
-
   def input(wrapper_options)
-    js = javascript_tag(<<-SCRIPT
+    js = template.javascript_tag(<<-SCRIPT
       $(function() {
         $("##{input_id}").modalPicker(#{picker_options(input_options).to_json});
       });
@@ -92,8 +88,9 @@ class ModalPickerInput < SimpleForm::Inputs::Base
   end
 
   def picker_options(options)
+    options[:icon] ||= template.crud_icon_tag(:modal_picker)
     options[:selected_item] ||= init_data(value)
-    options.slice(:url, :label_method, :value_method, :icon_class, :selected_item)
+    options.slice(:url, :label_method, :value_method, :icon, :selected_item)
       .transform_keys {|key| key.to_s.camelize(:lower)}
       .merge(multiple: multiple?, placeholder: placeholder, onChangeHint: options[:onChangeHint])
   end

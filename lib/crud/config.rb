@@ -23,6 +23,7 @@ module Crud
         context.tag.i(nil, class: icon)
       end
 
+      self.icon.modal_picker = "fas fa-th-list"
       self.icon.advanced_search = "fas fa-filter"
       self.icon.search = "fas fa-search"
       self.icon.sort = "fas fa-sort text-muted"

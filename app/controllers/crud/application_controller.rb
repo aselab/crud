@@ -10,7 +10,7 @@ module Crud
         :stored_params, :stored_params_keys_for_search, :stored_params_keys_for_advanced_search,
         :cancel_path, :sort_key?, :sort_key, :sort_order, :search_keyword, :search_values, :search_operators,
         :advanced_search?, :columns_for_advanced_search, :index_actions, :can?, :cannot?, :crud_action, :modal?,
-        :selectable?, :serializer, :serialization_scope
+        :selectable?, :serializer, :serialization_scope, :crud_form_options
     end
 
     def index(&format_block)
@@ -158,6 +158,10 @@ module Crud
 
     def columns_for_index
       request.format.html? || request.format.js? ? model_columns : super
+    end
+
+    def crud_form_options
+      {}
     end
   end
 end

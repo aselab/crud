@@ -7,7 +7,7 @@ import jQuery from 'jquery'
       var defaultOptions = {
         labelMethod: "label",
         valueMethod: "id",
-        iconClass: "fas fa-th-list",
+        icon: '<i class="fas fa-th-list"></i>',
         selectedItem: []
       };
       options = $.extend(true, defaultOptions, options);
@@ -24,7 +24,9 @@ import jQuery from 'jquery'
 
       var template = $("<div/>").addClass("modal-picker").append(
         $("<div/>").addClass("input-group").append(
-          $("<span/>").addClass("input-group-addon").append($("<i/>").addClass(options.iconClass)),
+          $("<div/>").addClass("input-group-prepend").append(
+            $("<div/>").addClass("input-group-text").append(options.icon)
+          ),
           $("<div/>").addClass("form-control").append(
             $("<span/>").addClass("picker-container").append(
               $("<span/>").addClass("picker-clear").html("&times; "),
