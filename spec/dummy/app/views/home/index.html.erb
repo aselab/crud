@@ -1,14 +1,18 @@
-<div class="row">
-  <% orm_models.each do |model| %>
-    <div class="col-md-6 my-2">
-      <div class="card">
-        <div class="card-header">
-          <%= model.model_name.human %>
-        </div>
-        <div id="<%= model.model_name.plural %>" class="card-body">
-          <%= link_to "Ajax load", polymorphic_path(model, container: model.model_name.plural), remote: true %>
+<div class="card plain">
+  <div class="card-body">
+    <div class="row">
+    <% orm_models.each do |model| %>
+      <div class="col-md-6 my-2">
+        <div class="card">
+          <div class="card-header">
+            <%= model.model_name.human %>
+          </div>
+          <div id="<%= model.model_name.plural %>" class="card-body">
+            <%= link_to "Ajax load", polymorphic_path(model, container: model.model_name.plural), remote: true %>
+          </div>
         </div>
       </div>
+    <% end %>
     </div>
-  <% end %>
+  </div>
 </div>

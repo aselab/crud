@@ -6,4 +6,14 @@ body {
 
 .breadcrumb {
   background-color: $gray-100;
+  margin-bottom: 0;
+}
+
+.main .container-fluid {
+  padding: 0;
+}
+
+.card.plain {
+  border: none;
+  margin-bottom: 0;
 }
