@@ -17,7 +17,7 @@ class ModalPickerInput < SimpleForm::Inputs::Base
     if @multiple.nil?
       @multiple = reflection ? reflection.macro == :has_many || reflection.macro == :has_and_belongs_to_many : false
     end
-    @multiple
+    input_html_options[:multiple] = @multiple
   end
 
   def model
@@ -37,7 +37,8 @@ class ModalPickerInput < SimpleForm::Inputs::Base
   def init_data(ids)
     return ids unless model
     return [] if ids.blank?
-    model.where(id: ids).map do |v|
+    method = Crud::ModelReflection[model].mongoid? ? :in : :where
+    model.send(method, id: ids).map do |v|
       data = pickers_serializer.new(v, scope: pickers_serialization_scope).as_json
       data[:label] ||= to_label(v)
       data
