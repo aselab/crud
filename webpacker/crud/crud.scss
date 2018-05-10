@@ -81,3 +81,9 @@
 span.chnage_hint_effect:not(:last-child)::after {
   content: ", ";
 }
+
+@media (max-width: 576px) {
+  [class*="col-"] {
+      margin-bottom: 0.5em;
+  }
+}
