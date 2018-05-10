@@ -4,20 +4,17 @@ module Crud
       "#{prefix}-#{object_id}"
     end
 
-    def crud_icon_tag(name)
-      return nil unless icon = Crud.config.icon[name]
-      Crud.config.icon.builder.call(icon, self)
+    def crud_icon_tag(name, label = nil)
+      return label unless icon = Crud.config.icon[name]
+      icon = Crud.config.icon.builder.call(icon, self)
+      label ? icon + tag.span(label, class: "ml-1") : icon
     end
 
-    def icon(i_class, options = nil)
-      options ||= {}
-      content_tag(:i, nil, options.merge(class: i_class))
+    def icon_tag(icon_class, label = nil)
+      icon = tag.i(nil, class: icon_class)
+      label ? icon + tag.span(label, class: "ml-1") : icon
     end
   
-    def icon_label(i_class, label, options = nil)
-      icon(i_class) + " " + content_tag(:span, label, options)
-    end
-
     def link_to_sort(key, options = nil)
       options ||= {}
       label = options.delete(:label) || model.human_attribute_name(key)
@@ -28,6 +25,7 @@ module Crud
         order = focus && current == :asc ? :desc : :asc
         p = options.delete(:params) || params.to_unsafe_hash
         p = p.merge(sort_key: key.to_s, sort_order: order.to_s)
+        options[:class] ||= "mr-1"
         link = link_to(label, p, options)
         icon = crud_icon_tag(focus ? "sort_#{current}" : "sort")
         icon ?  link + icon : link
@@ -58,10 +56,14 @@ module Crud
           if block
             link_to(params, options, &block)
           else
-            label = options.delete(:label)
-            label ||= action == :new ?
-              t("crud.action_title.new", name: model_name) :
-              t("crud.action." + action.to_s)
+            label = options.delete(:label) || t("crud.action.#{action}")
+            if options.delete(:tooltip)
+              options[:title] = label
+              options[:data] = (options[:data] || {}).merge(toggle: "tooltip", placement: "top")
+              label = crud_icon_tag(action)
+            else
+              label = crud_icon_tag(action, label)
+            end
             link_to(label, params, options)
           end
         end
@@ -153,7 +155,7 @@ module Crud
               unless actions.empty?
                 concat(content_tag(:td) do
                   actions.each do |action|
-                    concat link_to_action(action, resource, remote: remote, params: params)
+                    concat link_to_action(action, resource, remote: remote, params: params, tooltip: true)
                   end
                 end)
               end

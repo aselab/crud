@@ -28,6 +28,10 @@ module Crud
       self.icon.sort = "fas fa-sort text-muted"
       self.icon.sort_asc = "fas fa-sort-up"
       self.icon.sort_desc = "fas fa-sort-down"
+      self.icon.new = "fas fa-plus"
+      self.icon.show = "fas fa-sticky-note"
+      self.icon.edit = "fas fa-edit"
+      self.icon.destroy = "fas fa-trash"
     end
   end
 end

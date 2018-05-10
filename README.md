@@ -73,6 +73,7 @@ app/javascript/packs/application.js
 ```
 import 'crud'
 import 'crud/fontawesome'
+import 'crud/coreui'
 // inputsは使うものだけを個別にimportしてもよい
 import 'crud/inputs'
 ```
@@ -81,7 +82,7 @@ layoutなどにbootstrap_flash_messagesを追加
 
 ### 設定変更
 
-config/initializers/crud.rb
+config/initializers/crud.rb に以下のように書く
 
 ```
 Crud.configure do |config|
@@ -91,6 +92,8 @@ Crud.configure do |config|
   config.icon.search = "fas fa-search"
 end
 ```
+
+設定値は lib/crud/config.rb を参照。
 
 ## Crud::ApplicationController
 
