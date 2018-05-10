@@ -112,7 +112,7 @@ module Crud
 
     def crud_table(columns, resources, actions, options = nil)
       options = (try(:crud_table_options) || {}).deep_merge(options || {})
-      options[:class] ||= "table table-striped table-bordered table-vcenter crud-table"
+      options[:class] ||= "table table-hover table-sm crud-table"
       options[:class] += " modal-table" if modal?
       header_options = options[:header] || {}
       m = model
@@ -126,7 +126,7 @@ module Crud
       multiple = options.has_key?(:multiple) ? options[:multiple] : self.params[:multiple] == "true"
       selectable = options.has_key?(:selectable) ? options[:selectable] : modal?
       table = content_tag(:table, class: options[:class]) do
-        content_tag(:thead) do
+        content_tag(:thead, class: "thead-light") do
           content_tag(:tr) do
             if selectable
               if multiple
