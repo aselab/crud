@@ -1,71 +1,76 @@
 <div class="search-panel mb-2">
   <%= render "search_form" %>
-
 <% if columns_for_advanced_search.present? %>
-  <div id="<%= temp_id :advanced %>" class="advanced-form"><%= render partial: "advanced_search_form" %></div>
+<%= javascript_tag do %>
+  $(function() {
+    var searchForm = $("#<%= temp_id :index %>").find("form.form-search");
+    var searchPanel = $("#<%= temp_id :index %>").find(".search-panel");
+    var url = searchForm.attr("action");
+    var filter = $("#<%= temp_id :index %>").find("#filter");
+    var form = $("#<%= temp_id :advanced %>");
 
-  <%= javascript_tag do %>
-    $(function() {
-      var searchForm = $("#<%= temp_id :index %>").find("form.form-search");
-      var searchPanel = $("#<%= temp_id :index %>").find(".search-panel");
-      var url = searchForm.attr("action");
-      var filter = $("#<%= temp_id :index %>").find("#filter");
-      var form = $("#<%= temp_id :advanced %>");
+    filter.click(function(e) {
+      e.stopPropagation();
+      searchPanel.toggleClass("do-filter");
+    });
 
-      filter.click(function(e) {
-        e.stopPropagation();
-        searchPanel.toggleClass("do-filter");
-      });
+    var data = [{name: "format", value: "form"}, {name: "form", value: "<%= temp_id(:advanced) %>"}];
+    var updateForm = function(doOperation = false, doClear = false) {
+      var isInitialized = $.trim(location.search).length > 0;
+      var hideCount = 0;
 
-      var data = [{name: "format", value: "form"}, {name: "form", value: "<%= temp_id(:advanced) %>"}];
-      var updateForm = function(doOperation = false, doClear = false) {
-        //form.find("form").attr("action", url);
-        var isInitialized = $.trim(location.search).length > 0;
-        var hideCount = 0;
-
-        form.find(".operator").each(function(index, element) {
-          var row = $(element).closest(".form-row");
-          
-          if($.trim(element.value).length > 0) {
-            row.find(".use-switch").prop("checked", true);
-            row.addClass("do-use");
-            searchPanel.addClass("do-filter");
-          } else {
-            if(isInitialized && doOperation == false && doClear == false) {
-              row.find(".form-check").addClass("hide-check");
-              hideCount++;
-            }
-          }
-        });
-
-        if(hideCount > 0) {
-          form.find(".display-switch").removeClass("disabled");
+      form.find(".operator").each(function(index, element) {
+        var row = $(element).closest(".form-row");
+        
+        if($.trim(element.value).length > 0) {
+          row.find(".use-switch").prop("checked", true);
+          row.addClass("do-use");
+          searchPanel.addClass("do-filter");
         } else {
-          form.find(".display-switch").addClass("disabled");
+          if(isInitialized && doOperation == false && doClear == false) {
+            row.find(".form-check").addClass("hide-check");
+            hideCount++;
+          }
         }
-      };
+      });
 
-      updateForm();
-      form.on("change", ".operator", function() {
-        $.get(url, data.concat($(this).closest("form").serializeArray())).then(function() {
-          updateForm(true);
-        });
-      });
-      form.on("change", ".use-switch", function() {
-        $(this).closest(".form-row").toggleClass("do-use");
-      });
-      form.on("click", ".display-switch", function(event) {
-        event.preventDefault();
-        form.find(".form-row .form-check").removeClass("hide-check");
-        $(this).addClass("disabled");
-      });
-      form.on("click", ".btn-clear", function(event) {
-        event.preventDefault();
-        $.get(url, data).then(function() {
-          updateForm(false, true);
-        });
+      if(hideCount > 0) {
+        form.find(".display-switch").removeClass("disabled");
+      } else {
+        form.find(".display-switch").addClass("disabled");
+      }
+    };
+
+    updateForm();
+    form.on("change", ".operator", function() {
+      $.get(url, data.concat(searchForm.serializeArray())).then(function(result) {
+        updateForm(true);
       });
     });
-  <% end %>
+    form.on("change", ".use-switch", function() {
+      var row = $(this).closest(".form-row");
+
+      row.toggleClass("do-use");
+      if(!$(this).prop("checked")) {
+        row.find("select").val(0);
+        row.find("input").val("");
+      }
+    });
+    form.on("click", ".display-switch", function(event) {
+      event.preventDefault();
+      form.find(".form-row .form-check").removeClass("hide-check");
+      $(this).addClass("disabled");
+    });
+    form.on("click", ".btn-clear", function(event) {
+      event.preventDefault();
+      searchForm.find("select").remove();
+      searchForm.find("input").remove();
+      /*$.get(url, data).then(function() {
+        updateForm(false, true);
+      });*/
+      searchForm.find("#search-button").click();
+    });
+  });
+<% end %>
 <% end %>
 </div>

@@ -7,7 +7,9 @@
   border-radius: 4px;
   background-color: #f0f0f0;
   .form-search {
-    display: flex;
+    .normal-section {
+      display: flex;
+    }
   }
   .advanced-form {
     display: none;
@@ -44,9 +46,12 @@
       .use-control {
         display: block;
       }
+      .form-group {
+        margin-bottom: 0.25rem;
+      }
     }
     .form-group {
-      margin-bottom: 0.25rem;
+      margin-bottom: 0;
       label {
         margin-bottom: 0;
       }

@@ -1,23 +1,48 @@
-<%= form_tag stored_params(:container, :sort_key, :sort_order, :per, :modal_target, :multiple), class: "form-search", method: "GET", remote: @remote do %>
-<% if columns_for_advanced_search.present? %>
-  <button type="button" class="btn btn-secondary mr-2" id="filter">
-    <%= crud_icon_tag :advanced_search %>
-  </button>
-<% end %>
-  <% stored_params(*stored_params_keys_for_search).each do |key, value| %>
-    <% if value.is_a?(Array) %>
-      <% value.each do |v| %>
-        <%= hidden_field_tag "#{key}[]", v %>
-      <% end %>
-    <% else %>
-      <%= hidden_field_tag key, value %>
-    <% end %>
+<%= simple_form_for resource, wrapper: :horizontal_form, html: { id: temp_id(:advanced), class: "form-search" }, method: "GET", url: stored_params(:container, :sort_key, :sort_order, :per, :modal_target, :multiple), remote: @remote do |f| %>
+  <div class="normal-section">
+  <% if columns_for_advanced_search.present? %>
+    <button type="button" class="btn btn-secondary mr-2" id="filter">
+      <%= crud_icon_tag :advanced_search %>
+    </button>
   <% end %>
+    <% stored_params(*stored_params_keys_for_search).each do |key, value| %>
+      <% if value.is_a?(Array) %>
+        <% value.each do |v| %>
+          <%= hidden_field_tag "#{key}[]", v %>
+        <% end %>
+      <% else %>
+        <%= hidden_field_tag key, value %>
+      <% end %>
+    <% end %>
+    
+    <%= text_field_tag :term, search_keyword, class: "search-query form-control",
+      placeholder: t("crud.message.enter_search_term") %>
 
-  <%= text_field_tag :term, search_keyword, class: "search-query form-control",
-    placeholder: t("crud.message.enter_search_term") %>
+    <button id="search-button" type="submit" class="btn btn-primary ml-2">
+      <%= crud_icon_tag :search, t("crud.action.search") %>
+    </button>
+  </div>
 
-  <button id="search-button" type="submit" class="btn btn-primary ml-2">
-    <%= crud_icon_tag :search, t("crud.action.search") %>
-  </button>
+  <% if columns_for_advanced_search.present? %>
+  <div class="advanced-section">
+    <div class="advanced-form mt-2">
+    
+      <% stored_params(*stored_params_keys_for_advanced_search).each do |key, value| %>
+        <%= hidden_field_tag key, value %>
+      <% end %>
+    
+      <% columns_for_advanced_search.each do |column| %>
+        <%= advanced_search_input f, column %>
+      <% end %>
+    
+      <div class="advanced-form-footer mt-1">
+        <a href="#" class="btn btn-success mr-auto display-switch"><%= t("crud.action.redisplay_advanced_column") %></a>
+        <a href="#" class="btn btn-clear"><%= t("crud.action.clear") %></a>
+        <button type="submit" class="btn btn-primary">
+          <%= crud_icon_tag :search %> <%= t("crud.action.search") %>
+        </button>
+      </div>
+    </div>
+  </div>
+  <% end %>
 <% end %>
