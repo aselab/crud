@@ -1,22 +1,17 @@
-<div class="card mb-2">
-  <div class="card-header"><%= t("crud.advanced_search_conditions") %></div>
-  <div class="card-body">
-    <%= simple_form_for resource, wrapper: :horizontal_form, html: { class: "form-horizontal" }, method: "GET", url: "", remote: @remote do |f| %>
-      <% stored_params(*stored_params_keys_for_advanced_search).each do |key, value| %>
-        <%= hidden_field_tag key, value %>
-      <% end %>
-      <% columns_for_advanced_search.each do |column| %>
-        <%= advanced_search_input f, column %>
-      <% end %>
+<%= simple_form_for resource, wrapper: :horizontal_form, html: { class: "mt-2" }, method: "GET", url: "", remote: @remote do |f| %>
+  <% stored_params(*stored_params_keys_for_advanced_search).each do |key, value| %>
+    <%= hidden_field_tag key, value %>
+  <% end %>
 
-      <div class="form-group row">
-        <div class="ml-sm-auto col-sm-10">
-          <button type="submit" class="btn btn-primary">
-            <%= crud_icon_tag :search %> <%= t("crud.action.advanced_search") %>
-          </button>
-          <a href="#" class="btn btn-clear"><%= t("crud.action.clear") %></a>
-        </div>
-      </div>
-    <% end %>
+  <% columns_for_advanced_search.each do |column| %>
+    <%= advanced_search_input f, column %>
+  <% end %>
+
+  <div class="advanced-form-footer mt-1">
+    <a href="#" class="btn btn-success mr-auto display-switch"><%= t("crud.action.redisplay_advanced_column") %></a>
+    <a href="#" class="btn btn-clear"><%= t("crud.action.clear") %></a>
+    <button type="submit" class="btn btn-primary">
+      <%= crud_icon_tag :search %> <%= t("crud.action.search") %>
+    </button>
   </div>
-</div>
+<% end %>

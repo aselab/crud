@@ -1,29 +1,23 @@
 <%= form_tag stored_params(:container, :sort_key, :sort_order, :per, :modal_target, :multiple), class: "form-search", method: "GET", remote: @remote do %>
-  <div class="input-group">
-    <% if columns_for_advanced_search.present? %>
-      <div class="input-group-prepend">
-        <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown">
-          <%= crud_icon_tag :advanced_search %>
-        </button>
-        <div class="dropdown-menu">
-        </div>
-      </div>
-    <% end %>
-    <% stored_params(*stored_params_keys_for_search).each do |key, value| %>
-      <% if value.is_a?(Array) %>
-        <% value.each do |v| %>
-          <%= hidden_field_tag "#{key}[]", v %>
-        <% end %>
-      <% else %>
-        <%= hidden_field_tag key, value %>
+<% if columns_for_advanced_search.present? %>
+  <button type="button" class="btn btn-secondary mr-2" id="filter">
+    <%= crud_icon_tag :advanced_search %>
+  </button>
+<% end %>
+  <% stored_params(*stored_params_keys_for_search).each do |key, value| %>
+    <% if value.is_a?(Array) %>
+      <% value.each do |v| %>
+        <%= hidden_field_tag "#{key}[]", v %>
       <% end %>
+    <% else %>
+      <%= hidden_field_tag key, value %>
     <% end %>
-    <%= text_field_tag :term, search_keyword, class: "search-query form-control",
-      placeholder: t("crud.message.enter_search_term") %>
-    <div class="input-group-append">
-      <button id="search-button" type="submit" class="btn btn-primary">
-        <%= crud_icon_tag :search %>
-      </button>
-    </div>
-  </div>
+  <% end %>
+
+  <%= text_field_tag :term, search_keyword, class: "search-query form-control",
+    placeholder: t("crud.message.enter_search_term") %>
+
+  <button id="search-button" type="submit" class="btn btn-primary ml-2">
+    <%= crud_icon_tag :search, t("crud.action.search") %>
+  </button>
 <% end %>

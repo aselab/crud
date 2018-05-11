@@ -13,7 +13,9 @@ ja:
       create: 作成
       update: 更新
       destroy: 削除
+      search: 検索
       advanced_search: 詳細検索
+      redisplay_advanced_column: 再表示
 
     action_title:
       new: "%{name}新規作成"
