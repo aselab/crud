@@ -340,19 +340,16 @@ module Crud
       is_select = options[:as] ? [:select, :select2].include?(options[:as]) : [:enum, :belongs_to, :has_many, :has_and_belongs_to_many].include?(type)
       is_multiple = is_select && (options.has_key?(:multiple) ? options[:multiple] : [:has_many, :has_and_belongs_to_many].include?(type))
       options[:as] = :string if type == :active_storage
-      content_tag :div, class: "form-row" do
-        concat(content_tag(:div, class: "form-group col-sm-3") do
-          concat(content_tag(:div, class: "form-check") do
-            concat check_box("c", column, class: "form-check-input use-switch")
-            concat f.label( column, required: false)
-          end)
-          concat search_operator_select("op[#{column}]", operators, selected_operator, "operator form-control form-control-sm c[#{column}] use-control")
-        end)
+
+      tag.div class: "advanced-search-input" do
+        f.input(column, as: :boolean, wrapper: false, required: false, input_html: { name: nil, class: "operator" }) +
+        tag.div(class: "form-row d-none") do
+          concat tag.div(search_operator_select("op[#{column}]", operators, selected_operator), class: "col-sm-3")
           if args = SearchQuery::Operator[selected_operator].try(:args)
             (0...args).each do |i|
               input_options = options.deep_merge(
-                input_html: { name: "v[#{column}][]" },
-                wrapper_html: { class: "form-group col-sm c[#{column}] use-control" }
+                input_html: { name: "v[#{column}][]", class: "form-control-sm" },
+                wrapper_html: { class: "col-sm" }
               )
               input_options[:input_html][:id] ||= "query_#{column}_#{i}"
               if is_boolean
@@ -371,16 +368,16 @@ module Crud
               concat f.send(method, column, input_options)
             end
           end
-        #end
+        end
       end
     end
 
-    def search_operator_select(name, operators, selected, clazz)
+    def search_operator_select(name, operators, selected)
       options = operators.map do |o|
         o = SearchQuery::Operator[o] || o
         o.is_a?(Class) && o < SearchQuery::Operator ? [o.label, o.operator_name] : o
       end
-      select_tag(name, options_for_select(options, selected), class: clazz, include_blank: true)
+      select_tag(name, options_for_select(options, selected), class: "operator form-control form-control-sm", include_blank: true)
     end
 
     def translate_wizard_step(step)

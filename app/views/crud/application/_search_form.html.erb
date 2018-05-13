@@ -1,10 +1,10 @@
-<%= simple_form_for resource, wrapper: :horizontal_form, html: { id: temp_id(:advanced), class: "form-search" }, method: "GET", url: stored_params(:container, :sort_key, :sort_order, :per, :modal_target, :multiple), remote: @remote do |f| %>
+<%= simple_form_for resource, html: { class: "form-search" }, method: "GET", url: stored_params(*stored_params_keys_for_search), remote: @remote do |f| %>
   <div class="normal-section">
-  <% if columns_for_advanced_search.present? %>
-    <button type="button" class="btn btn-secondary mr-2" id="filter">
-      <%= crud_icon_tag :advanced_search %>
-    </button>
-  <% end %>
+    <% if columns_for_advanced_search.present? %>
+      <button type="button" class="btn btn-secondary mr-2" id="filter">
+        <%= crud_icon_tag :advanced_search %>
+      </button>
+    <% end %>
     <% stored_params(*stored_params_keys_for_search).each do |key, value| %>
       <% if value.is_a?(Array) %>
         <% value.each do |v| %>
@@ -27,16 +27,14 @@
   <div class="advanced-section">
     <div class="advanced-form mt-2">
     
-      <% stored_params(*stored_params_keys_for_advanced_search).each do |key, value| %>
-        <%= hidden_field_tag key, value %>
-      <% end %>
-    
-      <% columns_for_advanced_search.each do |column| %>
-        <%= advanced_search_input f, column %>
-      <% end %>
+      <fieldset>
+        <% columns_for_advanced_search.each do |column| %>
+          <%= advanced_search_input f, column %>
+        <% end %>
+      </fieldset>
     
       <div class="advanced-form-footer mt-1">
-        <a href="#" class="btn btn-success mr-auto display-switch"><%= t("crud.action.redisplay_advanced_column") %></a>
+        <button type="button" class="btn btn-success mr-auto display-switch"><%= t("crud.action.redisplay_advanced_column") %></button>
         <a href="#" class="btn btn-clear"><%= t("crud.action.clear") %></a>
         <button type="submit" class="btn btn-primary">
           <%= crud_icon_tag :search %> <%= t("crud.action.search") %>
