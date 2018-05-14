@@ -14,5 +14,8 @@ module SimpleForm
 
   class FormBuilder
     map_type :file, to: Crud::Inputs::BootstrapFilestyleInput
+    map_type :datetime, to: Crud::Inputs::DatetimePickerInput
+    map_type :date, to: Crud::Inputs::DatePickerInput
+    map_type :time, to: Crud::Inputs::TimePickerInput
   end
 end

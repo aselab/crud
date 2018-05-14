@@ -1,9 +1,6 @@
 module Crud
   module Inputs
     class Select2Input < SimpleForm::Inputs::CollectionSelectInput
-      include ActionView::Helpers::TagHelper
-      include Rails.application.routes.url_helpers
-
       def input(wrapper_options)
         if ajax?
           if options[:selected_item].present?
@@ -71,15 +68,11 @@ module Crud
       end
 
       def url
-        @url ||= input_options.delete(:url) || polymorphic_path(model)
+        @url ||= input_options.delete(:url) || template.polymorphic_path(model)
       end
 
       def ajax?
         @ajax ||= input_options[:url].present? || input_options[:ajax]
-      end
-
-      def input_id
-        input_html_options[:id] ||= "#{object_name.to_s.gsub(/\]\[|[^-a-zA-Z0-9:.]/, "_").sub(/_$/, "")}_#{attribute_name}"
       end
 
       def init_data(ids)

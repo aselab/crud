@@ -1,8 +1,4 @@
 module MiscsHelper
-  def miscs_file_input_options
-    { as: :bootstrap_filestyle }
-  end
-
   def miscs_misc_belongings_input_options
     { as: :select2 }
   end

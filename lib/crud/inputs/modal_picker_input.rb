@@ -86,10 +86,6 @@ module Crud
         value.to_s
       end
 
-      def input_id
-        input_html_options[:id] ||= "#{object_name.to_s.gsub(/\]\[|[^-a-zA-Z0-9:.]/, "_").sub(/_$/, "")}_#{attribute_name}"
-      end
-
       def picker_options(options)
         options[:icon] ||= template.crud_icon_tag(:modal_picker)
         options[:selected_item] ||= init_data(value)

@@ -7,10 +7,6 @@ module Crud
         filestyle_options
       end
 
-      def input_id
-        input_html_options[:id] ||= "#{object_name.to_s.gsub(/\]\[|[^-a-zA-Z0-9:.]/, "_").sub(/_$/, "")}_#{attribute_name}"
-      end
-
       def script
         template.javascript_tag <<-SCRIPT
           $(function() {
