@@ -1,3 +1,7 @@
-<h1><%= @title %></h1>
+<%= content_for :breadcrumb_menu do %>
+  <%= render "index_menu" %>
+<% end %>
 
-<%= render "selectable_index" %>
+<div class="card plain">
+  <%= render "selectable_index" %>
+</div>

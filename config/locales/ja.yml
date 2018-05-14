@@ -5,6 +5,7 @@ ja:
     action:
       ok: OK
       cancel: キャンセル
+      back: 戻る
       clear: クリア
       new: 新規作成
       edit: 編集
@@ -15,7 +16,7 @@ ja:
       destroy: 削除
       search: 検索
       advanced_search: 詳細検索
-      redisplay_advanced_column: 再表示
+      redisplay: 再表示
 
     action_title:
       new: "%{name}新規作成"

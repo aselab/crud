@@ -5,6 +5,7 @@ en:
     action:
       ok: OK
       cancel: Cancel
+      back: Back
       clear: Clear
       new: New
       edit: Edit
@@ -14,6 +15,7 @@ en:
       update: Update
       destroy: Destroy
       advanced_search: Advanced Search
+      redisplay: Redisplay
 
     action_title:
       new: "New %{name}"

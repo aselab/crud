@@ -4,6 +4,21 @@ module Crud
       "#{prefix}-#{object_id}"
     end
 
+    def class_names(*args)
+      classes = []
+      args.each do |arg|
+        case arg
+        when Hash
+          arg.each {|k, v| classes << k if v}
+        when Array
+          classes << class_names(arg)
+        else
+          classes << arg
+        end
+      end
+      classes.join(" ")
+    end
+
     def crud_icon_tag(name, label = nil)
       return label unless icon = Crud.config.icon[name]
       icon = Crud.config.icon.builder.call(icon, self)
@@ -268,8 +283,7 @@ module Crud
         remote: @remote,
         as: model_key,
         method: method,
-        url: url,
-        html: { class: "col-sm-12" }
+        url: url
       }.merge(options || {})
 
       send(:simple_form_for, resource, options, &block)

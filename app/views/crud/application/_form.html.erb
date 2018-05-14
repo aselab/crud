@@ -1,25 +1,28 @@
-<div class="card-body">
-  <div class="row mb-3">
-    <div class="col-sm-7">
-      <h4 class="card-title mb-0"><%= @title %></h4>
-    </div>
-    <div class="col-sm-5">
-      <div class="mr-auto">
-      </div>
-    </div>
-  </div>
-<%= crud_form resource do |f| %>
+<%= crud_form resource, crud_form_options do |f| %>
   <%= f.error_notification %>
   <%= f.error_notification message: f.object.errors[:base].to_sentence if f.object.errors[:base].present? %>
 
-  <% columns.each do |column| %>
-    <%= simple_form_input f, column %>
-  <% end %>
-  <% unless @skip_form_actions %>
-    <div class="form-group d-flex justify-content-end">
+	<% if controller.is_a?(Crud::Wizard) %>
+    <%= hidden_field_tag :current_step, current_step %>
+    <%= render "#{current_step}_form_inputs", f: f %>
+
+    <%= tag.div class: "form-group #{@skip_form_actions ? "d-none" : "d-flex justify-content-end"}" do %>
+      <% if previous_step %>
+        <%= button_tag icon_label("icon-arrow-left", "戻る"), name: "back_step", class: "btn btn-cancel" %>
+      <% else %>
+        <%= link_to t("crud.action.cancel"), cancel_path, class: "btn btn-cancel" %>
+      <% end %>
+      <% if next_step %>
+        <%= button_tag label_icon(translate_wizard_step(next_step), "icon-arrow-right"), class: "btn btn-primary" %>
+      <% else %>
+        <%= f.button :submit, @submit_label, class: "btn-primary" %>
+      <% end %>
+    <% end %>
+  <% else %>
+    <%= render "form_inputs", f: f %>
+    <%= tag.div class: "form-group #{@skip_form_actions ? "d-none" : "d-flex justify-content-end"}" do %>
       <%= link_to t("crud.action.cancel"), cancel_path, class: "btn btn-cancel" %>
       <%= f.button :submit, @submit_label, class: "btn-primary" %>
-    </div>
+    <% end %>
   <% end %>
 <% end %>
-</div>
