@@ -27,6 +27,7 @@ Rails.application.routes.draw do
     resources :misc_belongings
     resources :misc_throughs
     resources :misc_habtms
+    resources :wizard_miscs, only: [:new, :create]
   end
 
   post '/', to: "application#setting"

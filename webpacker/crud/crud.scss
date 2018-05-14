@@ -85,8 +85,42 @@ span.chnage_hint_effect:not(:last-child)::after {
     width: 10px;
 
     .btn {
+      color: #73818f;
       font-size: 18px;
       padding: 0px 6px;
     }
+  }
+}
+
+.search-panel {
+  padding: 0.5em;
+  border-radius: 4px;
+  background-color: #f0f0f0;
+  .normal-section, .advanced-form-footer {
+    display: flex;
+  }
+  .advanced-form {
+    display: none;
+  }
+  #search-button {
+    display: block;
+  }
+  &.do-filter {
+    .advanced-form {
+      display: block;
+    }
+    #search-button {
+      display: none;
+    }
+    #filter {
+      background-color: #179f08;
+      color: white;
+    }
+  }
+}
+
+.btn-link.btn-cancel {
+  &:focus, &:hover {
+    text-decoration: none;
   }
 }

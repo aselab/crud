@@ -244,3 +244,9 @@ ja:
     locale:
       en: 英語
       ja: 日本語
+    new_wizard: ウィザード作成
+  wizard:
+    ar/wizard_miscs:
+      one: ステップ1
+      two: ステップ2
+      three: ステップ3

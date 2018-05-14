@@ -8,12 +8,12 @@
 
     <%= tag.div class: "form-group #{@skip_form_actions ? "d-none" : "d-flex justify-content-end"}" do %>
       <% if previous_step %>
-        <%= button_tag icon_label("icon-arrow-left", "戻る"), name: "back_step", class: "btn btn-cancel" %>
+        <%= button_tag crud_icon_tag(:left, label: t("crud.action.back")), name: "back_step", class: "btn btn-link btn-cancel" %>
       <% else %>
-        <%= link_to t("crud.action.cancel"), cancel_path, class: "btn btn-cancel" %>
+        <%= link_to t("crud.action.cancel"), cancel_path, class: "btn btn-link btn-cancel" %>
       <% end %>
       <% if next_step %>
-        <%= button_tag label_icon(translate_wizard_step(next_step), "icon-arrow-right"), class: "btn btn-primary" %>
+        <%= button_tag crud_icon_tag(:right, label: translate_wizard_step(next_step), position: :right), class: "btn btn-primary" %>
       <% else %>
         <%= f.button :submit, @submit_label, class: "btn-primary" %>
       <% end %>
@@ -21,7 +21,7 @@
   <% else %>
     <%= render "form_inputs", f: f %>
     <%= tag.div class: "form-group #{@skip_form_actions ? "d-none" : "d-flex justify-content-end"}" do %>
-      <%= link_to t("crud.action.cancel"), cancel_path, class: "btn btn-cancel" %>
+      <%= link_to t("crud.action.cancel"), cancel_path, class: "btn btn-link btn-cancel" %>
       <%= f.button :submit, @submit_label, class: "btn-primary" %>
     <% end %>
   <% end %>

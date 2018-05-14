@@ -1,30 +1,3 @@
 .nav-link svg.feather {
   margin-right: 0.5em;
 }
-
-.search-panel {
-  padding: 0.5em;
-  border-radius: 4px;
-  background-color: #f0f0f0;
-  .normal-section, .advanced-form-footer {
-    display: flex;
-  }
-  .advanced-form {
-    display: none;
-  }
-  #search-button {
-    display: block;
-  }
-  &.do-filter {
-    .advanced-form {
-      display: block;
-    }
-    #search-button {
-      display: none;
-    }
-    #filter {
-      background-color: #179f08;
-      color: white;
-    }
-  }
-}

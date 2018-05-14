@@ -19,10 +19,6 @@ module Crud
 
       self.icon = ActiveSupport::OrderedOptions.new
 
-      self.icon.builder = lambda do |icon, context|
-        context.tag.i(nil, class: icon)
-      end
-
       self.icon.modal_picker = "fas fa-th-list"
       self.icon.advanced_search = "fas fa-filter"
       self.icon.search = "fas fa-search"
@@ -33,6 +29,8 @@ module Crud
       self.icon.show = "fas fa-sticky-note"
       self.icon.edit = "fas fa-edit"
       self.icon.destroy = "fas fa-trash"
+      self.icon.left = "fas fa-chevron-left"
+      self.icon.right = "fas fa-chevron-right"
     end
   end
 end

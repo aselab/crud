@@ -19,19 +19,19 @@ module Crud
       classes.join(" ")
     end
 
-    def crud_icon_tag(name, label = nil)
-      return label unless icon = Crud.config.icon[name]
-      icon = Crud.config.icon.builder.call(icon, self)
-      label ? icon + tag.span(label, class: "ml-1") : icon
+    def crud_icon_tag(name, **options)
+      icon_tag(Crud.config.icon[name], options)
     end
 
-    def icon_tag(icon_class, label = nil)
-      icon = tag.i(nil, class: icon_class)
-      label ? icon + tag.span(label, class: "ml-1") : icon
+    def icon_tag(icon_class, **options)
+      label = options[:label]
+      position = options[:position] || :left
+      icon = tag.i(nil, class: icon_class) if icon_class
+      left, right = options[:position] == :right ? [label, icon].compact : [icon, label].compact
+      left && right ? tag.span(left, class: "mr-1") + right : left
     end
   
-    def link_to_sort(key, options = nil)
-      options ||= {}
+    def link_to_sort(key, **options)
       label = options.delete(:label) || model.human_attribute_name(key)
       options[:remote] = @remote unless options.has_key?(:remote)
       if sort_key?(key)
@@ -61,9 +61,9 @@ module Crud
           if action == :destroy
             options[:method] ||= :delete
             options[:data] = { confirm: t("crud.message.are_you_sure") }.merge(options[:data] || {})
-            options[:class] ||= "btn btn-link text-danger"
+            options[:class] ||= "btn text-danger"
           else
-            options[:class] ||= "btn btn-link text-secondary"
+            options[:class] ||= "btn"
           end
           options[:remote] = @remote unless options.has_key?(:remote)
           options[:remote] = @remote_link unless @remote_link.nil?
@@ -77,7 +77,7 @@ module Crud
               options[:data] = (options[:data] || {}).merge(toggle: "tooltip", placement: "top")
               label = crud_icon_tag(action)
             else
-              label = crud_icon_tag(action, label)
+              label = crud_icon_tag(action, label: label)
             end
             link_to(label, params, options)
           end

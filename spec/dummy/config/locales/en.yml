@@ -26,6 +26,7 @@ en:
     locale:
       en: English
       ja: Japanese
+    new_wizard: New wizard
   activerecord:
     attributes:
       ar/group: &group
@@ -43,3 +44,8 @@ en:
         B: BLabel
         C: CLabel
     mongo/misc: *enums
+  wizard:
+    ar/wizard_miscs:
+      one: Step 1
+      two: Step 2
+      three: Step 3
