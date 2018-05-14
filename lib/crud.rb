@@ -1,3 +1,5 @@
 require 'crud_api'
 require 'simple_form'
+require 'crud/inputs'
+require 'crud/simple_form'
 require 'webpacker'

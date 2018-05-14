@@ -308,16 +308,6 @@ module Crud
     #
     def input_options(f, column)
       default = {}
-      case Crud::ModelReflection[f.object].column_type(column)
-      when :boolean
-        default[:wrapper] = :vertical_boolean
-      when :datetime, :timestamp
-        default[:as] = :bootstrap_datetimepicker
-      when :date
-        default[:as] = :bootstrap_datepicker
-      when :time
-        default[:as] = :bootstrap_timepicker
-      end
       options = call_method_for_column(column, :input_options) || {}
       options = default.merge(options)
       options

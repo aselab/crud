@@ -13,7 +13,6 @@
 # Dir[Rails.root.join('lib/components/**/*.rb')].each { |f| require f }
 
 # Use this setup block to configure all options available in SimpleForm.
-if defined? SimpleForm
 SimpleForm.setup do |config|
   # Default class for buttons
   config.button_class = 'btn'
@@ -437,12 +436,4 @@ SimpleForm.setup do |config|
   #   range:         :custom_range,
   #   time:          :custom_multi_select
   # }
-end
-
-class SimpleForm::Inputs::Base
-  def valid?
-    Crud.config.simple_form.use_valid_class && super
-  end
-end
-
 end
