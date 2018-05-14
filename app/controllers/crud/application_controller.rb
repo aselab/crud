@@ -112,11 +112,7 @@ module Crud
     end
 
     def stored_params_keys_for_search
-      [:container, :modal_target, :multiple]
-    end
-
-    def stored_params_keys_for_advanced_search
-      [:sort_key, :sort_order, :per] + stored_params_keys_for_search
+      [:sort_key, :sort_order, :per, :container, :modal_target, :multiple]
     end
 
     def index_actions

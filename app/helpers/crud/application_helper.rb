@@ -340,32 +340,33 @@ module Crud
       is_select = options[:as] ? [:select, :select2].include?(options[:as]) : [:enum, :belongs_to, :has_many, :has_and_belongs_to_many].include?(type)
       is_multiple = is_select && (options.has_key?(:multiple) ? options[:multiple] : [:has_many, :has_and_belongs_to_many].include?(type))
       options[:as] = :string if type == :active_storage
-      div_options = { class: "form-group row" }
-      div_options[:style] = "display: none;" if op.blank? && values.empty?
-      content_tag :div, div_options do
-        concat f.label( column, required: false, class: "#{column_size_class} col-form-label")
-        concat content_tag(:div, search_operator_select("op[#{column}]", operators, selected_operator), class: column_size_class)
-        if args = SearchQuery::Operator[selected_operator].try(:args)
-          (0...args).each do |i|
-            input_options = options.deep_merge(
-              input_html: { name: "v[#{column}][]" },
-              wrapper_html: { class: "col-sm" }
-            )
-            input_options[:input_html][:id] ||= "query_#{column}_#{i}"
-            if is_boolean
-              input_options[:input_html][:checked] = ref.cast(:boolean, values)
-            elsif is_select
-              if is_multiple
-                input_options[:selected] = values
+
+      tag.div class: "advanced-search-input" do
+        f.input(column, as: :boolean, wrapper: false, required: false, input_html: { name: nil, class: "operator" }) +
+        tag.div(class: "form-row d-none") do
+          concat tag.div(search_operator_select("op[#{column}]", operators, selected_operator), class: "col-sm-3")
+          if args = SearchQuery::Operator[selected_operator].try(:args)
+            (0...args).each do |i|
+              input_options = options.deep_merge(
+                input_html: { name: "v[#{column}][]", class: "form-control-sm" },
+                wrapper_html: { class: "col-sm" }
+              )
+              input_options[:input_html][:id] ||= "query_#{column}_#{i}"
+              if is_boolean
+                input_options[:input_html][:checked] = ref.cast(:boolean, values)
+              elsif is_select
+                if is_multiple
+                  input_options[:selected] = values
+                else
+                  input_options[:selected] = values[i]
+                  input_options[:include_blank] = true unless input_options.has_key?(:include_blank)
+                end
               else
-                input_options[:selected] = values[i]
-                input_options[:include_blank] = true unless input_options.has_key?(:include_blank)
+                input_options[:input_html][:value] = values[i]
               end
-            else
-              input_options[:input_html][:value] = values[i]
+              method = ref.association_key?(column) && type != :has_one ? :association : :input
+              concat f.send(method, column, input_options)
             end
-            method = ref.association_key?(column) && type != :has_one ? :association : :input
-            concat f.send(method, column, input_options)
           end
         end
       end
@@ -376,7 +377,7 @@ module Crud
         o = SearchQuery::Operator[o] || o
         o.is_a?(Class) && o < SearchQuery::Operator ? [o.label, o.operator_name] : o
       end
-      select_tag(name, options_for_select(options, selected), class: "operator form-control", include_blank: true)
+      select_tag(name, options_for_select(options, selected), class: "operator form-control form-control-sm", include_blank: true)
     end
 
     def translate_wizard_step(step)
