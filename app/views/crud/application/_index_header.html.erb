@@ -35,7 +35,7 @@
       });
     }).on("change", ":checkbox.operator", function() {
       var row = $(this).closest(".advanced-search-input").find(".form-row").toggleClass("d-none");
-      if (!this.checked) row.find("select.operator").val("").trigger("change");
+      if (!this.checked) row.find(":input").val("");
     }).on("click", ".display-switch", function(event) {
       searchPanel.find(".advanced-search-input").removeClass("d-none");
       $(this).addClass("disabled");
