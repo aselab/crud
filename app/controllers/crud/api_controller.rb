@@ -26,7 +26,7 @@ module Crud
       respond_to do |format|
         format_block.try(:call, format)
         format.json { render_json resources }
-        format.csv { send_data generate_csv(columns, resources, params), type: "text/csv", filename: params[:filename] }
+        format.csv { send_data generate_csv(columns_for_csv, resources, params), type: "text/csv", filename: params[:filename] }
       end
     end
 
